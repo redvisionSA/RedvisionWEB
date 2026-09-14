@@ -1,0 +1,57 @@
+{
+  "_comentario": "Reseñas reales de la ficha de Google de REDVISION. Transcriptas textualmente, sin editar la ortografia del autor ni recortar. Para actualizar, ver README seccion 10.",
+  "perfil": "https://www.google.com/maps/search/?api=1&query=REDVISION+Virrey+Cevallos+784+CABA",
+  "puntaje": 4.9,
+  "total": 619,
+  "actualizado": "14/09/2026",
+  "resenas": [
+    {
+      "autor": "German Barrionuevo",
+      "autorMeta": "1 opinión",
+      "localGuide": false,
+      "puntaje": 5,
+      "fecha": "Hace 2 meses",
+      "texto": "Muy amable con la atención telefónica y entrega de productos. Especialmente Carlos, un genio total. Muchas gracias por todo"
+    },
+    {
+      "autor": "Sebas Watts",
+      "autorMeta": "37 opiniones · 4 fotos",
+      "localGuide": true,
+      "puntaje": 5,
+      "fecha": "Hace 3 meses",
+      "texto": "Muy buenos precios y variedad con stock... Genial q abran un rato en fin de semana q siempre sale alguna changa resudencial"
+    },
+    {
+      "autor": "marcos IBAÑEZ",
+      "autorMeta": "17 opiniones",
+      "localGuide": false,
+      "puntaje": 5,
+      "fecha": "Hace 11 meses",
+      "texto": "Excelente atención general y, en particular, David un vendedor muy dispuesto para acesorar. además, al cotejar que uno de los componentes estaba más barato en ML en otro vendedor, se gestionó inmediatamente una baja del precio, lo que mostró una gran disposición para brindar la mejor opción del mercado."
+    },
+    {
+      "autor": "Emmanuel Yu",
+      "autorMeta": "7 opiniones · 23 fotos",
+      "localGuide": true,
+      "puntaje": 5,
+      "fecha": "Hace un año",
+      "texto": "Excelente la atención y muy buenos precios ! Super recomendable !"
+    },
+    {
+      "autor": "Michael Wilson Nieto Cosato",
+      "autorMeta": "1 opinión",
+      "localGuide": false,
+      "puntaje": 5,
+      "fecha": "Hace 3 años",
+      "texto": "Excelente, y muy buena atención al cliente, sobre todo gran calidad de sus productos."
+    },
+    {
+      "autor": "Nahuel De La Fuente",
+      "autorMeta": "1 opinión",
+      "localGuide": false,
+      "puntaje": 5,
+      "fecha": "Hace 3 años",
+      "texto": "Excelente servicio y muy buena atención, productos de muy buena calidad."
+    }
+  ]
+}

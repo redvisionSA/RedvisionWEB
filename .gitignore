@@ -1,0 +1,18 @@
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+.DS_Store
+.env
+.env.*
+!.env.example
+npm-debug.log*
+yarn-error.log*
+
+# Generado por scripts/copy-draco.mjs en cada npm install
+public/draco/
+
+# Material crudo de origen (videos y fotos de referencia, ~48 MB).
+# El sitio se compila con las versiones procesadas de public/.
+img/

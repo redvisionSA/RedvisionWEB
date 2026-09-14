@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es-AR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/png" href="/redvision-logo.png" />
+
+    <title>REDVISION | Comercialización y proyectos de seguridad electrónica</title>
+    <meta
+      name="description"
+      content="REDVISION comercializa equipamiento de seguridad electrónica de las principales marcas del mercado: videovigilancia, control de accesos, detección de intrusión, redes y energía. Venta mayorista y minorista, departamento de proyectos llave en mano y formación técnica. Dahua Technology como plataforma de referencia."
+    />
+    <meta name="theme-color" content="#D61922" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://redvision.com.ar/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="REDVISION" />
+    <meta property="og:title" content="REDVISION | Comercialización y proyectos de seguridad electrónica" />
+    <meta
+      property="og:description"
+      content="Catálogo multimarca con stock propio: videovigilancia, control de accesos, detección de intrusión, redes y energía. Mayorista y minorista. Departamento de proyectos llave en mano."
+    />
+    <meta property="og:image" content="/redvision-logo.png" />
+
+    <!--
+      El sitio siempre arranca en clear mode, por decision de marca.
+      No se lee prefers-color-scheme ni un tema guardado: la primera impresion
+      es siempre negro sobre blanco con el rojo institucional. El visitante
+      activa el dark mode desde el switch de la barra si lo prefiere.
+    -->
+    <script>
+      document.documentElement.classList.remove('dark')
+      document.documentElement.style.colorScheme = 'light'
+    </script>
+
+    <!-- El poster del video de fondo entra primero: el Hero nunca aparece vacio -->
+    <link rel="preload" as="image" href="/hero-poster.jpg" />
+
+    <!--
+      El modelo empieza a bajar junto con el HTML, sin esperar a que arranque el
+      JS. Es lo que hace que la cinematica de entrada dure lo que tarda el zoom
+      y no lo que tarda la descarga.
+      El decodificador Draco viaja en paralelo porque el GLB lo exige.
+    -->
+    <link rel="preload" as="fetch" type="model/gltf-binary" href="/Dahua_Robot_Replica.glb" crossorigin="anonymous" />
+    <link rel="preload" as="fetch" href="/draco/draco_decoder.wasm" crossorigin="anonymous" />
+    <link rel="preload" as="script" href="/draco/draco_wasm_wrapper.js" crossorigin="anonymous" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      La hoja de fuentes no bloquea el primer pintado: entra como `print` y
+      pasa a `all` al terminar de cargar. Con `display=swap` el texto se ve
+      desde el primer frame con la fuente del sistema y cambia sin salto.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&family=Source+Sans+3:wght@400;600&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "REDVISION",
+        "slogan": "Tecnología sin límites",
+        "description": "Comercialización mayorista y minorista de equipamiento de seguridad electrónica de las principales marcas del mercado: videovigilancia, control de accesos, detección de intrusión, redes y energía. Departamento de proyectos llave en mano y formación técnica para instaladores. Dahua Technology como plataforma de referencia.",
+        "areaServed": { "@type": "Country", "name": "Argentina" },
+        "telephone": "+5491125316650",
+        "email": "ecommerce2.redvision@gmail.com",
+        "url": "https://redvision.com.ar/",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Virrey Cevallos 784",
+          "addressLocality": "Ciudad Autónoma de Buenos Aires",
+          "postalCode": "C1077",
+          "addressCountry": "AR"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "18:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "09:00",
+            "closes": "13:00"
+          }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/redvision.tech/",
+          "https://www.facebook.com/CCTVRedvision",
+          "https://redvision.mercadoshops.com.ar/"
+        ],
+        "brand": { "@type": "Brand", "name": "Dahua Technology" },
+        "makesOffer": [
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Videovigilancia IP y HDCVI" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Control de accesos y presentismo" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Detección de intrusión y disuasión" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Redes, conectividad y energía" } }
+        ],
+        "department": [
+          { "@type": "Organization", "name": "Departamento de proyectos" },
+          { "@type": "Organization", "name": "Capacitaciones técnicas" }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

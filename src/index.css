@@ -1,0 +1,571 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   TOKENS DE MATERIAL "LIQUID GLASS"
+
+   Todo el vidrio se construye con opacidad sobre blanco o negro puro, mas el
+   rojo institucional como unico tinte. Ningun color nuevo entra aqui.
+
+   El color que se ve a traves del vidrio es el del video de fondo: por eso
+   el material sube la saturacion (210-230%) en vez de agregar pigmento. Asi
+   la pagina gana color sin tocar la paleta de marca.
+   ========================================================================== */
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* --- Vidrio de las teselas --------------------------------------- */
+    --glass-bg: rgba(255, 255, 255, 0.52);
+    --glass-bg-strong: rgba(255, 255, 255, 0.74);
+    --glass-bg-thin: rgba(255, 255, 255, 0.34);
+    --glass-border: rgba(255, 255, 255, 0.72);
+    --glass-edge: rgba(255, 255, 255, 0.98);
+
+    /* Optica: lo que convierte una capa translucida en vidrio con espesor */
+    --glass-blur: 26px;
+    --glass-sat: 215%;
+    --glass-bright: 1.07;
+    --glass-contrast: 1.02;
+
+    /* Brillos y tintes */
+    --glass-specular: rgba(255, 255, 255, 0.9);
+    --glass-sheen: rgba(255, 255, 255, 0.55);
+    --glass-bloom: rgba(214, 25, 34, 0.11);
+    --glass-prisma-a: rgba(255, 255, 255, 0.98);
+    --glass-prisma-b: rgba(214, 25, 34, 0.5);
+
+    /* Profundidad: canto, contacto, sombra media y sombra ambiente.
+       Las cuatro capas juntas son lo que da la sensacion de objeto flotando. */
+    --glass-lift:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.06),
+      inset 0 0 26px -8px rgba(255, 255, 255, 0.6);
+    --glass-depth:
+      0 1px 2px rgba(0, 0, 0, 0.05),
+      0 12px 26px -14px rgba(0, 0, 0, 0.3),
+      0 34px 68px -30px rgba(0, 0, 0, 0.42);
+    --glass-depth-hover:
+      0 2px 4px rgba(0, 0, 0, 0.07),
+      0 20px 40px -16px rgba(0, 0, 0, 0.36),
+      0 52px 96px -34px rgba(0, 0, 0, 0.5);
+
+    /* Velo que atenua el video para que actue como fondo y no como contenido */
+    --scrim: rgba(255, 255, 255, 0.74);
+    /* El video ya viene desenfocado desde ffmpeg: aca solo queda un velo de
+       cierre, no un desenfoque de pantalla completa por frame. */
+    --scrim-blur: 3px;
+
+    /* ------------------------------------------------------------------
+       CHROME: navbar y footer.
+       Son las dos superficies que sostienen el logotipo, asi que llevan su
+       propio material, mas vidrioso y mas claro que el resto de las teselas.
+       ------------------------------------------------------------------ */
+    --chrome-bg: rgba(255, 255, 255, 0.74);
+    --chrome-tint: rgba(255, 255, 255, 0);
+    --chrome-border: rgba(255, 255, 255, 0.9);
+    --chrome-blur: 40px;
+    --chrome-sat: 190%;
+    --chrome-bright: 1.04;
+    --chrome-shadow: 0 20px 55px -22px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+
+    /* Posicion del cursor dentro de cada panel (reflejo especular) */
+    --mx: 50%;
+    --my: 0%;
+  }
+
+  html.dark {
+    color-scheme: dark;
+
+    /* El vidrio oscuro es mas transparente que el claro, no mas opaco: sobre
+       negro, tapar es lo que mata el efecto. El espesor lo pone el blur. */
+    --glass-bg: rgba(0, 0, 0, 0.4);
+    --glass-bg-strong: rgba(0, 0, 0, 0.6);
+    --glass-bg-thin: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-edge: rgba(255, 255, 255, 0.55);
+
+    --glass-blur: 40px;
+    --glass-sat: 230%;
+    --glass-bright: 1.34;
+    --glass-contrast: 0.98;
+
+    --glass-specular: rgba(255, 255, 255, 0.3);
+    --glass-sheen: rgba(255, 255, 255, 0.16);
+    --glass-bloom: rgba(214, 25, 34, 0.2);
+    --glass-prisma-a: rgba(255, 255, 255, 0.7);
+    --glass-prisma-b: rgba(214, 25, 34, 0.75);
+
+    --glass-lift:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.55),
+      inset 0 0 30px -8px rgba(255, 255, 255, 0.22);
+    --glass-depth:
+      0 1px 2px rgba(0, 0, 0, 0.5),
+      0 14px 30px -14px rgba(0, 0, 0, 0.7),
+      0 40px 80px -32px rgba(0, 0, 0, 0.85);
+    --glass-depth-hover:
+      0 2px 6px rgba(0, 0, 0, 0.6),
+      0 24px 46px -16px rgba(0, 0, 0, 0.8),
+      0 60px 110px -36px rgba(0, 0, 0, 0.95);
+
+    /* En dark mode el chrome es cristal gris, no negro. El truco es subir el
+       brillo del BACKDROP (brightness 1.85) en vez de pintar un gris opaco:
+       el fondo que se ve a traves sigue siendo el video, pero levantado. Eso
+       da la superficie clara que el logotipo necesita sin apagar el dark mode. */
+    --chrome-bg: rgba(255, 255, 255, 0.09);
+    --chrome-tint: rgba(208, 213, 224, 0.07);
+    --chrome-border: rgba(255, 255, 255, 0.3);
+    --chrome-blur: 56px;
+    --chrome-sat: 205%;
+    --chrome-bright: 1.85;
+    --chrome-shadow: 0 24px 65px -24px rgba(0, 0, 0, 0.9), inset 0 1px 0 0 rgba(255, 255, 255, 0.34);
+
+    --scrim: rgba(0, 0, 0, 0.7);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    /* Lienzo de ultimo recurso: evita el destello blanco antes de que
+       cargue el video de fondo. */
+    background: #ffffff;
+  }
+
+  html.dark {
+    background: #000000;
+  }
+
+  body {
+    @apply text-black antialiased dark:text-white;
+    background: transparent; /* el video vive detras, en VideoBackground */
+    font-family: theme('fontFamily.sans');
+    transition: color 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: theme('fontFamily.display');
+    @apply tracking-tight;
+  }
+
+  :focus-visible {
+    outline: 2px solid #d61922;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: #d61922;
+    color: #ffffff;
+  }
+
+  /* Scrollbar discreta, dentro de la paleta */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(214, 25, 34, 0.55);
+    border-radius: 999px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     TACTIL Y PANTALLAS CHICAS
+
+     El desenfoque de fondo es lo mas caro del diseno y una GPU de telefono
+     lo paga en bateria y en frames. Se recorta el radio de blur, no el
+     efecto: el vidrio se sigue leyendo como vidrio.
+     ------------------------------------------------------------------ */
+  @media (max-width: 767px) {
+    :root {
+      --glass-blur: 18px;
+      --chrome-blur: 28px;
+      --scrim-blur: 0px;
+      --glass-sat: 195%;
+    }
+    html.dark {
+      --glass-blur: 26px;
+      --chrome-blur: 36px;
+      --glass-sat: 210%;
+    }
+  }
+
+  /* Sin cursor no hay estado hover: los objetivos tactiles suben a 48 px y
+     el reflejo especular deja de tener sentido. */
+  @media (hover: none) {
+    .rv-btn-primary,
+    .rv-btn-glass {
+      min-height: 48px;
+    }
+    .glass::before,
+    .glass-chrome::before {
+      opacity: 0.35;
+    }
+  }
+
+  /* El texto no se achica por debajo de 16 px en campos de formulario:
+     iOS hace zoom automatico al enfocar un input con letra mas chica. */
+  @media (max-width: 767px) {
+    .rv-field {
+      font-size: 16px;
+    }
+  }
+
+  /* Accesibilidad: si el sistema pide menos transparencia, el vidrio se vuelve solido */
+  @media (prefers-reduced-transparency: reduce) {
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.97);
+      --glass-bg-strong: rgba(255, 255, 255, 1);
+      --glass-bg-thin: rgba(255, 255, 255, 0.95);
+      --glass-sheen: transparent;
+      --glass-bloom: transparent;
+      --scrim: rgba(255, 255, 255, 0.97);
+      --chrome-bg: rgba(255, 255, 255, 0.99);
+      --chrome-tint: rgba(255, 255, 255, 0.99);
+    }
+    html.dark {
+      --glass-bg: rgba(18, 18, 20, 0.97);
+      --glass-bg-strong: rgba(10, 10, 12, 1);
+      --glass-bg-thin: rgba(30, 30, 34, 0.95);
+      --glass-sheen: transparent;
+      --glass-bloom: transparent;
+      --scrim: rgba(0, 0, 0, 0.97);
+      --chrome-bg: rgba(44, 46, 52, 0.99);
+      --chrome-tint: rgba(44, 46, 52, 0.99);
+    }
+    .glass,
+    .glass-thin,
+    .glass-strong,
+    .glass-chrome {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   COMPONENTES DE MATERIAL
+   ========================================================================== */
+@layer components {
+  /* ------------------------------------------------------------------
+     Panel de vidrio base.
+
+     Cinco capas apiladas, de atras hacia adelante:
+       1. backdrop-filter  espesor optico (blur + saturacion + brillo)
+       2. background       velo + brillo de esquina + bloom rojo + grano
+       3. ::before         reflejo especular que sigue al cursor
+       4. box-shadow       canto, contacto y sombra ambiente (la profundidad)
+       5. ::after          canto lenticular con dispersion blanco/rojo
+     ------------------------------------------------------------------ */
+  .glass {
+    position: relative;
+    isolation: isolate;
+    border-radius: theme('borderRadius.glass');
+    border: 1px solid var(--glass-border);
+
+    background-image:
+      /* bloom rojo institucional en la esquina superior derecha */
+      radial-gradient(95% 75% at 100% 0%, var(--glass-bloom), transparent 62%),
+      /* brillo de esquina: la luz que entra por el canto superior izquierdo */
+      radial-gradient(130% 120% at 0% 0%, var(--glass-sheen), transparent 58%),
+      /* velo base */
+      linear-gradient(var(--glass-bg), var(--glass-bg));
+
+    /* El filtro de fondo se enciende SOLO cerca del viewport.
+       Cada elemento con backdrop-filter obliga al navegador a recomponer y
+       desenfocar el fondo detras de el. Con quince teselas en la pagina, eso
+       es quince desenfoques vivos en cada scroll. GlassPanel marca
+       data-vidrio="on" cuando la tesela se acerca, y lo apaga al alejarse. */
+    box-shadow: var(--glass-depth), var(--glass-lift);
+
+    transition:
+      transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 300ms ease;
+  }
+
+  .glass[data-vidrio='on'] {
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright))
+      contrast(var(--glass-contrast));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright))
+      contrast(var(--glass-contrast));
+  }
+
+  /* Al acercarse, la tesela sube y su sombra se abre: gana altura real */
+  .glass:hover,
+  .glass:focus-within {
+    box-shadow: var(--glass-depth-hover), var(--glass-lift);
+  }
+
+  /* Reflejo especular. Dos radiales concentricos: el halo blanco del vidrio
+     y, dentro, un nucleo rojo institucional que da el color sin pigmentar. */
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      radial-gradient(240px circle at var(--mx) var(--my), var(--glass-bloom), transparent 60%),
+      radial-gradient(560px circle at var(--mx) var(--my), var(--glass-specular), transparent 64%);
+    opacity: 0.4;
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .glass:hover::before,
+  .glass:focus-within::before {
+    opacity: 1;
+  }
+
+  /* Canto lenticular con dispersion. El borde de un vidrio grueso no es de
+     un solo color: descompone la luz. Aca la descomposicion usa unicamente
+     blanco y el rojo de marca, asi que suma color sin salirse de la paleta. */
+  .glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from 205deg at 50% 50%,
+      var(--glass-prisma-a) 0%,
+      var(--glass-prisma-b) 12%,
+      transparent 26%,
+      var(--glass-prisma-a) 44%,
+      transparent 60%,
+      var(--glass-prisma-b) 76%,
+      var(--glass-prisma-a) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.55;
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .glass:hover::after,
+  .glass:focus-within::after {
+    opacity: 0.95;
+  }
+
+  /* --- Variantes ------------------------------------------------------ */
+  .glass-thin {
+    position: relative;
+    border-radius: theme('borderRadius.glass');
+    border: 1px solid var(--glass-border);
+    background-image:
+      radial-gradient(120% 110% at 0% 0%, var(--glass-sheen), transparent 60%),
+      linear-gradient(var(--glass-bg-thin), var(--glass-bg-thin));
+    backdrop-filter: blur(22px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    -webkit-backdrop-filter: blur(22px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    box-shadow: inset 0 1px 0 0 var(--glass-edge);
+  }
+
+  .glass-strong {
+    position: relative;
+    isolation: isolate;
+    border-radius: theme('borderRadius.glass');
+    border: 1px solid var(--glass-border);
+    background-image:
+      radial-gradient(95% 75% at 100% 0%, var(--glass-bloom), transparent 62%),
+      radial-gradient(130% 120% at 0% 0%, var(--glass-sheen), transparent 58%),
+      linear-gradient(var(--glass-bg-strong), var(--glass-bg-strong));
+    backdrop-filter: blur(48px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    -webkit-backdrop-filter: blur(48px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    box-shadow: var(--glass-depth), var(--glass-lift);
+  }
+
+  /* Estado activo: el rojo institucional tinta el canto, nunca el contenido */
+  .glass-active {
+    border-color: rgba(214, 25, 34, 0.85);
+    box-shadow:
+      0 0 0 1px rgba(214, 25, 34, 0.35),
+      0 18px 50px -20px rgba(214, 25, 34, 0.5),
+      var(--glass-lift);
+  }
+
+  /* --- Chrome: navbar y footer ---------------------------------------- */
+  .glass-chrome {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, var(--chrome-bg), var(--chrome-tint));
+    backdrop-filter: blur(var(--chrome-blur)) saturate(var(--chrome-sat)) brightness(var(--chrome-bright));
+    -webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(var(--chrome-sat)) brightness(var(--chrome-bright));
+    border: 1px solid var(--chrome-border);
+    border-radius: theme('borderRadius.glass');
+    box-shadow: var(--chrome-shadow);
+    transition:
+      transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 300ms ease;
+  }
+
+  .glass-chrome::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(420px circle at var(--mx) var(--my), var(--glass-specular), transparent 62%);
+    opacity: 0;
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .glass-chrome:hover::before,
+  .glass-chrome:focus-within::before {
+    opacity: 1;
+  }
+
+  .glass-chrome::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(160deg, var(--glass-edge), transparent 38%, transparent 62%, var(--glass-edge));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  /* Chip blanco para el logotipo de Dahua.
+     El wordmark oficial es negro; sobre el chip conserva sus colores exactos
+     y se lee igual en clear mode y en dark mode. */
+  .rv-chip-marca {
+    @apply inline-flex items-center justify-center rounded-2xl;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 10px -4px rgba(0, 0, 0, 0.35);
+  }
+
+  /* --- Tipografia de seccion ----------------------------------------- */
+  .rv-eyebrow {
+    @apply font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-rv-red;
+  }
+
+  .rv-muted {
+    @apply text-black/70 dark:text-white/75;
+  }
+
+  .rv-hairline {
+    @apply border-black/10 dark:border-white/15;
+  }
+
+  /* --- Controles ------------------------------------------------------ */
+  .rv-btn-primary {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-rv-red px-6 py-3
+           font-display text-sm font-semibold uppercase tracking-wide text-white
+           transition-all duration-200 ease-apple hover:bg-rv-red-press active:scale-[0.97];
+    min-height: 44px;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+      0 10px 30px -12px rgba(214, 25, 34, 0.9);
+  }
+
+  .rv-btn-glass {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill px-6 py-3
+           font-display text-sm font-semibold uppercase tracking-wide
+           text-black transition-all duration-200 ease-apple active:scale-[0.97]
+           dark:text-white;
+    min-height: 44px;
+    background-image:
+      radial-gradient(120% 140% at 0% 0%, var(--glass-sheen), transparent 65%),
+      linear-gradient(var(--glass-bg-thin), var(--glass-bg-thin));
+    backdrop-filter: blur(22px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    -webkit-backdrop-filter: blur(22px) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 0 var(--glass-edge);
+  }
+
+  .rv-btn-glass:hover {
+    border-color: rgba(214, 25, 34, 0.9);
+    color: #d61922;
+  }
+
+  .rv-link {
+    @apply cursor-pointer text-black/80 transition-colors duration-200 hover:text-rv-red
+           dark:text-white/80 dark:hover:text-rv-red;
+  }
+
+  .rv-chip {
+    @apply inline-flex items-center gap-2 rounded-pill px-3 py-1.5 font-display text-[11px]
+           font-semibold uppercase tracking-[0.14em];
+    background-image:
+      radial-gradient(120% 160% at 0% 0%, var(--glass-sheen), transparent 70%),
+      linear-gradient(var(--glass-bg-thin), var(--glass-bg-thin));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(16px) saturate(var(--glass-sat));
+    box-shadow: inset 0 1px 0 0 var(--glass-edge);
+  }
+
+  /* --- Campos de formulario en vidrio -------------------------------- */
+  .rv-field {
+    @apply w-full rounded-2xl px-4 py-3 text-black outline-none transition-colors duration-200
+           placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40;
+    min-height: 48px;
+    background-image: linear-gradient(var(--glass-bg-thin), var(--glass-bg-thin));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(16px) saturate(var(--glass-sat));
+    box-shadow: inset 0 1px 0 0 var(--glass-edge);
+  }
+
+  .rv-field:focus {
+    border-color: #d61922;
+  }
+}
+
+@layer utilities {
+  /* Texto con sombra suave: garantiza legibilidad sobre el video en movimiento */
+  .text-onglass {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+  .dark .text-onglass {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  }
+
+  /* Muescas y barras del sistema en telefonos */
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+  .pb-safe {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .px-safe {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .rv-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  }
+}
