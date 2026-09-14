@@ -568,4 +568,24 @@
   .rv-grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
   }
+
+  /* -----------------------------------------------------------------------
+     El lienzo del robot no secuestra el scroll
+
+     React Three Fiber escribe `touch-action: none` en el <canvas> como estilo
+     en linea, para poder implementar orbitas y arrastres. En este sitio el
+     robot ocupa casi toda la altura visible de un telefono, asi que ese
+     ajuste dejaba el dedo muerto justo donde el visitante lo apoya para
+     bajar: la pagina parecia trabada.
+
+     `pan-y` devuelve el desplazamiento vertical al navegador y conserva el
+     toque, que es lo unico que el robot necesita: acercar el QR del escudo.
+     El seguimiento de la cabeza lo resuelve el giroscopio, que no consume
+     ningun gesto. `!important` es obligatorio: compite contra un estilo en
+     linea de la libreria.
+     --------------------------------------------------------------------- */
+  .rv-robot,
+  .rv-robot canvas {
+    touch-action: pan-y pinch-zoom !important;
+  }
 }

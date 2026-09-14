@@ -16,3 +16,7 @@ public/draco/
 # Material crudo de origen (videos y fotos de referencia, ~48 MB).
 # El sitio se compila con las versiones procesadas de public/.
 img/
+
+# Scripts auxiliares de publicacion, locales de esta maquina
+push-*.bat
+limpiar-repo.bat

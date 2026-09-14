@@ -20,22 +20,21 @@ const IconoGiro = (p) => (
   </svg>
 )
 
-const IconoDedo = (p) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...p}>
-    <path d="M9 11V5.5a1.8 1.8 0 0 1 3.6 0V11" />
-    <path d="M12.6 11V9.2a1.7 1.7 0 0 1 3.4 0V11" />
-    <path d="M16 11v-.6a1.7 1.7 0 0 1 3.4 0V15a6 6 0 0 1-6 6h-1.6a5 5 0 0 1-3.8-1.7L5 15.6a1.7 1.7 0 0 1 2.5-2.3L9 14.8" />
-  </svg>
-)
-
 /* ------------------------------------------------------------------------
  * Control del robot en tactil.
  *
  * En escritorio el cursor recorre la ventana y no hace falta explicar nada.
- * Sin cursor, la pieza mas fiel a "te esta vigilando" es el giroscopio: el
- * telefono se mueve y el objetivo se queda apuntando a la persona. iOS 13+
- * exige permiso desde un gesto, asi que el permiso se pide con un boton de
- * marca en vez de con un dialogo del navegador que aparece de la nada.
+ * Sin cursor el seguimiento lo lleva el giroscopio, encendido de entrada y
+ * sin interruptor: el dispositivo se inclina y el objetivo se queda apuntando
+ * a la persona.
+ *
+ * Deliberadamente no hay arrastre con el dedo. El robot ocupa casi toda la
+ * altura visible de un telefono, y un lienzo que captura el gesto deja la
+ * pagina aparentemente trabada para quien apoya el dedo ahi para bajar. El
+ * scroll gana.
+ *
+ * iOS 13+ exige que el permiso del sensor se pida desde un gesto del usuario.
+ * Es el unico caso en que aparece un boton, y desaparece al concederlo.
  * ---------------------------------------------------------------------- */
 function ControlRobot({ controles, hayCursor }) {
   if (hayCursor) {
@@ -48,43 +47,42 @@ function ControlRobot({ controles, hayCursor }) {
 
   if (!controles) return null
 
-  const { giroEstado, giroActivo, activarGiro, desactivarGiro } = controles
-  const puedeGiro = giroEstado === 'disponible' || giroEstado === 'requiere-permiso' || giroActivo
+  const { giroEstado, giroActivo, activarGiro } = controles
 
-  return (
-    <div className="mt-4 flex flex-col items-center gap-2.5">
-      {puedeGiro && (
+  /* Permiso pendiente: un solo toque, y no vuelve a aparecer */
+  if (!giroActivo && giroEstado === 'requiere-permiso') {
+    return (
+      <div className="mt-4 flex flex-col items-center gap-2.5">
         <button
           type="button"
-          onClick={giroActivo ? desactivarGiro : activarGiro}
-          aria-pressed={giroActivo}
-          className={`inline-flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-pill px-5
-                      font-display text-xs font-semibold uppercase tracking-[0.14em]
-                      transition-all duration-300 ease-apple active:scale-95
-                      ${giroActivo ? 'text-white' : 'text-black dark:text-white'}`}
-          style={
-            giroActivo
-              ? { background: '#D61922', boxShadow: '0 12px 30px -14px rgba(214,25,34,0.95)' }
-              : { background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }
-          }
+          onClick={activarGiro}
+          className="inline-flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-pill px-5
+                     font-display text-xs font-semibold uppercase tracking-[0.14em] text-white
+                     transition-all duration-300 ease-apple active:scale-95"
+          style={{ background: '#D61922', boxShadow: '0 12px 30px -14px rgba(214,25,34,0.95)' }}
         >
-          <IconoGiro className={`h-4 w-4 ${giroActivo ? 'animate-rv-breathe' : ''}`} />
-          {giroActivo ? 'Seguimiento activo' : 'Activar seguimiento'}
+          <IconoGiro className="h-4 w-4" />
+          Activar seguimiento
         </button>
-      )}
-
-      <p className="rv-muted flex items-center gap-2 text-center text-[11px] uppercase tracking-[0.16em]">
-        <IconoDedo className="h-3.5 w-3.5 text-rv-red" />
-        {giroActivo ? 'Incline el dispositivo' : 'Arrastre el robot'}
-      </p>
-
-      {giroEstado === 'denegado' && (
-        <p className="rv-muted max-w-[220px] text-center text-[11px] leading-relaxed">
-          El navegador bloqueó el sensor de movimiento. El robot se puede mover arrastrándolo.
+        <p className="rv-muted max-w-[230px] text-center text-[11px] leading-relaxed">
+          Su dispositivo pide autorización para el sensor de movimiento.
         </p>
-      )}
-    </div>
-  )
+      </div>
+    )
+  }
+
+  if (giroActivo) {
+    return (
+      <p className="rv-muted mt-4 flex items-center justify-center gap-2 text-center text-[11px] uppercase tracking-[0.16em]">
+        <IconoGiro className="h-3.5 w-3.5 animate-rv-breathe text-rv-red" />
+        Incline el dispositivo: el objetivo lo sigue
+      </p>
+    )
+  }
+
+  /* Sensor denegado o inexistente: el robot conserva su barrido de reposo y
+     no se menciona nada, porque no hay nada que el visitante pueda hacer. */
+  return null
 }
 
 export default function Hero3D({ montarRobot = true }) {

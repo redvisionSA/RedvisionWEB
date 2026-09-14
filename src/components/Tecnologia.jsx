@@ -223,13 +223,16 @@ export function TileFullColor({ className = '' }) {
         material identificatorio.
       </p>
 
+      {/* `touch-pan-y`, no `touch-none`: el arrastre horizontal mueve el
+          comparador y el vertical sigue siendo scroll de la pagina. Con
+          `none` este bloque tambien dejaba el dedo muerto en tactil. */}
       <div
         ref={contRef}
         onPointerDown={(e) => {
           setArrastrando(true)
           mover(e.clientX)
         }}
-        className="relative mt-5 aspect-[4/3] w-full touch-none cursor-ew-resize select-none overflow-hidden rounded-glass sm:mt-6 sm:aspect-[16/10]"
+        className="relative mt-5 aspect-[4/3] w-full touch-pan-y cursor-ew-resize select-none overflow-hidden rounded-glass sm:mt-6 sm:aspect-[16/10]"
         style={{ border: '1px solid var(--glass-border)' }}
       >
         {/* Capa base: infrarrojo monocromo */}

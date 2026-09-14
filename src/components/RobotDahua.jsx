@@ -29,8 +29,8 @@ const NODO_LENTE = 'CTRL_Lente'
 /* El escudo lleva una textura de 512x818 con el logotipo de Dahua, la marca
    PARTNER y un codigo QR funcional, decodificado del escudo fisico. */
 const NODO_ESCUDO = 'RV_Cuerpo_EscudoSponsor'
-/* Un arrastre no debe disparar el enlace: por debajo de este umbral en pixeles
-   el gesto cuenta como click. */
+/* Un desplazamiento del dedo no debe disparar el enlace: por debajo de este
+   umbral en pixeles el gesto cuenta como toque; por encima era un scroll. */
 const UMBRAL_CLICK = 8
 
 const EJE_PAN = new THREE.Vector3(0, 1, 0)
@@ -80,9 +80,6 @@ const GIRO_RANGO_PAN = 34 // grados de `gamma`
 const GIRO_RANGO_TILT = 26 // grados de `beta` alrededor del reposo
 const GIRO_BETA_REPOSO = 48 // como se sostiene un telefono al mirarlo
 
-/* Arrastre: cuanto recorrido de dedo equivale al pan maximo */
-const ARRASTRE_FACTOR = 1.6
-
 /** Amortiguacion independiente del framerate: mismo resultado a 30 o 144 fps. */
 function suavizar(actual, objetivo, dt) {
   return actual + (objetivo - actual) * (1 - Math.exp(-K * dt))
@@ -96,17 +93,23 @@ function tiltDesdeNormal(n) {
 /* =========================================================================
  * CONTROLES
  *
- * Tres fuentes escriben en el mismo objetivo, segun el dispositivo:
+ * Dos fuentes escriben en el mismo objetivo, segun el dispositivo:
  *
  *   cursor       escritorio. El puntero recorre la ventana entera.
  *   giroscopio   movil y tablet. El robot se mantiene apuntando al usuario
  *                mientras el dispositivo se inclina. Es el equivalente exacto
  *                de "te esta vigilando": el que se mueve es el mundo, no el
- *                dedo. En iOS 13+ hace falta permiso explicito, pedido desde
- *                un gesto del usuario.
- *   arrastre     movil y tablet. Tocar el robot y moverlo con el dedo.
- *                Siempre disponible, sin permisos, y es el que descubre
- *                cualquiera sin instrucciones.
+ *                dedo. Se enciende solo y no se apaga.
+ *
+ * NO HAY ARRASTRE CON EL DEDO, y es deliberado.
+ *
+ * Arrastrar el robot obligaba a declarar `touch-action: none` sobre el lienzo,
+ * porque un gesto no puede ser a la vez arrastre y scroll. El efecto era que
+ * el dedo quedaba muerto justo sobre el robot: en telefono el robot ocupa casi
+ * toda la altura visible, asi que el visitante que apoyaba el dedo ahi para
+ * bajar creia que la pagina se habia trabado. Un gesto de navegacion vale mas
+ * que un gesto decorativo, de modo que el lienzo devuelve el scroll al
+ * navegador y el seguimiento queda enteramente a cargo del giroscopio.
  * ====================================================================== */
 function soportaGiro() {
   return typeof window !== 'undefined' && typeof window.DeviceOrientationEvent !== 'undefined'
@@ -119,7 +122,6 @@ function necesitaPermisoGiro() {
 export function useControlesRobot({ hayCursor, habilitado }) {
   const objetivo = useRef({ pan: 0, tilt: 0 })
   const ultimaInteraccion = useRef(-Infinity)
-  const arrastre = useRef(null)
   /* usePanTilt deja aqui su `invalidate`. Cada fuente de control pide un
      frame al escribir, asi el render bajo demanda no necesita un intervalo. */
   const notificar = useRef(null)
@@ -168,6 +170,15 @@ export function useControlesRobot({ hayCursor, habilitado }) {
     return () => window.removeEventListener('deviceorientation', onOrient)
   }, [habilitado, giroActivo, marcar])
 
+  /**
+   * Enciende el seguimiento. No existe la operacion inversa: una vez activo,
+   * el robot sigue al dispositivo durante toda la visita.
+   *
+   * En iOS 13+ la lectura del sensor exige `requestPermission()` invocado
+   * desde un gesto del usuario, por norma de la plataforma. Ese es el unico
+   * caso en el que hace falta tocar algo; en el resto de los dispositivos la
+   * llamada de abajo se dispara sola al montar.
+   */
   const activarGiro = useCallback(async () => {
     if (!soportaGiro()) return
     if (necesitaPermisoGiro()) {
@@ -186,72 +197,19 @@ export function useControlesRobot({ hayCursor, habilitado }) {
     setGiroActivo(true)
   }, [])
 
-  const desactivarGiro = useCallback(() => {
-    setGiroActivo(false)
-    setGiroEstado(necesitaPermisoGiro() ? 'requiere-permiso' : 'disponible')
-  }, [])
-
-  /* ---------------- Arrastre con el dedo ---------------- */
-  const onPointerDown = useCallback(
-    (event) => {
-      if (!habilitado || hayCursor) return
-      const rect = event.currentTarget.getBoundingClientRect()
-      arrastre.current = {
-        x: event.clientX,
-        y: event.clientY,
-        pan: objetivo.current.pan,
-        tilt: objetivo.current.tilt,
-        ancho: rect.width || 1,
-        alto: rect.height || 1,
-      }
-      event.currentTarget.setPointerCapture?.(event.pointerId)
-      marcar()
-    },
-    [habilitado, hayCursor, marcar]
-  )
-
-  const onPointerMove = useCallback(
-    (event) => {
-      const a = arrastre.current
-      if (!a) return
-      const dx = (event.clientX - a.x) / a.ancho
-      const dy = (event.clientY - a.y) / a.alto
-      objetivo.current.pan = THREE.MathUtils.clamp(
-        a.pan + dx * PAN_MAX * 2 * ARRASTRE_FACTOR,
-        -PAN_LIMITE_DURO,
-        PAN_LIMITE_DURO
-      )
-      objetivo.current.tilt = THREE.MathUtils.clamp(
-        a.tilt + dy * TILT_ABAJO * 2 * ARRASTRE_FACTOR,
-        -TILT_ARRIBA,
-        TILT_ABAJO
-      )
-      marcar()
-    },
-    [marcar]
-  )
-
-  const onPointerUp = useCallback((event) => {
-    arrastre.current = null
-    event.currentTarget.releasePointerCapture?.(event.pointerId)
-  }, [])
+  /* Encendido automatico donde la plataforma no pide permiso: Android y la
+     mayoria de las tablets. El visitante no tiene que descubrir nada. */
+  useEffect(() => {
+    if (hayCursor || giroActivo) return
+    if (giroEstado !== 'disponible') return
+    activarGiro()
+  }, [hayCursor, giroActivo, giroEstado, activarGiro])
 
   /* Identidad estable: el Hero recibe este objeto por callback y no debe
      re-suscribirse en cada render. */
   return useMemo(
-    () => ({
-      objetivo,
-      ultimaInteraccion,
-      notificar,
-      giroEstado,
-      giroActivo,
-      activarGiro,
-      desactivarGiro,
-      manejadoresArrastre: hayCursor
-        ? {}
-        : { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
-    }),
-    [giroEstado, giroActivo, activarGiro, desactivarGiro, hayCursor, onPointerDown, onPointerMove, onPointerUp]
+    () => ({ objetivo, ultimaInteraccion, notificar, giroEstado, giroActivo, activarGiro }),
+    [giroEstado, giroActivo, activarGiro]
   )
 }
 
@@ -818,12 +776,10 @@ export default function RobotDahua({
     return () => window.removeEventListener('keydown', onKey)
   }, [foco])
 
+  /* `rv-robot` devuelve el gesto vertical al navegador: en tactil el dedo
+     puede arrastrar la pagina desde encima del robot. Ver src/index.css. */
   return (
-    <div
-      ref={contenedorRef}
-      className={`${className} ${hayCursor ? '' : 'cursor-grab touch-none active:cursor-grabbing'}`}
-      {...controles.manejadoresArrastre}
-    >
+    <div ref={contenedorRef} className={`rv-robot ${className}`}>
       <Canvas
         frameloop={enPantalla ? 'demand' : 'never'}
         /* En tactil el techo baja a 1,6: la ganancia visual no compensa el
