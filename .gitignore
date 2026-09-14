@@ -20,3 +20,5 @@ img/
 # Scripts auxiliares de publicacion, locales de esta maquina
 push-*.bat
 limpiar-repo.bat
+Claude outputs/
+lista-repo.txt
