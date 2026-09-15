@@ -4,9 +4,18 @@ import GlassPanel from './GlassPanel.jsx'
 /**
  * Tecnologia.jsx
  * -----------------------------------------------------------------------
- *   TileFullColor   comparador arrastrable Full-color contra infrarrojo
+ *   TileFullColor   comparador deslizante Full-Color contra infrarrojo
  *   TileTecnologia  (default) conmutador de plataformas Dahua del catalogo
  */
+
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
+
+/* Filtro infrarrojo: no es solo escala de grises. Una camara IR real vira al
+   verde -el tubo intensificador y muchos sensores CCD son mas sensibles ahi-,
+   nunca queda en blanco y negro puro. grayscale quita el color; sepia+hue-rotate
+   reintroduce un UNICO tinte (verde) sobre ese monocromo; saturate lo hace notar. */
+const FILTRO_IR = 'grayscale(1) brightness(0.85) sepia(0.5) hue-rotate(78deg) saturate(1.9) contrast(1.15)'
+const FILTRO_COLOR = 'saturate(1.3) contrast(1.06) brightness(1.03)'
 
 /* =========================================================================
  * 1. ESCENA NOCTURNA
@@ -18,12 +27,12 @@ import GlassPanel from './GlassPanel.jsx'
  *     y el infrarrojo borra: color de vehiculo, color de ropa, patente,
  *     senaletica. Una foto cualquiera rara vez los tiene todos juntos.
  *
- * Para cambiarla por una fotografia real, pone la ruta en IMAGEN_REAL.
- * Recomendado: escena nocturna con luz artificial escasa, un vehiculo de
- * color saturado, una persona con ropa de color y algo de senaletica.
- * Formato 16/10, 1600 px de ancho, JPG.
+ * Fotografia real en uso: `public/full-color-real.webp` (Caminito, La Boca,
+ * 1900x1259). No hace falta tocar mas codigo para cambiarla: <Capa> la usa
+ * apenas existe el archivo con este nombre, y si algun dia se borra, cae
+ * sola en la ilustracion de abajo sin romper el layout.
  * ====================================================================== */
-const IMAGEN_REAL = null // por ejemplo: '/comparador-nocturno.jpg'
+const IMAGEN_REAL = '/full-color-real.webp'
 
 function EscenaNocturna({ titulo }) {
   return (
@@ -170,9 +179,18 @@ function EscenaNocturna({ titulo }) {
   )
 }
 
-/* ------------------------------------------------------------- comparador */
+/* ============================================================== lente 2D */
+/**
+ * TileFullColor
+ * -----------------------------------------------------------------------
+ * Control deslizante horizontal: se prueba una lente circular 2D y no
+ * mapeaba bien contra el contenedor en produccion (aro desalineado del
+ * punto real de toque/cursor). Un divisor de UN solo eje es matematicamente
+ * mas simple -un porcentaje, un clip-path `inset()`- y es el patron ya
+ * validado en este mismo componente antes de probar la lente.
+ */
 export function TileFullColor({ className = '' }) {
-  const [pos, setPos] = useState(52) // porcentaje visible de Full-color
+  const [pos, setPos] = useState(58) // % visible del lado Full-Color (izquierda)
   const [arrastrando, setArrastrando] = useState(false)
   const contRef = useRef(null)
 
@@ -181,7 +199,7 @@ export function TileFullColor({ className = '' }) {
     if (!node) return
     const rect = node.getBoundingClientRect()
     const p = ((clientX - rect.left) / rect.width) * 100
-    setPos(Math.min(100, Math.max(0, p)))
+    setPos(clamp(p, 0, 100))
   }, [])
 
   useEffect(() => {
@@ -197,70 +215,125 @@ export function TileFullColor({ className = '' }) {
   }, [arrastrando, mover])
 
   const onKeyDown = (e) => {
-    if (e.key === 'ArrowLeft') setPos((p) => Math.max(0, p - 4))
-    if (e.key === 'ArrowRight') setPos((p) => Math.min(100, p + 4))
-    if (e.key === 'Home') setPos(0)
-    if (e.key === 'End') setPos(100)
+    if (e.key === 'ArrowLeft') setPos((p) => clamp(p - 4, 0, 100))
+    else if (e.key === 'ArrowRight') setPos((p) => clamp(p + 4, 0, 100))
+    else if (e.key === 'Home') setPos(0)
+    else if (e.key === 'End') setPos(100)
+    else return
+    e.preventDefault()
   }
 
+  /* Si `public/full-color-real.webp` todavia no existe, el <img> dispara
+     onError una sola vez y el componente cae en la ilustracion: nunca se ve
+     un icono de imagen rota mientras nadie subio la foto. */
+  const [fotoRota, setFotoRota] = useState(false)
   const Capa = ({ titulo }) =>
-    IMAGEN_REAL ? (
-      <img src={IMAGEN_REAL} alt={titulo} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+    IMAGEN_REAL && !fotoRota ? (
+      <img
+        src={IMAGEN_REAL}
+        alt={titulo}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+        onError={() => setFotoRota(true)}
+      />
     ) : (
       <EscenaNocturna titulo={titulo} />
     )
 
   return (
-    <GlassPanel className={`flex flex-col overflow-hidden p-6 sm:p-7 ${className}`}>
-      <p className="rv-eyebrow mb-2">Criterio de selección</p>
-      <h3 className="text-onglass font-display text-xl font-bold sm:text-2xl">
-        Captación a color contra <span className="font-light">infrarrojo</span>
-      </h3>
-      <p className="rv-muted mt-2 text-sm leading-relaxed">
-        Desplace el control para comparar. La captación infrarroja entrega siluetas en monocromo y
-        permite establecer que ocurrió un evento. La tecnología de color nocturno conserva el color
-        del vehículo y de la vestimenta, y la patente legible: es lo que convierte una grabación en
-        material identificatorio.
-      </p>
+    <GlassPanel className={`flex flex-col overflow-hidden p-6 sm:p-8 ${className}`}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <p className="rv-eyebrow mb-2">Tecnología Dahua · Full-Color</p>
+          <h2 className="text-onglass font-display text-2xl font-bold sm:text-3xl">
+            Captación a color contra <span className="font-light">infrarrojo</span>
+          </h2>
+          <p className="rv-muted mt-3 text-sm leading-relaxed">
+            <strong className="text-onglass font-semibold">Full-Color</strong> es la tecnología de
+            Dahua Technology que reemplaza la silueta infrarroja por color real, las 24 horas y sin
+            luz ambiente: conserva el color del vehículo y de la vestimenta, y la patente legible.
+            Desplace el control para comparar ambos modos de captación.
+          </p>
+        </div>
+        <span className="rv-fullcolor-badge shrink-0 self-start sm:self-auto">
+          <span className="rv-fullcolor-text">Full-Color</span>
+        </span>
+      </div>
 
       {/* `touch-pan-y`, no `touch-none`: el arrastre horizontal mueve el
-          comparador y el vertical sigue siendo scroll de la pagina. Con
-          `none` este bloque tambien dejaba el dedo muerto en tactil. */}
+          comparador y el vertical sigue siendo scroll de la pagina. */}
       <div
         ref={contRef}
         onPointerDown={(e) => {
           setArrastrando(true)
           mover(e.clientX)
         }}
-        className="relative mt-5 aspect-[4/3] w-full touch-pan-y cursor-ew-resize select-none overflow-hidden rounded-glass sm:mt-6 sm:aspect-[16/10]"
+        className="relative mt-5 aspect-[16/11] w-full touch-pan-y cursor-ew-resize select-none overflow-hidden rounded-glass
+                   sm:mt-6 sm:aspect-[16/9] lg:aspect-[21/9]"
         style={{ border: '1px solid var(--glass-border)' }}
       >
-        {/* Capa base: infrarrojo monocromo */}
-        <div className="absolute inset-0" style={{ filter: 'grayscale(1) brightness(0.72) contrast(1.25)' }}>
-          <Capa titulo="La misma escena nocturna captada con iluminación infrarroja: todo en monocromo" />
+        {/* Capa base: infrarrojo verdoso, con la mascara de una camara real
+            -escaneado, vineta y grano-, no un simple blanco y negro. */}
+        <div className="absolute inset-0 overflow-hidden" style={{ filter: FILTRO_IR }}>
+          <Capa titulo="La misma escena captada con iluminación infrarroja: monocromo con tinte verdoso" />
         </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 mix-blend-overlay"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 1px, transparent 3px)',
+            opacity: 0.5,
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="rv-grain pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-overlay"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(120% 100% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%)' }}
+        />
 
-        {/* Capa superior: Full-color, recortada por el control */}
+        {/* Capa superior: Full-Color, recortada por el control deslizante.
+            Sin mascara de camara: es la realidad que el control revela. */}
         <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-          <div className="h-full w-full" style={{ filter: 'saturate(1.12) contrast(1.04)' }}>
-            <Capa titulo="Escena nocturna captada con tecnología Full-color: los colores se conservan" />
+          <div className="h-full w-full" style={{ filter: FILTRO_COLOR }}>
+            <Capa titulo="Escena captada con tecnología Full-Color: los colores reales se conservan" />
           </div>
         </div>
 
-        {/* Etiquetas */}
-        <span className="rv-chip absolute left-3 top-3 text-black/80 dark:text-white/80">Infrarrojo</span>
-        <span className="rv-chip absolute right-3 top-3 text-rv-red">Full-color</span>
+        {/* OSD: la sobreimpresion de una camara de seguridad real -no se
+            recorta con el control, es la interfaz del equipo, no la escena. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 bottom-3 flex items-center gap-1.5 font-display text-[10px]
+                     font-semibold uppercase tracking-[0.14em] text-white/85"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
+        >
+          <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" />
+          REC · CAM 04 · IR
+        </div>
 
-        {/* Control */}
-        <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-rv-red" style={{ left: `${pos}%` }}>
+        {/* Etiquetas fijas */}
+        <span className="rv-chip absolute left-3 top-3 text-black/80 dark:text-white/80">Infrarrojo</span>
+        <span className="rv-chip absolute right-3 top-3 text-rv-red">Full-Color</span>
+
+        {/* Control deslizante */}
+        <div
+          className="pointer-events-none absolute inset-y-0 w-0.5 bg-white/90"
+          style={{ left: `${pos}%`, boxShadow: '0 0 14px rgba(0,0,0,0.5)' }}
+        >
           <button
             type="button"
             role="slider"
-            aria-label="Comparador Full-color contra infrarrojo"
+            aria-label="Comparador Full-Color contra infrarrojo"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(pos)}
-            aria-valuetext={`${Math.round(pos)} por ciento Full-color`}
+            aria-valuetext={`${Math.round(pos)} por ciento Full-Color`}
             tabIndex={0}
             onKeyDown={onKeyDown}
             onPointerDown={(e) => {
@@ -303,7 +376,7 @@ export const LINEAS = [
   },
   {
     id: 'fullcolor',
-    marca: 'Full-color',
+    marca: 'Full-Color',
     titulo: 'Color real sin luz ambiente',
     texto:
       'Sensor de gran apertura combinado con iluminación cálida sostenida. La grabación nocturna conserva el color de la vestimenta y del vehículo, y pasa de registrar una silueta a aportar material identificatorio.',
@@ -398,7 +471,7 @@ export default function TileTecnologia({ className = '' }) {
         </div>
 
         <div className="flex flex-col justify-center border-black/10 pt-4 dark:border-white/15 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-          <p className="font-display text-3xl font-bold leading-none text-rv-red sm:text-4xl">{linea.dato}</p>
+          <p className="text-onglass font-display text-3xl font-bold leading-none sm:text-4xl">{linea.dato}</p>
           <p className="rv-muted mt-2 max-w-[140px] text-[11px] uppercase tracking-[0.14em]">{linea.datoPie}</p>
         </div>
       </div>

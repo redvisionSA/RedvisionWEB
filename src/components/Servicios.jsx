@@ -307,7 +307,7 @@ export function TileComoComprar({ className = '' }) {
             className="flex flex-col rounded-2xl p-4 transition-colors duration-300 ease-apple"
             style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
           >
-            <span className="rv-chip mb-3 self-start text-rv-red">{m.etiqueta}</span>
+            <span className="rv-chip mb-3 self-start text-black/80 dark:text-white/80">{m.etiqueta}</span>
             <h3 className="text-onglass font-display text-base font-semibold">{m.titulo}</h3>
             <p className="rv-muted mt-2 text-xs leading-relaxed">{m.texto}</p>
           </li>

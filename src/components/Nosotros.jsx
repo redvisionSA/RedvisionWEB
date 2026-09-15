@@ -158,7 +158,7 @@ function Metrica({ valor, sufijo, etiqueta, activo }) {
   const n = useContador(valor, activo)
   return (
     <div>
-      <p className="font-display text-3xl font-bold leading-none text-rv-red sm:text-4xl">
+      <p className="text-onglass font-display text-3xl font-bold leading-none sm:text-4xl">
         {n}
         <span className="text-2xl sm:text-3xl">{sufijo}</span>
       </p>
@@ -204,10 +204,7 @@ export function TileAsesoramiento({ className = '' }) {
 
   return (
     <GlassPanel tilt={3} className={`flex flex-col gap-5 p-6 ${className}`}>
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
-        <p className="rv-eyebrow">Mesa técnica</p>
-      </div>
+      <p className="rv-eyebrow">Mesa técnica</p>
 
       <div>
         <p className="font-display text-3xl font-bold leading-none tabular-nums sm:text-4xl" aria-live="off">
@@ -240,7 +237,7 @@ export function TileCapacitaciones({ className = '' }) {
     <GlassPanel className={`flex flex-col p-6 sm:p-8 ${className}`}>
       <div className="flex flex-wrap items-center gap-3">
         <p className="rv-eyebrow">Formación técnica</p>
-        <span className="rv-chip text-rv-red">Sin costo</span>
+        <span className="rv-chip text-black/80 dark:text-white/80">Sin costo</span>
       </div>
 
       <h2 className="text-onglass mt-2 font-display text-2xl font-bold sm:text-3xl">
@@ -264,11 +261,11 @@ export function TileCapacitaciones({ className = '' }) {
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#D61922"
+              stroke="currentColor"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mt-0.5 h-4 w-4 shrink-0"
+              className="mt-0.5 h-4 w-4 shrink-0 text-black/55 dark:text-white/60"
               aria-hidden="true"
             >
               <path d="m4 12 5 5L20 6" />
@@ -343,7 +340,10 @@ export function TileNosotros({ className = '' }) {
                   border: `1px solid ${esAbierto ? 'rgba(214,25,34,0.85)' : 'var(--glass-border)'}`,
                 }}
               >
-                <span className="font-display text-xl font-bold leading-none text-rv-red" aria-hidden="true">
+                <span
+                  className={`font-display text-xl font-bold leading-none transition-colors duration-300 ease-apple ${esAbierto ? 'text-rv-red' : 'text-onglass'}`}
+                  aria-hidden="true"
+                >
                   {pilar.numero}
                 </span>
                 <span className="text-onglass flex-1 font-display text-sm font-semibold">{pilar.titulo}</span>
@@ -353,7 +353,9 @@ export function TileNosotros({ className = '' }) {
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
-                  className={`h-4 w-4 shrink-0 text-rv-red transition-transform duration-300 ease-apple ${esAbierto ? 'rotate-45' : ''}`}
+                  className={`h-4 w-4 shrink-0 transition-all duration-300 ease-apple ${
+                    esAbierto ? 'rotate-45 text-rv-red' : 'text-black/60 dark:text-white/60'
+                  }`}
                   aria-hidden="true"
                 >
                   <path d="M12 5v14M5 12h14" />

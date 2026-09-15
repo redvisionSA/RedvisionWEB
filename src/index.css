@@ -5,8 +5,12 @@
 /* ==========================================================================
    TOKENS DE MATERIAL "LIQUID GLASS"
 
-   Todo el vidrio se construye con opacidad sobre blanco o negro puro, mas el
-   rojo institucional como unico tinte. Ningun color nuevo entra aqui.
+   Todo el vidrio se construye con opacidad sobre blanco o negro puro. El
+   rojo institucional pasa a ser acento puntual (CTA, estado activo, un
+   detalle por seccion), no un tinte estructural repetido en cada tesela.
+   El grafito (sombras de negro) es el color SECUNDARIO de la marca: cubre
+   el volumen que antes ocupaba el rojo. Ningun color ajeno a blanco/negro/
+   rojo entra aqui.
 
    El color que se ve a traves del vidrio es el del video de fondo: por eso
    el material sube la saturacion (210-230%) en vez de agregar pigmento. Asi
@@ -16,25 +20,32 @@
   :root {
     color-scheme: light;
 
-    /* --- Vidrio de las teselas --------------------------------------- */
-    --glass-bg: rgba(255, 255, 255, 0.52);
-    --glass-bg-strong: rgba(255, 255, 255, 0.74);
-    --glass-bg-thin: rgba(255, 255, 255, 0.34);
-    --glass-border: rgba(255, 255, 255, 0.72);
+    /* --- Vidrio de las teselas ---------------------------------------
+       En clear mode el vidrio era casi opaco (0.52-0.74 de blanco): se leia
+       como una tarjeta blanca lisa, no como vidrio. Baja la opacidad de base
+       y sube el blur/saturacion para compensar: menos pintura, mas optica. */
+    --glass-bg: rgba(255, 255, 255, 0.34);
+    --glass-bg-strong: rgba(255, 255, 255, 0.52);
+    --glass-bg-thin: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.82);
     --glass-edge: rgba(255, 255, 255, 0.98);
 
-    /* Optica: lo que convierte una capa translucida en vidrio con espesor */
-    --glass-blur: 26px;
-    --glass-sat: 215%;
-    --glass-bright: 1.07;
+    /* Optica: lo que convierte una capa translucida en vidrio con espesor.
+       El blur es el que hace legible el texto sobre un fondo mas visible:
+       homogeniza el video en manchas de color suaves, nunca detalle nitido. */
+    --glass-blur: 38px;
+    --glass-sat: 210%;
+    --glass-bright: 1.02;
     --glass-contrast: 1.02;
 
-    /* Brillos y tintes */
-    --glass-specular: rgba(255, 255, 255, 0.9);
-    --glass-sheen: rgba(255, 255, 255, 0.55);
-    --glass-bloom: rgba(214, 25, 34, 0.11);
+    /* Brillos y tintes. El bloom de esquina y el canto ahora son grafito
+       (sombra de negro): el rojo institucional queda para el acento activo
+       de cada tesela (.glass-active), no para el reposo de todas. */
+    --glass-specular: rgba(255, 255, 255, 0.92);
+    --glass-sheen: rgba(255, 255, 255, 0.6);
+    --glass-bloom: rgba(10, 10, 14, 0.05);
     --glass-prisma-a: rgba(255, 255, 255, 0.98);
-    --glass-prisma-b: rgba(214, 25, 34, 0.5);
+    --glass-prisma-b: rgba(20, 20, 26, 0.28);
 
     /* Profundidad: canto, contacto, sombra media y sombra ambiente.
        Las cuatro capas juntas son lo que da la sensacion de objeto flotando. */
@@ -51,11 +62,16 @@
       0 20px 40px -16px rgba(0, 0, 0, 0.36),
       0 52px 96px -34px rgba(0, 0, 0, 0.5);
 
-    /* Velo que atenua el video para que actue como fondo y no como contenido */
-    --scrim: rgba(255, 255, 255, 0.74);
+    /* Velo que atenua el video para que actue como fondo y no como contenido.
+       Antes este velo era casi blanco solido (0.74): lavaba el video ANTES
+       de que llegara a cualquier tesela, y por eso ningun panel de vidrio
+       podia mostrar traslucidez -no habia nada debajo que revelar-. Bajar
+       el velo es la palanca principal para que el Liquid Glass se sienta
+       liquido tambien en clear mode. */
+    --scrim: rgba(255, 255, 255, 0.4);
     /* El video ya viene desenfocado desde ffmpeg: aca solo queda un velo de
        cierre, no un desenfoque de pantalla completa por frame. */
-    --scrim-blur: 3px;
+    --scrim-blur: 4px;
 
     /* ------------------------------------------------------------------
        CHROME: navbar y footer.
@@ -73,6 +89,12 @@
     /* Posicion del cursor dentro de cada panel (reflejo especular) */
     --mx: 50%;
     --my: 0%;
+
+    /* Grafito: el color SECUNDARIO de marca (sombra de negro). Reemplaza al
+       rojo en todo lo estructural -eyebrows, numeros, iconos decorativos-
+       que antes lo usaba por defecto en cada tesela. */
+    --rv-ink: rgba(10, 11, 14, 0.82);
+    --rv-ink-soft: rgba(10, 11, 14, 0.58);
   }
 
   html.dark {
@@ -86,16 +108,19 @@
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-edge: rgba(255, 255, 255, 0.55);
 
-    --glass-blur: 40px;
-    --glass-sat: 230%;
-    --glass-bright: 1.34;
-    --glass-contrast: 0.98;
+    --glass-blur: 44px;
+    --glass-sat: 240%;
+    --glass-bright: 1.36;
+    --glass-contrast: 0.99;
 
-    --glass-specular: rgba(255, 255, 255, 0.3);
-    --glass-sheen: rgba(255, 255, 255, 0.16);
-    --glass-bloom: rgba(214, 25, 34, 0.2);
-    --glass-prisma-a: rgba(255, 255, 255, 0.7);
-    --glass-prisma-b: rgba(214, 25, 34, 0.75);
+    /* Grafito claro en vez de rojo: el bloom estructural pasa a ser un
+       secundario de marca (gris tibio derivado del negro), y el rojo queda
+       reservado para .glass-active y los acentos puntuales de cada tesela. */
+    --glass-specular: rgba(255, 255, 255, 0.32);
+    --glass-sheen: rgba(255, 255, 255, 0.18);
+    --glass-bloom: rgba(210, 213, 222, 0.09);
+    --glass-prisma-a: rgba(255, 255, 255, 0.72);
+    --glass-prisma-b: rgba(200, 204, 214, 0.4);
 
     --glass-lift:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
@@ -123,6 +148,9 @@
     --chrome-shadow: 0 24px 65px -24px rgba(0, 0, 0, 0.9), inset 0 1px 0 0 rgba(255, 255, 255, 0.34);
 
     --scrim: rgba(0, 0, 0, 0.7);
+
+    --rv-ink: rgba(232, 234, 240, 0.88);
+    --rv-ink-soft: rgba(232, 234, 240, 0.62);
   }
 
   html {
@@ -195,9 +223,12 @@
      ------------------------------------------------------------------ */
   @media (max-width: 767px) {
     :root {
-      --glass-blur: 18px;
+      --glass-blur: 22px;
       --chrome-blur: 28px;
-      --scrim-blur: 0px;
+      /* En clear mode el velo ya no es casi opaco (ver --scrim arriba): sin
+         nada de blur el video sin desenfocar se notaria en los huecos entre
+         teselas. Un radio chico alcanza y sigue siendo barato en movil. */
+      --scrim-blur: 3px;
       --glass-sat: 195%;
     }
     html.dark {
@@ -314,8 +345,10 @@
     box-shadow: var(--glass-depth-hover), var(--glass-lift);
   }
 
-  /* Reflejo especular. Dos radiales concentricos: el halo blanco del vidrio
-     y, dentro, un nucleo rojo institucional que da el color sin pigmentar. */
+  /* Reflejo especular. Una franja elipsoidal ancha (el brillo curvo de una
+     superficie liquida) mas un nucleo grafito que da volumen sin pigmentar.
+     Respira sola, sin cursor: por eso el panel se lee como vidrio LIQUIDO
+     incluso en reposo, no solo al pasar el mouse. */
   .glass::before {
     content: '';
     position: absolute;
@@ -324,8 +357,9 @@
     border-radius: inherit;
     background:
       radial-gradient(240px circle at var(--mx) var(--my), var(--glass-bloom), transparent 60%),
-      radial-gradient(560px circle at var(--mx) var(--my), var(--glass-specular), transparent 64%);
-    opacity: 0.4;
+      radial-gradient(85% 50% at var(--mx) var(--my), var(--glass-specular), transparent 72%);
+    opacity: 0.5;
+    animation: rv-glass-breathe 7s ease-in-out infinite;
     transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
     pointer-events: none;
   }
@@ -333,25 +367,38 @@
   .glass:hover::before,
   .glass:focus-within::before {
     opacity: 1;
+    animation-play-state: paused;
+  }
+
+  @keyframes rv-glass-breathe {
+    0%,
+    100% {
+      opacity: 0.42;
+    }
+    50% {
+      opacity: 0.68;
+    }
   }
 
   /* Canto lenticular con dispersion. El borde de un vidrio grueso no es de
-     un solo color: descompone la luz. Aca la descomposicion usa unicamente
-     blanco y el rojo de marca, asi que suma color sin salirse de la paleta. */
+     un solo color: descompone la luz. La descomposicion usa blanco y grafito
+     -el secundario de marca-, con apenas una veta roja en un solo cuadrante
+     para firmar el material sin pintarlo. */
   .glass::after {
     content: '';
     position: absolute;
     inset: 0;
     z-index: 1;
     border-radius: inherit;
-    padding: 1.5px;
+    padding: 2px;
     background: conic-gradient(
       from 205deg at 50% 50%,
       var(--glass-prisma-a) 0%,
       var(--glass-prisma-b) 12%,
       transparent 26%,
       var(--glass-prisma-a) 44%,
-      transparent 60%,
+      transparent 58%,
+      rgba(214, 25, 34, 0.4) 68%,
       var(--glass-prisma-b) 76%,
       var(--glass-prisma-a) 100%
     );
@@ -360,14 +407,14 @@
       linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0.55;
+    opacity: 0.65;
     transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
     pointer-events: none;
   }
 
   .glass:hover::after,
   .glass:focus-within::after {
-    opacity: 0.95;
+    opacity: 1;
   }
 
   /* --- Variantes ------------------------------------------------------ */
@@ -466,13 +513,33 @@
     box-shadow: 0 2px 10px -4px rgba(0, 0, 0, 0.35);
   }
 
-  /* --- Tipografia de seccion ----------------------------------------- */
+  /* --- Tipografia de seccion -----------------------------------------
+     Antes cada eyebrow de cada tesela era rojo institucional: quince
+     etiquetas rojas por pantalla es justo el "demasiado rojo" reportado.
+     Ahora el texto es grafito (secundario de marca) y el rojo queda como
+     una marca de 10px antes del texto: firma la marca sin teñir la pagina. */
   .rv-eyebrow {
-    @apply font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-rv-red;
+    @apply font-display inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em];
+    color: var(--rv-ink);
+  }
+
+  .rv-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 2px;
+    border-radius: 999px;
+    background: #d61922;
   }
 
   .rv-muted {
     @apply text-black/70 dark:text-white/75;
+    /* Halo mas discreto que .text-onglass: el cuerpo de texto es mas chico
+       y mas denso, un halo fuerte se veria borroso letra contra letra. */
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.65), 0 1px 4px rgba(255, 255, 255, 0.4);
+  }
+  .dark .rv-muted {
+    text-shadow: none;
   }
 
   .rv-hairline {
@@ -515,6 +582,26 @@
            dark:text-white/80 dark:hover:text-rv-red;
   }
 
+  /* --- Insignia "Full-Color" ------------------------------------------
+     Unica superficie multicolor del sitio, y a proposito: Dahua nombra y
+     presenta esta tecnologia con su propio wordmark en degrade. Citarlo en
+     la tesela que la explica es "usar la terminologia de la marca" tal
+     como lo pidio direccion; en cualquier otro lugar del sitio se vuelve a
+     la paleta estricta blanco/negro/rojo. */
+  .rv-fullcolor-badge {
+    @apply inline-flex items-center rounded-pill px-4 py-2 font-display text-sm font-bold tracking-tight;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.5);
+  }
+
+  .rv-fullcolor-text {
+    background-image: linear-gradient(90deg, #ff3d5a 0%, #ff9f3d 26%, #ffd23d 46%, #3ddc84 64%, #3dc9ff 82%, #7b5bff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   .rv-chip {
     @apply inline-flex items-center gap-2 rounded-pill px-3 py-1.5 font-display text-[11px]
            font-semibold uppercase tracking-[0.14em];
@@ -545,9 +632,17 @@
 }
 
 @layer utilities {
-  /* Texto con sombra suave: garantiza legibilidad sobre el video en movimiento */
+  /* Texto con halo: garantiza legibilidad sobre el video en movimiento.
+     En clear mode el vidrio ahora deja ver mucho mas video detras (ver los
+     tokens de arriba), asi que el texto negro necesita un halo BLANCO -no
+     una sombra oscura- para separarse de un fondo que puede ser claro y
+     colorido a la vez. Es la misma tecnica que usan los materiales de
+     vibrancy: el halo no oscurece, encapsula la letra. */
   .text-onglass {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    text-shadow:
+      0 0 1px rgba(255, 255, 255, 0.9),
+      0 1px 2px rgba(255, 255, 255, 0.7),
+      0 1px 10px rgba(255, 255, 255, 0.35);
   }
   .dark .text-onglass {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);

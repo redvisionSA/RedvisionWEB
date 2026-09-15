@@ -722,6 +722,7 @@ export default function RobotDahua({
   materialesLigeros = false,
   onControles,
   onFoco,
+  onListo,
 }) {
   const contenedorRef = useRef(null)
   const [foco, setFoco] = useState(null)
@@ -801,13 +802,14 @@ export default function RobotDahua({
         <directionalLight position={[0.35, 0.65, 0.5]} intensity={2} />
         <SombraContacto />
 
-        <LimiteModelo fallback={<RobotProxy controles={controles} reposoActivo={activo} />}>
+        <LimiteModelo fallback={<RobotProxy controles={controles} reposoActivo={activo} onListo={onListo} />}>
           <Suspense fallback={<Cargando />}>
             <ModeloRobot
               controles={controles}
               reposoActivo={activo}
               materialesLigeros={materialesLigeros}
               onEscudo={setFoco}
+              onListo={onListo}
             />
           </Suspense>
         </LimiteModelo>

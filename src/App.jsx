@@ -1,18 +1,16 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { SiteContext } from './context/SiteContext.jsx'
 import VideoBackground from './components/VideoBackground.jsx'
-import IntroCinematica from './components/IntroCinematica.jsx'
+import PantallaCarga from './components/PantallaCarga.jsx'
 import Navbar from './components/Navbar.jsx'
 import Hero3D from './components/Hero3D.jsx'
 
 /* Todo lo que esta debajo del Hero se descarga en un chunk aparte. En el
    primer pintado el navegador solo ejecuta la barra, el Hero y el robot; el
-   resto llega mientras el visitante lee el titular. */
+   resto llega mientras el visitante mira la PantallaCarga. */
 const BentoCanvas = lazy(() => import('./components/BentoCanvas.jsx'))
 const Contacto = lazy(() => import('./components/Contacto.jsx'))
 const Footer = lazy(() => import('./components/Footer.jsx'))
-
-const INTRO_KEY = 'rv-intro-vista'
 
 /**
  * El sitio SIEMPRE arranca en clear mode.
@@ -27,28 +25,32 @@ const INTRO_KEY = 'rv-intro-vista'
  */
 const TEMA_INICIAL = 'light'
 
-/** La intro se salta con prefers-reduced-motion y en la segunda carga de la
- *  misma pestana: ver la cinematica en cada recarga cansa y cuesta tiempo. */
-function decidirIntro() {
-  if (typeof window === 'undefined') return false
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-  try {
-    if (window.sessionStorage.getItem(INTRO_KEY)) return false
-  } catch (e) {
-    /* sessionStorage bloqueado: mostramos la intro igual */
-  }
-  return true
-}
+/* Si todo ya estaba en cache (segunda visita, misma pestana) las tres
+   condiciones de carga se cumplen casi al instante: sin este piso minimo la
+   PantallaCarga parpadearia un frame y se sentiria como un glitch, no como
+   una carga real. */
+const ESPERA_MINIMA = 380 // ms
+/* Techo de seguridad: una red que se cuelga no debe dejar a nadie mirando el
+   loader para siempre. Pasado este tiempo, la pagina se revela igual. */
+const TECHO_SEGURIDAD = 7000 // ms
 
 export default function App() {
   const [theme, setTheme] = useState(TEMA_INICIAL)
   const [lens, setLens] = useState(false)
   const [canHover, setCanHover] = useState(true)
 
-  const [conIntro] = useState(decidirIntro)
-  /* paginaLista habilita lo caro: el canvas del Hero y la descarga del video.
-     Durante la intro el ancho de banda va entero al modelo. */
-  const [paginaLista, setPaginaLista] = useState(() => !decidirIntro())
+  /* Las tres condiciones que tienen que cumplirse JUNTAS antes de destapar la
+     pagina. Video y robot arrancan a descargarse en paralelo desde el primer
+     render (ver VideoBackground.jsx y RobotDahua.jsx): lo que antes generaba
+     el render disparejo era mostrar la pagina antes de que ambos estuvieran
+     listos, no la descarga en si. */
+  const [videoListo, setVideoListo] = useState(false)
+  const [robotListo, setRobotListo] = useState(false)
+  const [fuentesListas, setFuentesListas] = useState(false)
+  const [tiempoMinimoCumplido, setTiempoMinimoCumplido] = useState(false)
+
+  const marcarVideoListo = useCallback(() => setVideoListo(true), [])
+  const marcarRobotListo = useCallback(() => setRobotListo(true), [])
 
   /* La clase .dark en <html> conmuta TODAS las superficies.
      El rojo #D61922 nunca depende de ella, por eso no se altera. */
@@ -67,24 +69,48 @@ export default function App() {
     return () => media.removeEventListener('change', onChange)
   }, [])
 
-  /* Bloquea el scroll mientras la intro ocupa la pantalla */
+  /* Fuentes tipograficas: sin esperarlas, el desvanecido del loader revelaria
+     un fallback del sistema que salta a Lexend/Source Sans un instante
+     despues -el mismo tipo de sacudida que esta pantalla existe para evitar. */
   useEffect(() => {
-    if (paginaLista) return
+    if (!document.fonts) {
+      setFuentesListas(true)
+      return undefined
+    }
+    let vivo = true
+    document.fonts.ready
+      .then(() => vivo && setFuentesListas(true))
+      .catch(() => vivo && setFuentesListas(true))
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setTiempoMinimoCumplido(true), ESPERA_MINIMA)
+    return () => window.clearTimeout(id)
+  }, [])
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setVideoListo(true)
+      setRobotListo(true)
+      setFuentesListas(true)
+    }, TECHO_SEGURIDAD)
+    return () => window.clearTimeout(id)
+  }, [])
+
+  const listo = videoListo && robotListo && fuentesListas && tiempoMinimoCumplido
+
+  /* Bloquea el scroll mientras la PantallaCarga tapa la pagina */
+  useEffect(() => {
+    if (listo) return undefined
     const previo = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = previo
     }
-  }, [paginaLista])
-
-  const alTerminarIntro = useCallback(() => {
-    setPaginaLista(true)
-    try {
-      window.sessionStorage.setItem(INTRO_KEY, '1')
-    } catch (e) {
-      /* no-op */
-    }
-  }, [])
+  }, [listo])
 
   const toggleTheme = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), [])
   const toggleLens = useCallback(() => setLens((l) => !l), [])
@@ -96,9 +122,9 @@ export default function App() {
 
   return (
     <SiteContext.Provider value={value}>
-      {conIntro && <IntroCinematica onFin={alTerminarIntro} />}
+      <PantallaCarga listo={listo} />
 
-      <VideoBackground activo={paginaLista} />
+      <VideoBackground onListo={marcarVideoListo} />
 
       <a
         href="#contenido"
@@ -110,9 +136,7 @@ export default function App() {
       <Navbar />
 
       <main id="contenido" className="relative z-10">
-        {/* El canvas del Hero se monta despues de la intro: nunca hay dos
-            contextos WebGL vivos a la vez. */}
-        <Hero3D montarRobot={paginaLista} />
+        <Hero3D onRobotListo={marcarRobotListo} />
         <Suspense fallback={<div className="min-h-[40vh]" aria-hidden="true" />}>
           <BentoCanvas />
           <Contacto />

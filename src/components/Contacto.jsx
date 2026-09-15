@@ -14,6 +14,10 @@ import EMPRESA from '../datos/empresa.js'
  *
  * Los datos de contacto salen de src/datos/empresa.js, que es la fuente unica
  * de verdad del telefono, el correo y la direccion.
+ *
+ * El envio real del formulario lo hace api/contacto.js (funcion serverless
+ * de Vercel, Resend por debajo). Ver ese archivo para la configuracion de
+ * variables de entorno requerida.
  */
 
 const TIPOS = [
@@ -41,20 +45,43 @@ const CAMPOS = [
   { id: 'telefono', label: 'Teléfono / WhatsApp', type: 'tel', autoComplete: 'tel', required: true },
 ]
 
+const IconoWhatsapp = (p) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+    <path d="M12.04 2C6.6 2 2.2 6.4 2.2 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.35-1.4a9.8 9.8 0 0 0 4.69 1.2h.01c5.43 0 9.84-4.4 9.84-9.84S17.47 2 12.04 2Zm4.49 11.89c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.13-.55.12s-.64.8-.78.97c-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.19 3.7.58.26 1.04.41 1.4.52.59.19 1.12.16 1.55.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.28Z" />
+  </svg>
+)
+
+/* Sobre de correo generico, no el logotipo de Gmail: la marca de Google no
+   se reproduce sin sus assets oficiales, igual que el resto del sitio usa
+   glifos de linea -no logos a color- para enlazar a servicios de terceros
+   (ver IconoWhatsapp arriba, o Instagram/Facebook en Footer.jsx). */
+const IconoGmail = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2.4" />
+    <path d="m4 6.5 8 6.5 8-6.5" />
+  </svg>
+)
+
 const DATOS = [
   {
     titulo: 'Ventas y mostrador',
-    valor: EMPRESA.telefono.display,
-    href: `tel:${EMPRESA.telefono.tel}`,
-    extra: { texto: 'Escribir por WhatsApp', href: EMPRESA.telefono.whatsapp },
+    tipo: 'icono',
+    Icono: IconoWhatsapp,
+    etiqueta: 'Escribir por WhatsApp',
+    href: EMPRESA.telefono.whatsapp,
   },
   {
     titulo: 'Pedidos y cotizaciones',
-    valor: EMPRESA.email,
-    href: `mailto:${EMPRESA.email}`,
+    tipo: 'icono',
+    Icono: IconoGmail,
+    etiqueta: 'Escribir por Gmail',
+    /* Abre el compositor de Gmail en el navegador, no el cliente de correo
+       por defecto del sistema: la cuenta de la empresa es una cuenta Gmail. */
+    href: `https://mail.google.com/mail/?view=cm&fs=1&to=${EMPRESA.email}`,
   },
   {
     titulo: 'Local y depósito',
+    tipo: 'texto',
     valor: EMPRESA.direccion.completa,
     href: EMPRESA.direccion.ficha,
   },
@@ -63,11 +90,13 @@ const DATOS = [
 export default function Contacto() {
   const [tipo, setTipo] = useState(TIPOS[0].id)
   const [enviado, setEnviado] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [errorEnvio, setErrorEnvio] = useState('')
   const [errores, setErrores] = useState({})
 
   const tipoActivo = TIPOS.find((t) => t.id === tipo) || TIPOS[0]
 
-  function onSubmit(event) {
+  async function onSubmit(event) {
     event.preventDefault()
     const form = event.currentTarget
     const datos = new FormData(form)
@@ -84,11 +113,38 @@ export default function Contacto() {
     }
 
     setErrores(nuevosErrores)
-    if (Object.keys(nuevosErrores).length === 0) {
-      // TODO: conectar con el endpoint real (API, Formspree, EmailJS, etc.)
-      // El campo `tipo` viaja en el FormData para rutear la consulta.
+    if (Object.keys(nuevosErrores).length > 0) return
+
+    setErrorEnvio('')
+    setEnviando(true)
+    try {
+      const respuesta = await fetch('/api/contacto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: datos.get('nombre'),
+          empresa: datos.get('empresa'),
+          email: datos.get('email'),
+          telefono: datos.get('telefono'),
+          tipo: datos.get('tipo'),
+          mensaje: datos.get('mensaje'),
+          _hp: datos.get('_hp'), // honeypot: siempre vacio para un humano
+        }),
+      })
+      const resultado = await respuesta.json().catch(() => ({}))
+
+      if (!respuesta.ok || !resultado.ok) {
+        throw new Error(resultado.error || 'No se pudo enviar la consulta.')
+      }
+
       setEnviado(true)
       form.reset()
+    } catch (error) {
+      setErrorEnvio(
+        error.message || 'No se pudo enviar la consulta. Intente nuevamente o escríbanos por WhatsApp.'
+      )
+    } finally {
+      setEnviando(false)
     }
   }
 
@@ -119,30 +175,34 @@ export default function Contacto() {
                   className="rounded-2xl px-4 py-3"
                   style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
                 >
-                  <dt className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-rv-red">
+                  <dt
+                    className="font-display text-[10px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: 'var(--rv-ink)' }}
+                  >
                     {dato.titulo}
                   </dt>
-                  <dd className="mt-1">
-                    <a
-                      href={dato.href}
-                      target={dato.href.startsWith('http') ? '_blank' : undefined}
-                      rel={dato.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      className="rv-link break-words font-display text-base font-medium"
-                    >
-                      {dato.valor}
-                    </a>
-                    {dato.extra && (
+                  <dd className="mt-2">
+                    {dato.tipo === 'icono' ? (
                       <a
-                        href={dato.extra.href}
+                        href={dato.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-rv-red
-                                   transition-opacity duration-200 hover:opacity-75"
+                        className="inline-flex items-center gap-2.5 rounded-pill py-1.5 pl-1.5 pr-4 transition-transform duration-200 ease-apple hover:scale-[1.03]"
+                        style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
                       >
-                        <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
-                          <path d="M12.04 2C6.6 2 2.2 6.4 2.2 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.35-1.4a9.8 9.8 0 0 0 4.69 1.2h.01c5.43 0 9.84-4.4 9.84-9.84S17.47 2 12.04 2Zm4.49 11.89c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.13-.55.12s-.64.8-.78.97c-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.44.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.19 3.7.58.26 1.04.41 1.4.52.59.19 1.12.16 1.55.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.28Z" />
-                        </svg>
-                        {dato.extra.texto}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rv-red text-white">
+                          <dato.Icono className="h-5 w-5" />
+                        </span>
+                        <span className="text-onglass font-display text-sm font-semibold">{dato.etiqueta}</span>
+                      </a>
+                    ) : (
+                      <a
+                        href={dato.href}
+                        target={dato.href.startsWith('http') ? '_blank' : undefined}
+                        rel={dato.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className="rv-link break-words font-display text-base font-medium"
+                      >
+                        {dato.valor}
                       </a>
                     )}
                   </dd>
@@ -155,7 +215,7 @@ export default function Contacto() {
           <GlassPanel className="p-6 sm:p-8 md:col-span-6 lg:col-span-7">
             {enviado ? (
               <div role="status" className="flex h-full flex-col items-center justify-center py-14 text-center">
-                <span className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-rv-red text-white">
+                <span className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8" aria-hidden="true">
                     <path d="m4 12 5 5L20 6" />
                   </svg>
@@ -172,6 +232,17 @@ export default function Contacto() {
               <form onSubmit={onSubmit} noValidate>
                 <h3 className="text-onglass font-display text-xl font-semibold">Solicitar cotización</h3>
                 <p className="rv-muted mt-1 text-sm">Los campos marcados con asterisco son obligatorios.</p>
+
+                {/* Honeypot: invisible y no alcanzable con teclado, para que
+                    solo lo complete un bot. Un humano nunca lo ve ni lo llena. */}
+                <input
+                  type="text"
+                  name="_hp"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="sr-only"
+                />
 
                 {/* Tipo de consulta */}
                 <fieldset className="mt-6">
@@ -257,8 +328,18 @@ export default function Contacto() {
                   </div>
                 </div>
 
-                <button type="submit" className="rv-btn-primary mt-7 w-full sm:w-auto sm:px-10">
-                  Enviar consulta
+                {errorEnvio && (
+                  <p role="alert" className="mt-5 text-sm font-medium text-rv-red">
+                    {errorEnvio}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={enviando}
+                  className="rv-btn-primary mt-7 w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-10"
+                >
+                  {enviando ? 'Enviando…' : 'Enviar consulta'}
                 </button>
               </form>
             )}

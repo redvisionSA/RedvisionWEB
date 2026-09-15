@@ -96,12 +96,12 @@ export function TileMapa({ className = '' }) {
           aria-hidden="true"
         >
           <span className="relative flex h-16 w-16 items-center justify-center">
-            <span className="absolute inset-0 animate-rv-pulse-ring rounded-full border-2 border-rv-red" />
+            <span className="absolute inset-0 animate-rv-pulse-ring rounded-full border-2 border-black/50 dark:border-white/60" />
             <span className="absolute inset-[30%] rounded-full bg-rv-red" />
-            <span className="absolute left-1/2 top-[-14px] h-4 w-px -translate-x-1/2 bg-rv-red" />
-            <span className="absolute bottom-[-14px] left-1/2 h-4 w-px -translate-x-1/2 bg-rv-red" />
-            <span className="absolute left-[-14px] top-1/2 h-px w-4 -translate-y-1/2 bg-rv-red" />
-            <span className="absolute right-[-14px] top-1/2 h-px w-4 -translate-y-1/2 bg-rv-red" />
+            <span className="absolute left-1/2 top-[-14px] h-4 w-px -translate-x-1/2 bg-black/45 dark:bg-white/55" />
+            <span className="absolute bottom-[-14px] left-1/2 h-4 w-px -translate-x-1/2 bg-black/45 dark:bg-white/55" />
+            <span className="absolute left-[-14px] top-1/2 h-px w-4 -translate-y-1/2 bg-black/45 dark:bg-white/55" />
+            <span className="absolute right-[-14px] top-1/2 h-px w-4 -translate-y-1/2 bg-black/45 dark:bg-white/55" />
           </span>
         </div>
 
@@ -117,10 +117,10 @@ export function TileMapa({ className = '' }) {
         >
           {/* Linea de escaneo, la misma firma visual del Hero */}
           <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            <span className="block h-24 w-full animate-rv-scan bg-gradient-to-b from-transparent via-rv-red/25 to-transparent" />
+            <span className="block h-24 w-full animate-rv-scan bg-gradient-to-b from-transparent via-black/20 to-transparent dark:via-white/25" />
           </span>
 
-          <span className="rv-chip text-rv-red transition-transform duration-300 ease-apple group-hover:scale-105">
+          <span className="rv-chip text-black/85 dark:text-white/85 transition-transform duration-300 ease-apple group-hover:scale-105">
             Active el mapa interactivo
           </span>
         </button>
@@ -174,14 +174,17 @@ export function TileMapa({ className = '' }) {
 function Estrellas({ puntaje = 5, size = 'h-4 w-4' }) {
   const llenas = Math.round(puntaje)
   return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`${puntaje} de 5 estrellas`}>
+    <span
+      className="inline-flex items-center gap-0.5 text-black/85 dark:text-white/90"
+      aria-label={`${puntaje} de 5 estrellas`}
+    >
       {[1, 2, 3, 4, 5].map((i) => (
         <svg
           key={i}
           viewBox="0 0 24 24"
           className={size}
-          fill={i <= llenas ? '#D61922' : 'none'}
-          stroke="#D61922"
+          fill={i <= llenas ? 'currentColor' : 'none'}
+          stroke="currentColor"
           strokeWidth="1.6"
           strokeLinejoin="round"
           aria-hidden="true"
@@ -247,8 +250,8 @@ function TarjetaResena({ resena }) {
 
       <figcaption className="mt-4 flex items-center gap-3">
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rv-red
-                     font-display text-sm font-bold text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black dark:bg-white
+                     font-display text-sm font-bold text-white dark:text-black"
           aria-hidden="true"
         >
           {inicial(resena.autor)}
@@ -259,7 +262,7 @@ function TarjetaResena({ resena }) {
           </span>
           <span className="rv-muted flex items-center gap-1.5 text-[11px]">
             {resena.localGuide && (
-              <span className="inline-flex items-center gap-1 text-rv-red">
+              <span className="inline-flex items-center gap-1">
                 <IconoLocalGuide className="h-3 w-3" />
                 Local Guide
               </span>
@@ -326,7 +329,7 @@ export function TileResenas({ className = '' }) {
           className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-glass p-4"
           style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
         >
-          <p className="font-display text-5xl font-bold leading-none text-rv-red tabular-nums">
+          <p className="text-onglass font-display text-5xl font-bold leading-none tabular-nums">
             {puntaje.toFixed(1)}
           </p>
           <div>

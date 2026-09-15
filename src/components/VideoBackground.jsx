@@ -37,7 +37,13 @@ function detectarAhorro() {
   return ['slow-2g', '2g', '3g'].includes(conexion.effectiveType)
 }
 
-export default function VideoBackground({ activo = true }) {
+/* Techo de seguridad propio: si el evento `loadeddata` nunca llega -una red
+   lenta o inestable-, este componente igual avisa que esta "listo" para no
+   colgar la PantallaCarga de App.jsx mas alla de lo razonable. El techo
+   final y absoluto sigue siendo el de App.jsx. */
+const ESPERA_VIDEO = 3000 // ms
+
+export default function VideoBackground({ onListo }) {
   const { lens, canHover } = useSite()
   const videoRef = useRef(null)
   const lensVideoRef = useRef(null)
@@ -45,8 +51,41 @@ export default function VideoBackground({ activo = true }) {
   const [reducedMotion, setReducedMotion] = useState(false)
   const [ahorroDatos] = useState(detectarAhorro)
 
-  /* El video solo arranca si hay permiso de movimiento y de datos */
-  const reproducir = activo && !ahorroDatos && !reducedMotion
+  /* El video arranca siempre de entrada, en paralelo con el robot 3D: ya no
+     hay una intro que le reserve el ancho de banda para despues. */
+  const reproducir = !ahorroDatos && !reducedMotion
+
+  /* Sin video que reproducir -ahorro de datos o reduced-motion- el poster ya
+     cubre la pantalla: no hay nada que esperar. */
+  useEffect(() => {
+    if (reproducir) return undefined
+    const id = window.setTimeout(() => onListo?.(), 0)
+    return () => window.clearTimeout(id)
+  }, [reproducir, onListo])
+
+  /* Con video: se avisa "listo" apenas hay un primer cuadro reproducible, o
+     al vencer el propio techo de seguridad si la red nunca lo entrega. */
+  useEffect(() => {
+    if (!reproducir) return undefined
+    const video = videoRef.current
+    if (!video) return undefined
+    let avisado = false
+    const avisar = () => {
+      if (avisado) return
+      avisado = true
+      onListo?.()
+    }
+    if (video.readyState >= 2) {
+      avisar()
+    } else {
+      video.addEventListener('loadeddata', avisar)
+    }
+    const id = window.setTimeout(avisar, ESPERA_VIDEO)
+    return () => {
+      video.removeEventListener('loadeddata', avisar)
+      window.clearTimeout(id)
+    }
+  }, [reproducir, onListo])
 
   /* Respeta prefers-reduced-motion: sin movimiento, el fondo queda en el poster */
   useEffect(() => {
@@ -64,8 +103,7 @@ export default function VideoBackground({ activo = true }) {
     return () => media.removeEventListener('change', onChange)
   }, [])
 
-  /* El src llega despues del montaje, asi que autoPlay no alcanza: arrancamos
-     la reproduccion cuando `activo` pasa a true. */
+  /* Arranca la reproduccion apenas el `src` esta asignado */
   useEffect(() => {
     if (!reproducir) return
     const video = videoRef.current
@@ -118,8 +156,8 @@ export default function VideoBackground({ activo = true }) {
     <>
       {/* ---------- Capa 1: video ---------- */}
       <div className="pointer-events-none fixed inset-0 -z-30 overflow-hidden">
-        {/* El src se asigna recien cuando `activo` es true. Durante la intro el
-            ancho de banda va entero al modelo; el poster ya cubre la pantalla. */}
+        {/* El poster cubre la pantalla desde el primer pintado; el video se
+            reproduce apenas tiene un cuadro listo, en paralelo con el robot. */}
         <video
           ref={videoRef}
           className="h-full w-full object-cover"
@@ -146,13 +184,18 @@ export default function VideoBackground({ activo = true }) {
         }}
       />
 
-      {/* ---------- Capa 3: vineta roja + grano ---------- */}
+      {/* ---------- Capa 3: vineta grafito + grano ----------
+          Antes esta vineta era roja y cubria TODO el sitio, en todo momento:
+          era la principal razon del "demasiado rojo" reportado, porque tenia
+          mas superficie que cualquier otro elemento de la pagina. Ahora la
+          vineta es grafito (el secundario de marca) y el rojo queda en un
+          unico acento, discreto, en la esquina superior derecha. */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(120% 80% at 50% 0%, rgba(214,25,34,0.16), transparent 58%), radial-gradient(90% 60% at 100% 100%, rgba(214,25,34,0.10), transparent 60%)',
+            'radial-gradient(120% 80% at 50% 0%, rgba(8,9,12,0.14), transparent 58%), radial-gradient(90% 60% at 100% 100%, rgba(8,9,12,0.12), transparent 60%), radial-gradient(60% 45% at 100% 0%, rgba(214,25,34,0.09), transparent 62%)',
         }}
       />
       <div aria-hidden="true" className="rv-grain pointer-events-none fixed inset-0 -z-10 opacity-[0.18] mix-blend-overlay" />

@@ -85,7 +85,7 @@ function ControlRobot({ controles, hayCursor }) {
   return null
 }
 
-export default function Hero3D({ montarRobot = true }) {
+export default function Hero3D({ onRobotListo }) {
   const { canHover } = useSite()
   const [controles, setControles] = useState(null)
   const [qrEnFoco, setQrEnFoco] = useState(false)
@@ -155,15 +155,18 @@ export default function Hero3D({ montarRobot = true }) {
                 </div>
               </div>
 
-              {/* El canvas se monta cuando la intro termina: durante la
-                  cinematica no hay dos contextos WebGL vivos a la vez. */}
-              {montarRobot && (
-                <RobotDahua
-                  className="absolute inset-0"
-                  onControles={recibirControles}
-                  onFoco={recibirFoco}
-                />
-              )}
+              {/* El canvas se monta de entrada, junto con el resto de la
+                  pagina: el GLB ya se precarga desde el import del modulo
+                  (ver RobotDahua.jsx), asi que arrancar aca en paralelo con
+                  el video de fondo es lo que evita el render disparejo. La
+                  PantallaCarga de App.jsx tapa la pagina hasta que este
+                  canvas -y el video- esten listos. */}
+              <RobotDahua
+                className="absolute inset-0"
+                onControles={recibirControles}
+                onFoco={recibirFoco}
+                onListo={onRobotListo}
+              />
 
               {/* HUD flotante: solo desde tablet en adelante */}
               {HUD.map((item) => (
@@ -175,7 +178,7 @@ export default function Hero3D({ montarRobot = true }) {
                               ${qrEnFoco ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
                   style={{ borderRadius: 999, animationDelay: item.delay }}
                 >
-                  <p className="font-display text-sm font-bold leading-none text-rv-red sm:text-base">
+                  <p className="text-onglass font-display text-sm font-bold leading-none sm:text-base">
                     {item.valor}
                   </p>
                   <p className="rv-muted mt-1 text-[10px] uppercase tracking-[0.16em]">{item.etiqueta}</p>
@@ -188,7 +191,7 @@ export default function Hero3D({ montarRobot = true }) {
               {HUD.map((item) => (
                 <li key={item.etiqueta} className="flex-1">
                   <GlassPanel variant="thin" className="h-full rounded-2xl px-3 py-2.5">
-                    <p className="font-display text-sm font-bold leading-none text-rv-red">{item.valor}</p>
+                    <p className="text-onglass font-display text-sm font-bold leading-none">{item.valor}</p>
                     <p className="rv-muted mt-1 text-[9px] uppercase leading-tight tracking-[0.12em]">
                       {item.etiqueta}
                     </p>
@@ -213,7 +216,7 @@ export default function Hero3D({ montarRobot = true }) {
                 key={`${item}-${i}`}
                 className="flex shrink-0 items-center gap-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.18em] sm:gap-3 sm:text-xs sm:tracking-[0.2em]"
               >
-                <span className="h-1 w-1 rounded-full bg-rv-red" />
+                <span className="h-1 w-1 rounded-full bg-black/50 dark:bg-white/55" />
                 {item}
               </span>
             ))}

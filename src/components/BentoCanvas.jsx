@@ -51,11 +51,11 @@ function TileRespaldo({ className = '' }) {
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#D61922"
+              stroke="currentColor"
               strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mt-0.5 h-4 w-4 shrink-0"
+              className="mt-0.5 h-4 w-4 shrink-0 text-black/55 dark:text-white/60"
               aria-hidden="true"
             >
               <path d="m4 12 5 5L20 6" />
@@ -74,9 +74,12 @@ export default function BentoCanvas() {
       {/* ============ 1. Comercializacion: la actividad principal ============ */}
       <section id="catalogo" className="scroll-mt-28 pt-4 sm:scroll-mt-32 sm:pt-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6 lg:grid-cols-12">
-          {/* Fila alta: dos paneles de volumen equivalente */}
-          <TileCatalogo className="md:col-span-6 lg:col-span-7" />
-          <TileFullColor className="md:col-span-6 lg:col-span-5" />
+          <TileCatalogo className="md:col-span-6 lg:col-span-12" />
+
+          {/* Full-Color en su propia fila, a todo el ancho: la lente
+              necesita superficie real para leerse como una demostracion y
+              no como un grafico mas entre otros. */}
+          <TileFullColor className="md:col-span-6 lg:col-span-12" />
 
           {/* Fila mixta: dos teselas horizontales apiladas contra una vertical.
               Modalidades y respaldo son listas cortas y anchas; multimarca es
