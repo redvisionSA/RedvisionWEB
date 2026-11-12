@@ -95,7 +95,7 @@ nombre y la descripción (`src/tienda/specs.js`): "4 MP", "Full-Color", "8 canal
 
 - Marcas de dispositivos con identidad propia en la tienda (logo y color): **Dahua, Hikvision e Imou**
   (`src/tienda/marcas.js`). Se reconocen por slug o nombre; los logos oficiales van en
-  `public/marcas/` (`dahua.svg` cargado; `hikvision.svg` e `imou.svg` pendientes).
+  `public/marcas/` (`dahua.svg`, `hikvision.webp` + `hikvision-blanco.png`, `imou.png`).
 - **Marcas genéricas o alternativas** (slug o nombre con "genérico", "sin marca", "alternativa",
   "OEM", "varios", "otras marcas", "importado"…): la tienda **no muestra la marca** y ubica el producto
   en **Accesorios**, sin importar su categoría. Si el ERP tiene un nombre distinto para estas marcas,

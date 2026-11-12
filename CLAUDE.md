@@ -104,9 +104,11 @@ siguientes.
   productos» y una banda roja grande justo debajo del hero y otra al final del inicio.
 - **Marcas** (`src/tienda/marcas.js`, `LogoMarca` en `piezas.jsx`): Dahua, Hikvision e Imou con logo
   oficial y color propio en tarjetas (franja superior), ficha, filtro de marca, portada de marca
-  (`/productos?marca=…` con una sola marca) y tarjetas del inicio. Logos en `public/marcas/`; sin
-  archivo se muestra el nombre en texto (nunca un dibujo propio). Colores solo desde el archivo
-  oficial (Dahua `#E50214`); Hikvision e Imou en `null` hasta tener su SVG. Las marcas genéricas o
+  (`/productos?marca=…` con una sola marca) y tarjetas del inicio. Logos oficiales en `public/marcas/`
+  (Dahua SVG; Hikvision WebP 240×30 en color para tamaños chicos y PNG negativo 1520×192 sobre su
+  rojo para tamaños grandes; Imou PNG 300×81). Colores tomados de los archivos: Dahua `#E50214`,
+  Hikvision `#D8171F` (medido sobre WebP con pérdida: confirmar con manual), Imou `#F08C00`. Sin
+  archivo se muestra el nombre en texto, nunca un dibujo propio. Las marcas genéricas o
   alternativas no se nombran nunca y sus productos van a Accesorios.
 - Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
   línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).

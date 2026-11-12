@@ -152,6 +152,25 @@ export function Migas({ items }) {
 export function LogoMarca({ marca, alto = 16, className = '', conChip = false }) {
   if (!marca) return null
   const id = marca.identidad
+  /* Logo chico en color pierde nitidez en tamaño grande: se usa el negativo
+     oficial sobre el color de la marca */
+  if (id?.logoNegativo && id.altoMaximoLogo && alto > id.altoMaximoLogo) {
+    const proporcionNeg = 1520 / 192
+    return (
+      <span className={`inline-flex items-center rounded-lg ${className}`} style={{ background: id.color, padding: `${Math.round(alto * 0.28)}px ${Math.round(alto * 0.45)}px` }}>
+        <img
+          src={id.logoNegativo}
+          alt={marca.nombre}
+          height={alto}
+          width={Math.round(alto * proporcionNeg)}
+          loading="lazy"
+          decoding="async"
+          className="block object-contain"
+          style={{ height: Math.round(alto * 0.62), width: 'auto' }}
+        />
+      </span>
+    )
+  }
   if (id?.logo) {
     const img = (
       <img
