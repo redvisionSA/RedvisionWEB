@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { BotonFavorito, Disponibilidad, ImagenProducto, Precio, sePuedeComprar } from './piezas.jsx'
+import { BotonFavorito, Disponibilidad, ImagenProducto, LogoMarca, Precio, sePuedeComprar } from './piezas.jsx'
 import { IconoCarrito, IconoCheck, IconoWhatsapp } from './Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from './whatsapp.js'
 import { etiquetasClave } from './specs.js'
@@ -55,6 +55,9 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
     <article
       className={`rv-solido rv-solido-hover group relative flex h-full overflow-hidden ${lista ? 'flex-row' : 'flex-col'} ${className}`}
     >
+      {producto.marca?.identidad?.color && (
+        <span className="absolute inset-x-0 top-0 z-10 h-[3px]" style={{ background: producto.marca.identidad.color }} aria-hidden="true" />
+      )}
       <Link
         to={`/producto/${producto.slug}`}
         className={`relative block shrink-0 ${lista ? 'w-32 sm:w-44' : 'w-full'}`}
@@ -72,9 +75,9 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
 
       <div className={`flex min-w-0 flex-1 ${lista ? 'flex-col gap-3 p-4 sm:flex-row sm:items-center' : 'flex-col'}`}>
         <Link to={`/producto/${producto.slug}`} className={`flex min-w-0 flex-1 flex-col gap-1.5 ${lista ? '' : 'px-3.5 pt-3 sm:px-4'}`}>
-          <p className="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-black/55 dark:text-white/55">
-            {producto.marca?.nombre || ' '}
-          </p>
+          <div className="flex h-6 items-center">
+            <LogoMarca marca={producto.marca} alto={14} conChip={Boolean(producto.marca?.identidad?.logo)} />
+          </div>
           <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-semibold leading-tight text-black group-hover:text-rv-red dark:text-white">
             {producto.nombre}
           </h3>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { COMPLEMENTOS, lineaPorId } from '../tienda/lineas.js'
-import { BotonFavorito, Disponibilidad, ImagenProducto, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
+import { BotonFavorito, Disponibilidad, ImagenProducto, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
 import { Cantidad } from '../tienda/LineaCarrito.jsx'
 import Riel from '../tienda/Riel.jsx'
 import { IconoCamion, IconoCarrito, IconoCheck, IconoEscudo, IconoLocal, IconoTecnico, IconoWhatsapp } from '../tienda/Iconos.jsx'
@@ -212,18 +212,21 @@ export default function Producto() {
         </div>
 
         <div className="flex flex-col gap-5">
-          <div className="rv-solido p-5 sm:p-7">
+          <div className="rv-solido relative overflow-hidden p-5 sm:p-7">
+            {producto.marca?.identidad?.color && (
+              <span className="absolute inset-x-0 top-0 h-1" style={{ background: producto.marca.identidad.color }} aria-hidden="true" />
+            )}
             {producto.marca && (
-              <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-black/60 dark:text-white/65">
-                {producto.marca.nombre}
-              </p>
+              <Link to={`/productos?marca=${encodeURIComponent(producto.marca.slug)}`} className="inline-flex items-center gap-2" title={`Ver todo ${producto.marca.nombre}`}>
+                <LogoMarca marca={producto.marca} alto={22} conChip={Boolean(producto.marca.identidad?.logo)} />
+              </Link>
             )}
             <h1 className="text-onglass mt-1.5 font-display text-2xl font-bold leading-tight sm:text-3xl">{producto.nombre}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
               {producto.sku && <span className="rv-muted text-xs">Código {producto.sku}</span>}
               <Disponibilidad valor={producto.disponibilidad} />
             </div>
-            {producto.marca?.slug?.includes('dahua') && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
+            {producto.marca?.identidad?.oficial && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
 
             <div className="mt-5 border-t rv-hairline pt-5">
               <Precio valor={producto.precio} grande />

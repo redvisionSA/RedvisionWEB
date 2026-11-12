@@ -15,7 +15,7 @@ import {
 import { formatoPrecio } from '../tienda/formato.js'
 import { LINEAS, lineaPorId } from '../tienda/lineas.js'
 import ProductoCard from '../tienda/ProductoCard.jsx'
-import { Migas } from '../tienda/piezas.jsx'
+import { LogoMarca, Migas } from '../tienda/piezas.jsx'
 import { IconoBuscar, IconoCerrar, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import { enlaceWhatsapp } from '../tienda/whatsapp.js'
 import Pagina, { usePagina } from './Pagina.jsx'
@@ -88,7 +88,9 @@ function FacetaLista({ faceta, onAlternar }) {
                 onChange={() => onAlternar(faceta.param, o.valor)}
                 className="h-4 w-4 shrink-0 accent-[#D61922]"
               />
-              <span className="min-w-0 flex-1 truncate">{o.etiqueta}</span>
+              <span className="min-w-0 flex-1 truncate">
+                {faceta.id === 'marca' && o.marca?.identidad ? <LogoMarca marca={o.marca} alto={14} /> : o.etiqueta}
+              </span>
               <span className="num text-xs text-black/45 dark:text-white/45">{o.n}</span>
             </label>
           </li>
@@ -274,11 +276,20 @@ export default function Catalogo() {
     return linea ? lista.filter((p) => p.linea === linea.id) : lista
   }, [busqueda, linea])
 
-  const ctx = useMemo(() => ({ marcas: nombresMarca, categorias: nombresCategoria }), [nombresMarca, nombresCategoria])
+  const ctx = useMemo(
+    () => ({ marcas: nombresMarca, categorias: nombresCategoria, listaMarcas: catalogo.datos.marcas }),
+    [nombresMarca, nombresCategoria, catalogo.datos.marcas]
+  )
   const facetas = useMemo(() => calcularFacetas(base, sel, ctx), [base, sel, ctx])
   const rango = useMemo(() => rangoPrecios(base, sel), [base, sel])
   const resultado = useMemo(() => ordenarLista(filtrar(base, sel), q && orden === 'relevancia' ? 'relevancia' : orden), [base, sel, orden, q])
   const chips = useMemo(() => chipsActivos(sel, facetas, formatoPrecio), [sel, facetas])
+  const marcaUnica = useMemo(() => {
+    const elegidas = sel.facetas.marca
+    if (!elegidas || elegidas.size !== 1) return null
+    const slug = [...elegidas][0]
+    return catalogo.datos.marcas.find((m) => m.slug === slug) || null
+  }, [sel, catalogo.datos.marcas])
 
   const conteoLineas = useMemo(() => {
     const c = {}
@@ -385,6 +396,23 @@ export default function Catalogo() {
           ...(linea ? [{ label: linea.titulo }] : []),
         ]}
       />
+
+      {marcaUnica && (
+        <div className="rv-solido relative mb-5 flex flex-col gap-3 overflow-hidden p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+          <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: marcaUnica.identidad?.color || '#0b0b0d' }} aria-hidden="true" />
+          <LogoMarca marca={marcaUnica} alto={40} className="pl-2" />
+          <div className="min-w-0 flex-1">
+            {marcaUnica.identidad?.oficial && (
+              <span className="mb-1 inline-block rounded-md bg-black px-2 py-1 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white dark:bg-white dark:text-black">
+                Distribuidor oficial
+              </span>
+            )}
+            <p className="text-sm leading-relaxed text-black/70 dark:text-white/70">
+              {marcaUnica.identidad?.texto || `Productos ${marcaUnica.nombre} disponibles en REDVISION.`}
+            </p>
+          </div>
+        </div>
+      )}
 
       <header className="mb-5 flex flex-col gap-1.5 px-1">
         <h1 className="font-display text-3xl font-bold text-black dark:text-white sm:text-4xl">{titulo}</h1>

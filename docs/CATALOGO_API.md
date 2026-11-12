@@ -91,7 +91,17 @@ Si el ERP no manda `specs` (o manda solo algunas claves), la web completa lo que
 nombre y la descripción (`src/tienda/specs.js`): "4 MP", "Full-Color", "8 canales", "2,8 mm",
 "IR 30 m". Solo extrae lo escrito; nunca deduce. Lo que manda el ERP gana siempre.
 
-### Qué NO viaja nunca
+### Marcas
+
+- Marcas de dispositivos con identidad propia en la tienda (logo y color): **Dahua, Hikvision e Imou**
+  (`src/tienda/marcas.js`). Se reconocen por slug o nombre; los logos oficiales van en
+  `public/marcas/` (`dahua.svg` cargado; `hikvision.svg` e `imou.svg` pendientes).
+- **Marcas genéricas o alternativas** (slug o nombre con "genérico", "sin marca", "alternativa",
+  "OEM", "varios", "otras marcas", "importado"…): la tienda **no muestra la marca** y ubica el producto
+  en **Accesorios**, sin importar su categoría. Si el ERP tiene un nombre distinto para estas marcas,
+  sumarlo al patrón `GENERICA` de `marcas.js`.
+
+
 
 Costo, rentabilidad, otras listas (Gremio, Mayorista, Distribuidor), stock exacto, stock de
 Control Red, proveedores, datos de clientes. Solo productos `active` de catálogo con precio de

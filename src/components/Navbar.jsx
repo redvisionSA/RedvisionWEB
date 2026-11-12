@@ -6,6 +6,7 @@ import Buscador from '../tienda/Buscador.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { LINEAS } from '../tienda/lineas.js'
 import { IconoCarrito, IconoCorazon, IconoWhatsapp } from '../tienda/Iconos.jsx'
+import { LogoMarca } from '../tienda/piezas.jsx'
 import EMPRESA from '../datos/empresa.js'
 
 /* Pestañas institucionales: cada una es una pagina propia. La tienda es el
@@ -171,6 +172,29 @@ export function LensSwitch({ className = '' }) {
 }
 
 
+/* ============================================================ Tienda */
+/* Acceso a todo el catalogo: el boton mas visible de la barra, siempre a la
+   vista (tambien con la barra compacta y en telefono). */
+function BotonTienda() {
+  const { pathname } = useLocation()
+  const activo = pathname.startsWith('/producto')
+  return (
+    <Link
+      to="/productos"
+      aria-current={activo ? 'page' : undefined}
+      className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-pill px-3 font-display text-[13px] font-semibold text-white transition-all duration-200 ease-apple active:scale-95 sm:px-4
+                  ${activo ? 'bg-black dark:bg-white dark:text-black' : 'bg-rv-red hover:bg-rv-red-press'}`}
+      style={activo ? undefined : { boxShadow: '0 8px 22px -10px rgba(214,25,34,0.9)' }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]" aria-hidden="true">
+        <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+      </svg>
+      <span className="hidden sm:inline">Productos</span>
+      <span className="sr-only sm:hidden">Todos los productos</span>
+    </Link>
+  )
+}
+
 /* ============================================================ Carrito */
 function BotonCarrito() {
   const { resumen, setCarritoAbierto, ultimoAgregado } = useTienda()
@@ -191,11 +215,11 @@ function BotonCarrito() {
       aria-label={`Abrir carrito (${resumen.unidades} ${resumen.unidades === 1 ? 'unidad' : 'unidades'})`}
       className={`relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-pill text-white
                   transition-transform duration-300 ease-apple active:scale-90 ${latido ? 'scale-110' : ''}`}
-      style={{ background: '#D61922', boxShadow: '0 8px 22px -10px rgba(214,25,34,0.9)' }}
+      style={{ background: '#0b0b0d', border: '1px solid rgba(255,255,255,0.15)' }}
     >
       <IconoCarrito className="h-5 w-5" />
       {resumen.unidades > 0 && (
-        <span className="num absolute -right-1 -top-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-pill bg-black px-1 text-[11px] font-bold text-white ring-2 ring-white dark:bg-white dark:text-black dark:ring-black">
+        <span className="num absolute -right-1 -top-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-pill bg-rv-red px-1 text-[11px] font-bold text-white ring-2 ring-white dark:ring-black">
           {resumen.unidades > 99 ? '99+' : resumen.unidades}
         </span>
       )}
@@ -219,6 +243,28 @@ function BotonFavoritos({ className = '' }) {
 }
 
 /* ========================================================= Mega menu */
+function MarcasMenu({ onCerrar }) {
+  const { catalogo } = useTienda()
+  const marcas = catalogo.datos.marcas.filter((m) => m.identidad)
+  if (!marcas.length) return null
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t rv-hairline px-2 pt-3">
+      <span className="rv-eyebrow mr-2">Marcas</span>
+      {marcas.map((m) => (
+        <Link
+          key={m.slug}
+          to={`/productos?marca=${encodeURIComponent(m.slug)}`}
+          onClick={onCerrar}
+          className="inline-flex h-10 items-center rounded-xl bg-white px-3 ring-1 ring-black/10 transition-shadow hover:ring-2"
+          style={m.identidad.color ? { '--tw-ring-color': m.identidad.color } : undefined}
+        >
+          <LogoMarca marca={m} alto={16} />
+        </Link>
+      ))}
+    </div>
+  )
+}
+
 function MenuProductos({ abierto, onCerrar }) {
   if (!abierto) return null
   return (
@@ -246,6 +292,7 @@ function MenuProductos({ abierto, onCerrar }) {
           </li>
         ))}
       </ul>
+      <MarcasMenu onCerrar={onCerrar} />
       <div className="mt-3 flex items-center justify-between border-t rv-hairline px-2 pt-3">
         <p className="rv-muted text-xs">¿Es instalador o empresa? Consulte por la lista mayorista.</p>
         <Link to="/productos" onClick={onCerrar} className="rv-btn-primary px-5 py-2 text-xs">
@@ -357,11 +404,12 @@ export default function Navbar() {
               />
             </Link>
 
-            <Buscador atajo className="mx-auto hidden w-full max-w-xl md:block" />
+            <Buscador atajo className="mx-auto hidden w-full max-w-xl lg:block" />
 
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 md:ml-0">
+            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 md:ml-0">
+              <BotonTienda />
               <LensSwitch className="hidden xl:inline-flex" />
-              <ThemeSwitch />
+              <ThemeSwitch className="hidden sm:inline-flex" />
               <BotonFavoritos className="hidden sm:inline-flex" />
               <BotonCarrito />
               <button
@@ -397,7 +445,7 @@ export default function Navbar() {
                             ${megaOpen || enTienda ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-black hover:text-rv-red dark:text-white'}`}
               >
                 <MenuIcon className="h-4 w-4" />
-                Productos
+                Líneas y marcas
               </button>
 
               <ul className="flex items-center gap-0.5" onPointerMove={onDockMove} onPointerLeave={onDockLeave}>
@@ -421,7 +469,7 @@ export default function Navbar() {
 
           {/* ---------------- Buscador en telefono ---------------- */}
           <div
-            className={`pointer-events-auto transition-all duration-400 ease-apple md:hidden ${
+            className={`pointer-events-auto transition-all duration-400 ease-apple lg:hidden ${
               scrolled ? 'pointer-events-none -translate-y-2 opacity-0' : 'opacity-100'
             }`}
           >
@@ -469,7 +517,11 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <a href={EMPRESA.telefono.whatsapp} target="_blank" rel="noopener noreferrer" className="rv-btn-glass mt-4 w-full">
+          <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-2" style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}>
+            <span className="font-display text-sm font-medium text-black dark:text-white">Tema claro / oscuro</span>
+            <ThemeSwitch />
+          </div>
+          <a href={EMPRESA.telefono.whatsapp} target="_blank" rel="noopener noreferrer" className="rv-btn-glass mt-3 w-full">
             <IconoWhatsapp className="h-4 w-4" />
             Hablar con un asesor
           </a>

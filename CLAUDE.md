@@ -99,6 +99,15 @@ siguientes.
   del inicio también son sólidos. El vidrio queda para lo institucional (hero, barra, pestañas).
 - Sello **"Distribuidor oficial Dahua"** (`PreHeader` en `Navbar.jsx`, logo oficial
   `public/dahua-logo.png` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
+- **Acceso a la tienda bien visible:** botón rojo «Productos» fijo en la cápsula de la barra (también
+  compacta y en teléfono; el carrito pasó a negro), botón principal del hero «Ver todos los
+  productos» y una banda roja grande justo debajo del hero y otra al final del inicio.
+- **Marcas** (`src/tienda/marcas.js`, `LogoMarca` en `piezas.jsx`): Dahua, Hikvision e Imou con logo
+  oficial y color propio en tarjetas (franja superior), ficha, filtro de marca, portada de marca
+  (`/productos?marca=…` con una sola marca) y tarjetas del inicio. Logos en `public/marcas/`; sin
+  archivo se muestra el nombre en texto (nunca un dibujo propio). Colores solo desde el archivo
+  oficial (Dahua `#E50214`); Hikvision e Imou en `null` hasta tener su SVG. Las marcas genéricas o
+  alternativas no se nombran nunca y sus productos van a Accesorios.
 - Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
   línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).
 - Las teselas institucionales se reutilizan sin cambiar su copy (`src/paginas/Institucionales.jsx`).

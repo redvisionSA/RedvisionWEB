@@ -6,7 +6,8 @@ import { TileFullColor } from '../components/Tecnologia.jsx'
 import { TileResenas } from '../components/Ubicacion.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { LINEAS } from '../tienda/lineas.js'
-import { sePuedeComprar } from '../tienda/piezas.jsx'
+import { LogoMarca, sePuedeComprar } from '../tienda/piezas.jsx'
+import { MARCAS_DISPOSITIVOS } from '../tienda/marcas.js'
 import Riel from '../tienda/Riel.jsx'
 import { IconoCamion, IconoEscudo, IconoFlecha, IconoLocal, IconoTecnico, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import EMPRESA from '../datos/empresa.js'
@@ -55,6 +56,95 @@ const INSTITUCIONAL = [
     cta: 'Conocer REDVISION',
   },
 ]
+
+/* Puerta a la tienda completa: la accion principal del inicio, imposible de
+   pasar por alto. Aparece apenas termina el hero y otra vez al final. */
+function BandaTienda({ compacta = false }) {
+  const { catalogo } = useTienda()
+  const total = catalogo.datos.productos.length
+  return (
+    <Link
+      to="/productos"
+      className={`group relative flex flex-col items-start justify-between gap-5 overflow-hidden rounded-[24px] bg-rv-red text-white shadow-[0_24px_60px_-28px_rgba(214,25,34,0.9)] transition-transform duration-300 ease-apple hover:-translate-y-0.5 sm:flex-row sm:items-center
+                  ${compacta ? 'px-6 py-6 sm:px-8' : 'px-6 py-7 sm:px-10 sm:py-9'}`}
+    >
+      <span className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-white/10" aria-hidden="true" />
+      <span className="relative">
+        <span className="block font-display text-[11px] font-semibold uppercase tracking-[0.24em] text-white/80">Tienda en línea</span>
+        <span className={`mt-1.5 block font-display font-bold leading-tight ${compacta ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl lg:text-4xl'}`}>
+          {compacta ? '¿Listo para comprar?' : 'Todos los productos, con precio y disponibilidad'}
+        </span>
+        <span className="mt-1.5 block text-sm text-white/85">
+          {total > 0 ? `${total} productos · ` : ''}Dahua, Hikvision, Imou y accesorios de las principales marcas
+        </span>
+      </span>
+      <span className="relative inline-flex min-h-[52px] w-full shrink-0 items-center justify-center gap-3 rounded-full bg-white px-7 font-display text-sm font-bold uppercase tracking-wide text-rv-red transition-colors group-hover:bg-black group-hover:text-white sm:w-auto">
+        Ver todos los productos
+        <IconoFlecha className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+      </span>
+    </Link>
+  )
+}
+
+/* Marcas de dispositivos con su logo y su color; los accesorios, aparte */
+function Marcas() {
+  const { catalogo } = useTienda()
+  const { marcas, productos } = catalogo.datos
+  const items = MARCAS_DISPOSITIVOS.map((id) => {
+    const enCatalogo = marcas.find((m) => m.identidad?.clave === id.clave)
+    const slug = enCatalogo?.slug || id.clave
+    const n = productos.filter((p) => p.marca?.identidad?.clave === id.clave).length
+    return { id, slug, n, marca: enCatalogo || { slug, nombre: id.nombre, identidad: id } }
+  })
+  return (
+    <section aria-labelledby="titulo-marcas">
+      <div className="mb-4 px-1">
+        <p className="rv-eyebrow mb-1.5">Marcas</p>
+        <h2 id="titulo-marcas" className="text-onglass font-display text-xl font-bold sm:text-2xl">
+          Las marcas líderes de la seguridad electrónica
+        </h2>
+      </div>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        {items.map(({ id, slug, n, marca }) => (
+          <li key={id.clave}>
+            <Link
+              to={`/productos?marca=${encodeURIComponent(slug)}`}
+              className="rv-solido rv-solido-hover group relative flex h-full flex-col overflow-hidden p-5"
+            >
+              <span className="absolute inset-x-0 top-0 h-1" style={{ background: id.color || '#0b0b0d' }} aria-hidden="true" />
+              <span className="flex h-12 items-center">
+                <LogoMarca marca={marca} alto={30} />
+              </span>
+              <span className="mt-3 text-sm leading-relaxed text-black/70 dark:text-white/70">{id.texto}</span>
+              <span className="mt-auto flex items-center justify-between pt-4 font-display text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
+                {n > 0 ? `Ver ${n} productos` : 'Ver productos'}
+                <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" style={id.color ? { color: id.color } : undefined} />
+              </span>
+              {id.oficial && (
+                <span className="absolute right-3 top-3 rounded-md bg-black px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white dark:bg-white dark:text-black">
+                  Distribuidor oficial
+                </span>
+              )}
+            </Link>
+          </li>
+        ))}
+        <li>
+          <Link to="/productos/accesorios" className="rv-solido rv-solido-hover group relative flex h-full flex-col overflow-hidden p-5">
+            <span className="absolute inset-x-0 top-0 h-1 bg-black dark:bg-white" aria-hidden="true" />
+            <span className="flex h-12 items-center font-display text-xl font-bold text-black dark:text-white">Accesorios</span>
+            <span className="mt-3 text-sm leading-relaxed text-black/70 dark:text-white/70">
+              Soportes, cajas, conectores, cableado, energía e instrumental de las principales marcas del mercado.
+            </span>
+            <span className="mt-auto flex items-center justify-between pt-4 font-display text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
+              Ver accesorios
+              <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
+          </Link>
+        </li>
+      </ul>
+    </section>
+  )
+}
 
 function Departamentos() {
   const { catalogo } = useTienda()
@@ -231,10 +321,12 @@ export default function Inicio({ onRobotListo }) {
       <Hero3D onRobotListo={onRobotListo} />
 
       <div className="mx-auto flex max-w-[1400px] flex-col gap-10 px-4 pb-10 sm:gap-12 sm:px-5">
+        <BandaTienda />
         <Departamentos />
         <SinCatalogo />
         <Riel eyebrow="Selección" titulo="Productos destacados" productos={destacados} verTodo="/productos" />
         {recientes.length > 0 && <Riel eyebrow="Para retomar" titulo="Vistos recientemente" productos={recientes} />}
+        <Marcas />
         <Beneficios />
         <Riel eyebrow="Videovigilancia" titulo="Cámaras y grabación" productos={videovigilancia} verTodo="/productos/cctv" />
         <BandaMayorista />
@@ -250,6 +342,7 @@ export default function Inicio({ onRobotListo }) {
 
         <Institucional />
         <TileResenas />
+        <BandaTienda compacta />
       </div>
     </>
   )

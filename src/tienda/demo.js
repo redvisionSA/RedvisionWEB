@@ -30,6 +30,7 @@ export default {
   updatedAt: new Date().toISOString(),
   brands: [
     { slug: 'dahua', name: 'Dahua Technology' },
+    { slug: 'hikvision', name: 'Hikvision' },
     { slug: 'imou', name: 'Imou' },
     { slug: 'tp-link', name: 'TP-Link' },
     { slug: 'generico', name: 'Genérico' },
@@ -82,5 +83,8 @@ export default {
     P(20, 'Cámara PTZ 4 MP zoom óptico 25x', 'dahua', 'camaras-ip', null, 'a_pedido', {
       description: 'Precio según proyecto: consulte disponibilidad y condiciones.',
     }),
+    P(21, 'Cámara IP turret 4 MP ColorVu lente 2,8 mm', 'hikvision', 'camaras-ip', 104900, 'disponible', { featured: true }),
+    P(22, 'Cámara IP domo 4 MP AcuSense con IR 30 m', 'hikvision', 'camaras-ip', 96400, 'ultimas'),
+    P(23, 'Grabador NVR 16 canales PoE 4K', 'hikvision', 'grabadores', 412000, 'a_pedido'),
   ],
 }

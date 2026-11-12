@@ -2,6 +2,7 @@ import { lineaDe } from './lineas.js'
 import { normalizarTexto, slugify } from './formato.js'
 import { extraerSpecs } from './specs.js'
 import { indexar } from './motor.js'
+import { esGenerica, identidadDe } from './marcas.js'
 
 /**
  * catalogo.js
@@ -56,7 +57,10 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     .filter((p) => p && p.id && p.name)
     .map((p) => {
       const categoria = categorias.get(p.category) || null
-      const marca = marcas.get(p.brand) || null
+      const marcaErp = marcas.get(p.brand) || null
+      /* Marca generica o alternativa: no se nombra y el producto va a Accesorios */
+      const generico = esGenerica(marcaErp)
+      const marca = generico ? null : marcaErp
       const textoCategoria = rutaCategoria(p.category)
       const disponibilidad = DISPONIBILIDAD[p.availability] ? p.availability : 'a_pedido'
       return {
@@ -65,9 +69,9 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         sku: p.sku || '',
         nombre: p.name,
         descripcion: p.description || '',
-        marca: marca ? { slug: marca.slug, nombre: marca.name } : null,
+        marca: marca ? { slug: marca.slug, nombre: marca.name, identidad: identidadDe(marca) } : null,
         categoria: categoria ? { slug: categoria.slug, nombre: categoria.name } : null,
-        linea: lineaDe(textoCategoria, p.name),
+        linea: generico ? 'accesorios' : lineaDe(textoCategoria, p.name),
         imagen: p.imageUrl || null,
         precio: aNumero(p.price),
         disponibilidad,
@@ -89,8 +93,8 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     productos,
     porId: new Map(productos.map((p) => [p.id, p])),
     porSlug: new Map(productos.map((p) => [p.slug, p])),
-    marcas: [...marcas.values()].map((m) => ({ slug: m.slug, nombre: m.name })),
-    nombresMarca: new Map([...marcas.values()].map((m) => [m.slug, m.name])),
+    marcas: [...marcas.values()].filter((m) => !esGenerica(m)).map((m) => ({ slug: m.slug, nombre: m.name, identidad: identidadDe(m) })),
+    nombresMarca: new Map([...marcas.values()].filter((m) => !esGenerica(m)).map((m) => [m.slug, m.name])),
     nombresCategoria: new Map([...categorias.values()].map((c) => [c.slug, c.name])),
     motor: indexar(productos),
     actualizado: crudo.updatedAt || null,

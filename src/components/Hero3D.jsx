@@ -137,7 +137,7 @@ export default function Hero3D({ onRobotListo }) {
   return (
     <section
       id="inicio"
-      className="relative overflow-hidden pb-6 pt-[150px] sm:pb-8 md:pt-[118px] lg:pt-[176px]"
+      className="relative overflow-hidden pb-6 pt-[150px] sm:pb-8 lg:pt-[176px]"
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-5">
         {/* Maquetado asimetrico en escritorio; apilado en telefono y tablet */}
@@ -164,7 +164,7 @@ export default function Hero3D({ onRobotListo }) {
               Precio final con IVA, envío a todo el país y asesoramiento técnico antes de comprar.
             </p>
 
-            <Buscador grande className="mt-7 hidden max-w-xl md:block" />
+            <Buscador grande className="mt-7 hidden max-w-xl lg:block" />
 
             <ul className="mt-3 flex max-w-xl flex-wrap gap-1.5">
               {LINEAS.map((l) => (
@@ -178,8 +178,11 @@ export default function Hero3D({ onRobotListo }) {
             </ul>
 
             <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">
-              <Link to="/productos" className="rv-btn-primary animate-rv-pulse-ring w-full sm:w-auto">
-                Ver productos
+              <Link to="/productos" className="rv-btn-primary animate-rv-pulse-ring min-h-[52px] w-full px-8 text-[15px] sm:w-auto">
+                Ver todos los productos
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-5 w-5" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
               </Link>
               <Link to="/contacto" className="rv-btn-glass w-full sm:w-auto">
                 Asesoramiento técnico

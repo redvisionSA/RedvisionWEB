@@ -157,7 +157,7 @@ export function ContactoPagina() {
     descripcion: 'Contacto, ubicación y horarios de REDVISION. Ventas, cuentas mayoristas, proyectos y capacitación.',
   })
   return (
-    <div className="pt-[136px] md:pt-[100px] lg:pt-[156px]">
+    <div className="pt-[136px] lg:pt-[156px]">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-5">
         <Migas items={[{ label: 'Inicio', to: '/' }, { label: 'Contacto' }]} />
       </div>

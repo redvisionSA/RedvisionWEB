@@ -242,6 +242,7 @@ export function calcularFacetas(productos, sel, ctx) {
       n,
       etiqueta: f.etiqueta ? f.etiqueta(valor, ctx) : valor,
       activa: elegidas.has(valor),
+      marca: f.id === 'marca' ? ctx.listaMarcas?.find((m) => m.slug === valor) : undefined,
     }))
     if (f.orden === 'numerico') opciones.sort((a, b) => (a.valor === 'varifocal') - (b.valor === 'varifocal') || Number(a.valor) - Number(b.valor))
     else if (Array.isArray(f.orden)) opciones.sort((a, b) => f.orden.indexOf(a.valor) - f.orden.indexOf(b.valor))

@@ -145,3 +145,34 @@ export function Migas({ items }) {
     </nav>
   )
 }
+
+/* ------------------------------------------------------- Logo de marca
+   Logo oficial si esta cargado en public/marcas/; si no, el nombre en texto
+   (con el color de la marca cuando se conoce). Nunca un dibujo propio. */
+export function LogoMarca({ marca, alto = 16, className = '', conChip = false }) {
+  if (!marca) return null
+  const id = marca.identidad
+  if (id?.logo) {
+    const img = (
+      <img
+        src={id.logo}
+        alt={marca.nombre}
+        height={alto}
+        width={Math.round(alto * id.proporcion)}
+        loading="lazy"
+        decoding="async"
+        className="block object-contain"
+        style={{ height: alto, width: 'auto' }}
+      />
+    )
+    return conChip ? <span className={`rv-chip-marca px-2 py-1 ${className}`}>{img}</span> : <span className={`inline-flex ${className}`}>{img}</span>
+  }
+  return (
+    <span
+      className={`font-display font-bold uppercase tracking-[0.08em] ${id?.color ? '' : 'text-black/70 dark:text-white/75'} ${className}`}
+      style={{ fontSize: Math.max(10, Math.round(alto * 0.72)), lineHeight: 1, ...(id?.color ? { color: id.color } : {}) }}
+    >
+      {id?.nombre || marca.nombre}
+    </span>
+  )
+}
