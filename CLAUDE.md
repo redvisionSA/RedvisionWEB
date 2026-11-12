@@ -86,6 +86,19 @@ siguientes.
   arma el correo a ventas (Resend, mismas variables que contacto + `CATALOGO_URL`,
   `PEDIDOS_EMAIL_DESTINO`) y devuelve el número `RV-W-AAMMDD-XXXXX`. Si falla, el carrito ofrece mandar
   el pedido por WhatsApp con el detalle.
+- **Búsqueda y filtros** (`src/tienda/motor.js`, `specs.js`): búsqueda tolerante (tildes, plural,
+  sinónimos del rubro como bala=bullet o 4mp=4 MP, errores de tipeo con "resultados para…"), ranking
+  código > nombre > marca/categoría > descripción; facetas disyuntivas con conteos (marca, tecnología,
+  resolución, tipo de equipo, canales, lente, alcance IR, instalación, capacidad, puertos, categoría),
+  precio con histograma y rango doble, solo con stock, chips activos, atajos, orden (relevancia,
+  precio, resolución, entrega inmediata, nombre), vista grilla/lista. Todo en la URL. Las specs salen
+  de `specs` del ERP y, si faltan, del texto del producto.
+- **Solidez en la tienda:** en `/productos`, `/producto`, `/carrito` y `/favoritos` el `<html>` lleva
+  `data-zona="tienda"` (velo del video casi opaco) y las superficies son `.rv-solido` / `.rv-sutil`
+  (blanco pleno, borde 1 px, sin `backdrop-filter`). Tarjetas de producto, departamentos y beneficios
+  del inicio también son sólidos. El vidrio queda para lo institucional (hero, barra, pestañas).
+- Sello **"Distribuidor oficial Dahua"** (`PreHeader` en `Navbar.jsx`, logo oficial
+  `public/dahua-logo.png` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
 - Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
   línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).
 - Las teselas institucionales se reutilizan sin cambiar su copy (`src/paginas/Institucionales.jsx`).

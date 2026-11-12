@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { buscar } from './catalogo.js'
+import { buscarRanking } from './motor.js'
 import { formatoPrecio } from './formato.js'
 import { IconoBuscar } from './Iconos.jsx'
 import { ImagenProducto } from './piezas.jsx'
@@ -24,10 +24,11 @@ export default function Buscador({ className = '', grande = false, atajo = false
   const cajaRef = useRef(null)
   const listaId = useId()
 
-  const resultados = useMemo(() => {
-    if (consulta.trim().length < 2) return []
-    return buscar(catalogo.datos.productos, consulta)
-  }, [catalogo.datos.productos, consulta])
+  const busqueda = useMemo(() => {
+    if (consulta.trim().length < 2) return { resultados: [], correccion: null }
+    return buscarRanking(catalogo.datos.motor, consulta)
+  }, [catalogo.datos.motor, consulta])
+  const resultados = busqueda.resultados.map((r) => r.p)
   const sugerencias = resultados.slice(0, 6)
 
   useEffect(() => {
@@ -124,8 +125,7 @@ export default function Buscador({ className = '', grande = false, atajo = false
         <div
           id={listaId}
           role="listbox"
-          className="glass-strong absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-3xl p-2"
-          data-vidrio="on"
+          className="rv-solido absolute inset-x-0 top-full z-50 mt-2 overflow-hidden p-2"
         >
           {sugerencias.length === 0 ? (
             <p className="rv-muted px-3 py-4 text-sm">
@@ -133,6 +133,11 @@ export default function Buscador({ className = '', grande = false, atajo = false
             </p>
           ) : (
             <>
+              {busqueda.correccion && (
+                <p className="px-3 pb-1 pt-2 text-xs text-black/60 dark:text-white/60">
+                  Resultados para «{busqueda.correccion}»
+                </p>
+              )}
               {sugerencias.map((p, i) => (
                 <button
                   key={p.id}

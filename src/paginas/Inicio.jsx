@@ -77,7 +77,7 @@ function Departamentos() {
       <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
         {LINEAS.map((l) => (
           <li key={l.id}>
-            <GlassPanel tilt={3} className="group h-full p-0">
+            <div className="rv-solido rv-solido-hover group h-full">
               <Link to={`/productos/${l.id}`} className="flex h-full flex-col p-4 sm:p-5">
                 <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-white transition-colors duration-300 group-hover:bg-rv-red dark:bg-white dark:text-black dark:group-hover:bg-rv-red dark:group-hover:text-white">
                   <l.Icono className="h-5 w-5" />
@@ -91,7 +91,7 @@ function Departamentos() {
                   <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-rv-red" />
                 </span>
               </Link>
-            </GlassPanel>
+            </div>
           </li>
         ))}
       </ul>
@@ -101,11 +101,11 @@ function Departamentos() {
 
 function Beneficios() {
   return (
-    <GlassPanel variant="thin" className="p-4 sm:p-6">
+    <div className="rv-solido p-4 sm:p-6">
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {BENEFICIOS.map(({ Icono, titulo, texto }) => (
           <li key={titulo} className="flex items-start gap-3">
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-black dark:text-white" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+            <span className="rv-sutil inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-black dark:text-white">
               <Icono className="h-5 w-5" />
             </span>
             <span>
@@ -115,7 +115,7 @@ function Beneficios() {
           </li>
         ))}
       </ul>
-    </GlassPanel>
+    </div>
   )
 }
 

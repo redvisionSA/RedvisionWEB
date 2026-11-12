@@ -98,7 +98,7 @@ export default function CarritoDrawer() {
               </ul>
 
               {sugeridos.length > 0 && (
-                <section className="mb-4 mt-2 rounded-3xl p-4" style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}>
+                <section className="rv-sutil mb-4 mt-2 rounded-2xl p-4">
                   <p className="rv-eyebrow mb-3">Complete la instalación</p>
                   <ul className="flex flex-col gap-2.5">
                     {sugeridos.map((p) => (

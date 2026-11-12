@@ -68,30 +68,40 @@ const CloseIcon = (p) => (
 
 /* ============================================================== PreHeader */
 /**
- * Pastilla institucional "Powered by Dahua".
+ * Sello "Distribuidor oficial Dahua".
  *
- * Se usa una sola version del logotipo: la oficial, con el wordmark negro.
- * Como ese negro desaparece sobre una superficie oscura, el logotipo viaja
- * dentro de un chip blanco (.rv-chip-marca) que lo mantiene identico en clear
- * mode y en dark mode, sin alterar los colores de la marca.
+ * Logotipo oficial de Dahua Technology (public/dahua-logo.png) sin alterar
+ * colores ni proporciones. Como el wordmark es negro y rojo, viaja siempre
+ * dentro de un chip blanco (.rv-chip-marca): se lee igual en clear y en dark.
+ *
+ *   variante 'chrome'  pastilla de vidrio de la barra
+ *   variante 'solido'  superficie blanca plena (tienda, fichas)
  */
-export function PreHeader({ className = '' }) {
+export function PreHeader({ className = '', variante = 'chrome', compacto = false }) {
   return (
     <div
-      className={`glass-chrome flex h-12 items-center gap-2.5 rounded-pill px-3.5 ${className}`}
+      className={`flex items-center gap-2.5 rounded-pill ${compacto ? 'h-10 px-2.5' : 'h-12 px-3.5'} ${
+        variante === 'solido' ? 'rv-solido !rounded-full' : 'glass-chrome'
+      } ${className}`}
       style={{ borderRadius: 999 }}
+      title="REDVISION es distribuidor oficial de Dahua Technology"
     >
-      <span className="h-1.5 w-1.5 shrink-0 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
-      <span className="whitespace-nowrap font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-black/75 dark:text-white/80">
-        Powered by
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-rv-red" aria-hidden="true">
+        <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6Z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+      <span className="whitespace-nowrap font-display text-[10px] font-bold uppercase leading-tight tracking-[0.16em] text-black/80 dark:text-white/85">
+        Distribuidor
+        <br />
+        oficial
       </span>
-      <span className="rv-chip-marca px-2.5 py-1.5">
+      <span className={`rv-chip-marca ${compacto ? 'px-2 py-1' : 'px-2.5 py-1.5'}`}>
         <img
           src="/dahua-logo.png"
           alt="Dahua Technology"
           width="294"
           height="88"
-          className="h-[26px] w-auto object-contain"
+          className={`${compacto ? 'h-[20px]' : 'h-[24px]'} w-auto object-contain`}
           loading="eager"
           decoding="async"
         />
@@ -400,10 +410,11 @@ export default function Navbar() {
                 ))}
               </ul>
 
-              <p className="rv-muted ml-auto hidden items-center gap-2 pr-3 text-[12px] xl:flex">
+              <p className="rv-muted ml-auto hidden items-center gap-2 pr-2 text-[12px] 2xl:flex">
                 <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
-                Envíos a todo el país · Retiro en el local · Asesoramiento técnico sin cargo
+                Envíos a todo el país · Asesoramiento técnico sin cargo
               </p>
+              <PreHeader compacto className="ml-auto shrink-0 2xl:ml-0" />
             </GlassPanel>
             <MenuProductos abierto={megaOpen && !scrolled} onCerrar={() => setMegaOpen(false)} />
           </div>
@@ -418,7 +429,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        <PreHeader className="pointer-events-auto hidden shrink-0 2xl:flex" />
       </div>
 
       {/* ---------------- Hoja movil ---------------- */}

@@ -39,7 +39,19 @@ CORS: `Access-Control-Allow-Origin` para `https://redvision.com.ar` y `https://w
       "imageUrl": "https://… (URL pública directa, o null)",
       "price": "98500.00",
       "availability": "disponible",
-      "featured": false
+      "featured": false,
+      "specs": {
+        "mp": 4,
+        "technologies": ["Full-Color", "WizSense", "PoE"],
+        "formFactor": "Bullet",
+        "channels": null,
+        "lensMm": 2.8,
+        "irRangeM": 30,
+        "environment": "exterior",
+        "storageTb": null,
+        "ports": null,
+        "poe": true
+      }
     }
   ]
 }
@@ -58,6 +70,26 @@ CORS: `Access-Control-Allow-Origin` para `https://redvision.com.ar` y `https://w
 | `price` | string decimal \| null | **Lista ECOMMERCE de REDVISION, en pesos, final con IVA**, convertida con la cotización del día que usa el ERP (BNA billete vendedor). `null` = "Consultar precio". Nunca `0`. |
 | `availability` | enum | `disponible` · `ultimas` (pocas unidades; umbral lo define el ERP) · `a_pedido` · `sin_stock`. **No se publica la cantidad exacta.** |
 | `featured` | bool | Opcional. Destacados del inicio. |
+| `specs` | object | **Opcional**, alimenta los filtros de la tienda. Cada clave puede faltar o ser `null`. Ver abajo. |
+
+### `specs` (filtros facetados)
+
+| Clave | Tipo | Ejemplo | Filtro en la tienda |
+|---|---|---|---|
+| `mp` | número | `4` | Resolución |
+| `technologies` | string[] | `["Full-Color","WizSense"]` | Tecnología. Nombres de la marca tal cual (Full-Color, WizSense, WizMind, Starlight, Smart Dual Light, TiOC, ColorVu, AcuSense, HDCVI, IP, Wi-Fi, PoE, ePoE, H.265+…). |
+| `formFactor` | string | `"Domo"` | Tipo de equipo (Domo, Bullet, PTZ, Turret / eyeball, Fisheye, NVR, XVR / DVR, Switch, Lector, Panel, Sensor, Fuente, UPS, Disco). |
+| `channels` | número | `8` | Canales (grabadores). |
+| `lensMm` | número | `2.8` | Lente. |
+| `irRangeM` | número | `30` | Alcance de visión nocturna (la web lo agrupa en tramos). |
+| `environment` | `"interior"` \| `"exterior"` | | Instalación. |
+| `storageTb` | número | `4` | Capacidad (discos). |
+| `ports` | número | `8` | Puertos (switches). |
+| `poe` | bool | `true` | Alimentación PoE. |
+
+Si el ERP no manda `specs` (o manda solo algunas claves), la web completa lo que falta leyendo el
+nombre y la descripción (`src/tienda/specs.js`): "4 MP", "Full-Color", "8 canales", "2,8 mm",
+"IR 30 m". Solo extrae lo escrito; nunca deduce. Lo que manda el ERP gana siempre.
 
 ### Qué NO viaja nunca
 

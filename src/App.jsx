@@ -29,6 +29,12 @@ const Footer = lazy(() => import('./components/Footer.jsx'))
    cambiar filtros (?q=, ?marca=) no mueve el scroll. */
 function AlCambiarDePagina() {
   const { pathname, hash } = useLocation()
+  /* Zona tienda: superficies solidas y video atenuado (ver index.css) */
+  useEffect(() => {
+    const tienda = /^\/(productos|producto|carrito|favoritos)(\/|$)/.test(pathname)
+    if (tienda) document.documentElement.dataset.zona = 'tienda'
+    else delete document.documentElement.dataset.zona
+  }, [pathname])
   useEffect(() => {
     if (hash) {
       document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' })

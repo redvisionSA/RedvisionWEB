@@ -169,7 +169,7 @@ export default function Footer() {
               />
             </span>
             <p className="rv-muted mt-4 text-xs leading-relaxed">
-              Powered by Dahua. Comercializamos además las principales marcas del mercado. Los
+              Distribuidor oficial de Dahua Technology. Comercializamos además las principales marcas del mercado. Los
               nombres y logotipos citados pertenecen a sus respectivos titulares.
             </p>
           </div>

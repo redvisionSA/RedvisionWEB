@@ -1,24 +1,26 @@
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import GlassPanel from '../components/GlassPanel.jsx'
 import { useTienda } from './TiendaContext.jsx'
 import { BotonFavorito, Disponibilidad, ImagenProducto, Precio, sePuedeComprar } from './piezas.jsx'
 import { IconoCarrito, IconoCheck, IconoWhatsapp } from './Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from './whatsapp.js'
+import { etiquetasClave } from './specs.js'
 
 /**
- * Tarjeta de producto.
+ * Tarjeta de producto, superficie solida (la tienda no usa vidrio en las
+ * tarjetas: se comparan precios y especificaciones, no se contempla).
  *
- * Jerarquia de lectura (escaneo en F): imagen, marca, nombre, disponibilidad,
- * precio y una sola accion. "Agregar" no saca al visitante de la lista: suma
- * al carrito y confirma en el mismo boton; el cajon lateral se abre solo con
- * el primer producto para que se entienda donde quedo.
+ * Jerarquia (escaneo en F): imagen, marca, nombre, especificaciones clave,
+ * disponibilidad, precio y una sola accion. `vista="lista"` la acuesta para
+ * comparar en fila, como en las tiendas de tecnologia.
  */
-function ProductoCard({ producto, className = '' }) {
+function ProductoCard({ producto, className = '', vista = 'grilla' }) {
   const { agregar, carrito } = useTienda()
   const [recien, setRecien] = useState(false)
   const comprable = sePuedeComprar(producto)
   const enCarrito = carrito.some((i) => i.id === producto.id)
+  const claves = etiquetasClave(producto.specs || { tecnologias: [] })
+  const lista = vista === 'lista'
 
   function onAgregar(e) {
     e.preventDefault()
@@ -27,60 +29,80 @@ function ProductoCard({ producto, className = '' }) {
     window.setTimeout(() => setRecien(false), 1400)
   }
 
-  return (
-    <GlassPanel variant="strong" className={`group flex h-full flex-col overflow-hidden p-0 ${className}`} style={{ borderRadius: 24 }}>
-      <Link to={`/producto/${producto.slug}`} className="flex flex-1 flex-col focus-visible:outline-none">
-        <div className="relative">
-          <ImagenProducto producto={producto} className="aspect-square w-full" />
-          {producto.disponibilidad === 'ultimas' && (
-            <span className="absolute left-3 top-3 rounded-pill bg-rv-red px-2.5 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-              Últimas unidades
-            </span>
-          )}
-          <BotonFavorito id={producto.id} className="absolute right-3 top-3" />
-        </div>
+  const boton = comprable ? (
+    <button
+      type="button"
+      onClick={onAgregar}
+      className={`flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-3 font-display text-xs font-semibold uppercase tracking-wide transition-colors duration-200 active:scale-[0.98]
+                  ${recien || enCarrito ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-rv-red text-white hover:bg-rv-red-press'}`}
+    >
+      {recien ? <IconoCheck className="h-4 w-4" /> : <IconoCarrito className="h-4 w-4" />}
+      {recien ? 'Agregado' : enCarrito ? 'Sumar otro' : 'Agregar'}
+    </button>
+  ) : (
+    <a
+      href={enlaceWhatsapp(mensajeProducto(producto))}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-black/15 px-3 font-display text-xs font-semibold uppercase tracking-wide text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:text-white"
+    >
+      <IconoWhatsapp className="h-4 w-4" />
+      Consultar ingreso
+    </a>
+  )
 
-        <div className="flex flex-1 flex-col gap-1.5 px-4 pb-2 pt-3.5">
-          {producto.marca && (
-            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-black/55 dark:text-white/60">
-              {producto.marca.nombre}
-            </p>
-          )}
-          <h3 className="text-onglass line-clamp-2 min-h-[2.5em] font-display text-sm font-semibold leading-tight group-hover:text-rv-red">
+  return (
+    <article
+      className={`rv-solido rv-solido-hover group relative flex h-full overflow-hidden ${lista ? 'flex-row' : 'flex-col'} ${className}`}
+    >
+      <Link
+        to={`/producto/${producto.slug}`}
+        className={`relative block shrink-0 ${lista ? 'w-32 sm:w-44' : 'w-full'}`}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        <ImagenProducto producto={producto} className={`${lista ? 'h-full min-h-[128px]' : 'aspect-square'} w-full`} />
+        {producto.disponibilidad === 'ultimas' && (
+          <span className="absolute left-2.5 top-2.5 rounded-md bg-rv-red px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.1em] text-white">
+            Últimas unidades
+          </span>
+        )}
+      </Link>
+      {!lista && <BotonFavorito id={producto.id} className="absolute right-2.5 top-2.5" />}
+
+      <div className={`flex min-w-0 flex-1 ${lista ? 'flex-col gap-3 p-4 sm:flex-row sm:items-center' : 'flex-col'}`}>
+        <Link to={`/producto/${producto.slug}`} className={`flex min-w-0 flex-1 flex-col gap-1.5 ${lista ? '' : 'px-3.5 pt-3 sm:px-4'}`}>
+          <p className="font-display text-[10px] font-semibold uppercase tracking-[0.16em] text-black/55 dark:text-white/55">
+            {producto.marca?.nombre || ' '}
+          </p>
+          <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-semibold leading-tight text-black group-hover:text-rv-red dark:text-white">
             {producto.nombre}
           </h3>
-          <Disponibilidad valor={producto.disponibilidad} />
-          <div className="mt-auto pt-2">
+          {claves.length > 0 && (
+            <ul className="flex flex-wrap gap-1" aria-label="Especificaciones clave">
+              {claves.map((c) => (
+                <li key={c} className="rv-sutil rounded-md px-1.5 py-0.5 text-[11px] font-medium text-black/75 dark:text-white/75">
+                  {c}
+                </li>
+              ))}
+            </ul>
+          )}
+          <Disponibilidad valor={producto.disponibilidad} className="mt-0.5" />
+          {producto.sku && lista && <p className="text-xs text-black/50 dark:text-white/50">Código {producto.sku}</p>}
+        </Link>
+
+        <div className={lista ? 'flex shrink-0 flex-col gap-2 sm:w-48 sm:items-end' : 'mt-auto px-3.5 pb-3.5 pt-2 sm:px-4 sm:pb-4'}>
+          <div className={lista ? 'sm:text-right' : 'mb-2.5'}>
             <Precio valor={producto.precio} />
-            {producto.precio !== null && <p className="rv-muted text-[11px]">Precio final, IVA incluido</p>}
+            {producto.precio !== null && <p className="text-[11px] text-black/55 dark:text-white/55">IVA incluido</p>}
+          </div>
+          <div className={lista ? 'flex w-full items-center gap-2' : ''}>
+            {boton}
+            {lista && <BotonFavorito id={producto.id} className="shrink-0 border border-black/10 dark:border-white/15" />}
           </div>
         </div>
-      </Link>
-
-      <div className="px-4 pb-4 pt-1">
-        {comprable ? (
-          <button
-            type="button"
-            onClick={onAgregar}
-            className={`flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-pill font-display text-xs font-semibold uppercase tracking-wide transition-all duration-200 ease-apple active:scale-[0.97]
-                        ${recien || enCarrito ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-rv-red text-white hover:bg-rv-red-press'}`}
-          >
-            {recien ? <IconoCheck className="h-4 w-4" /> : <IconoCarrito className="h-4 w-4" />}
-            {recien ? 'Agregado' : enCarrito ? 'Sumar otro' : 'Agregar al carrito'}
-          </button>
-        ) : (
-          <a
-            href={enlaceWhatsapp(mensajeProducto(producto))}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rv-btn-glass w-full px-3 text-xs"
-          >
-            <IconoWhatsapp className="h-4 w-4" />
-            Consultar ingreso
-          </a>
-        )}
       </div>
-    </GlassPanel>
+    </article>
   )
 }
 

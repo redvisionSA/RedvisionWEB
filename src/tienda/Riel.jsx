@@ -34,8 +34,7 @@ export default function Riel({ eyebrow, titulo, productos, verTodo, className = 
             type="button"
             onClick={() => mover(-1)}
             aria-label="Anteriores"
-            className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-pill text-black hover:text-rv-red dark:text-white md:inline-flex"
-            style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+            className="rv-solido hidden h-10 w-10 cursor-pointer items-center justify-center !rounded-full text-black hover:text-rv-red dark:text-white md:inline-flex"
           >
             <IconoFlecha className="h-4 w-4 rotate-180" />
           </button>
@@ -43,8 +42,7 @@ export default function Riel({ eyebrow, titulo, productos, verTodo, className = 
             type="button"
             onClick={() => mover(1)}
             aria-label="Siguientes"
-            className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-pill text-black hover:text-rv-red dark:text-white md:inline-flex"
-            style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+            className="rv-solido hidden h-10 w-10 cursor-pointer items-center justify-center !rounded-full text-black hover:text-rv-red dark:text-white md:inline-flex"
           >
             <IconoFlecha className="h-4 w-4" />
           </button>

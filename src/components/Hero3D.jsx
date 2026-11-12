@@ -8,6 +8,7 @@ import { LINEAS } from '../tienda/lineas.js'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { IconoEstrella } from '../tienda/Iconos.jsx'
 import { useResenas } from '../paginas/Pagina.jsx'
+import { PreHeader } from './Navbar.jsx'
 
 /* Pastillas de dato. En pantallas medianas y grandes flotan sobre el robot;
    en telefono pasan a una fila debajo del lienzo, donde no lo tapan. */
@@ -23,6 +24,7 @@ function PruebaSocial() {
   const { resumen } = useTienda()
   return (
     <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+      <PreHeader compacto />
       {resenas?.puntaje && (
         <a
           href={resenas.perfil}

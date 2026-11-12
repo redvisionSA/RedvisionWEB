@@ -8,8 +8,7 @@ import { IconoBasura, IconoMas, IconoMenos } from './Iconos.jsx'
 export function Cantidad({ valor, onCambiar, etiqueta = 'Cantidad', min = 1 }) {
   return (
     <div
-      className="inline-flex items-center rounded-pill"
-      style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+      className="rv-sutil inline-flex items-center rounded-pill"
     >
       <button
         type="button"

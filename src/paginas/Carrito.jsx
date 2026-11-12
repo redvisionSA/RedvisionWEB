@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import GlassPanel from '../components/GlassPanel.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import LineaCarrito from '../tienda/LineaCarrito.jsx'
 import { Migas } from '../tienda/piezas.jsx'
@@ -50,7 +49,7 @@ function Pasos({ actual }) {
             className={`num inline-flex h-7 w-7 items-center justify-center rounded-pill text-xs font-bold ${
               i < actual ? 'bg-black text-white dark:bg-white dark:text-black' : i === actual ? 'bg-rv-red text-white' : 'text-black/50 dark:text-white/50'
             }`}
-            style={i > actual ? { border: '1px solid var(--glass-border)' } : undefined}
+            style={i > actual ? { border: '1px solid rgba(127,127,127,0.35)' } : undefined}
             aria-current={i === actual ? 'step' : undefined}
           >
             {i < actual ? <IconoCheck className="h-3.5 w-3.5" /> : i + 1}
@@ -83,7 +82,7 @@ function Confirmacion({ pedido }) {
   return (
     <Pagina>
       <Pasos actual={2} />
-      <GlassPanel variant="strong" className="mx-auto max-w-2xl p-6 text-center sm:p-10">
+      <div className="rv-solido mx-auto max-w-2xl p-6 text-center sm:p-10">
         <span className="mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-pill bg-rv-red text-white">
           <IconoCheck className="h-7 w-7" />
         </span>
@@ -109,7 +108,7 @@ function Confirmacion({ pedido }) {
             Seguir comprando
           </Link>
         </div>
-      </GlassPanel>
+      </div>
     </Pagina>
   )
 }
@@ -197,17 +196,17 @@ export default function Carrito() {
       <Pasos actual={validas.length ? 1 : 0} />
 
       {lineas.length === 0 ? (
-        <GlassPanel className="mx-auto max-w-xl p-8 text-center">
+        <div className="rv-solido mx-auto max-w-xl p-8 text-center">
           <h1 className="text-onglass font-display text-2xl font-bold">Su carrito está vacío</h1>
           <p className="rv-muted mt-2 text-sm">Busque por producto, código o marca, o recorra las líneas del catálogo.</p>
           <Link to="/productos" className="rv-btn-primary mt-5">
             Ver productos
           </Link>
-        </GlassPanel>
+        </div>
       ) : (
         <form onSubmit={onSubmit} noValidate className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-6">
           <div className="flex flex-col gap-5">
-            <GlassPanel variant="strong" className="p-5 sm:p-6">
+            <div className="rv-solido p-5 sm:p-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-onglass font-display text-xl font-bold sm:text-2xl">Su pedido</h1>
                 <button type="button" onClick={vaciar} className="rv-link text-xs font-semibold uppercase tracking-wide">
@@ -223,9 +222,9 @@ export default function Carrito() {
                   ))}
                 </ul>
               )}
-            </GlassPanel>
+            </div>
 
-            <GlassPanel variant="strong" className="p-5 sm:p-6">
+            <div className="rv-solido p-5 sm:p-6">
               <h2 className="text-onglass mb-4 font-display text-lg font-bold">Sus datos</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Campo id="nombre" label="Nombre y apellido *" error={errores.nombre}>
@@ -269,11 +268,7 @@ export default function Carrito() {
                   ].map((op) => (
                     <label
                       key={op.id}
-                      className="flex cursor-pointer items-start gap-3 rounded-2xl p-4 transition-colors"
-                      style={{
-                        background: 'var(--glass-bg-thin)',
-                        border: `1px solid ${entrega === op.id ? '#D61922' : 'var(--glass-border)'}`,
-                      }}
+                      className={`rv-sutil flex cursor-pointer items-start gap-3 rounded-xl p-4 transition-colors ${entrega === op.id ? '!border-rv-red ring-1 ring-rv-red' : ''}`}
                     >
                       <input
                         type="radio"
@@ -327,11 +322,11 @@ export default function Carrito() {
                 <label htmlFor="_hp">No completar</label>
                 <input id="_hp" name="_hp" tabIndex={-1} autoComplete="off" />
               </div>
-            </GlassPanel>
+            </div>
           </div>
 
           <div className="lg:sticky lg:top-[150px] lg:self-start">
-            <GlassPanel variant="strong" className="p-5 sm:p-6">
+            <div className="rv-solido p-5 sm:p-6">
               <h2 className="text-onglass font-display text-lg font-bold">Resumen</h2>
               <dl className="mt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -370,7 +365,7 @@ export default function Carrito() {
                 <IconoEscudo className="mt-0.5 h-4 w-4 shrink-0" />
                 No se cobra nada ahora. Un asesor confirma stock, precio y envío y le envía los datos de pago.
               </p>
-            </GlassPanel>
+            </div>
           </div>
         </form>
       )}

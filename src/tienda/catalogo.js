@@ -1,5 +1,7 @@
 import { lineaDe } from './lineas.js'
 import { normalizarTexto, slugify } from './formato.js'
+import { extraerSpecs } from './specs.js'
+import { indexar } from './motor.js'
 
 /**
  * catalogo.js
@@ -70,6 +72,7 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         precio: aNumero(p.price),
         disponibilidad,
         destacado: Boolean(p.featured),
+        specs: extraerSpecs(p),
         busqueda: normalizarTexto(
           [p.name, p.sku, marca?.name, categoria?.name, textoCategoria, p.description].filter(Boolean).join(' ')
         ),
@@ -87,6 +90,9 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     porId: new Map(productos.map((p) => [p.id, p])),
     porSlug: new Map(productos.map((p) => [p.slug, p])),
     marcas: [...marcas.values()].map((m) => ({ slug: m.slug, nombre: m.name })),
+    nombresMarca: new Map([...marcas.values()].map((m) => [m.slug, m.name])),
+    nombresCategoria: new Map([...categorias.values()].map((c) => [c.slug, c.name])),
+    motor: indexar(productos),
     actualizado: crudo.updatedAt || null,
     demo,
   }
@@ -105,38 +111,4 @@ export async function cargarCatalogo({ signal } = {}) {
   }
 
   return { estado: 'sin-fuente', datos: normalizarCatalogo({}) }
-}
-
-/* ------------------------------------------------------------- busqueda */
-export function buscar(productos, consulta) {
-  const terminos = normalizarTexto(consulta).split(/\s+/).filter(Boolean)
-  if (!terminos.length) return productos
-  return productos.filter((p) => terminos.every((t) => p.busqueda.includes(t)))
-}
-
-export const ORDENES = [
-  { id: 'relevancia', etiqueta: 'Más relevantes' },
-  { id: 'precio-asc', etiqueta: 'Menor precio' },
-  { id: 'precio-desc', etiqueta: 'Mayor precio' },
-  { id: 'nombre', etiqueta: 'Nombre (A-Z)' },
-]
-
-export function ordenar(productos, orden) {
-  const lista = [...productos]
-  const sinPrecioAlFinal = (a, b, f) => {
-    if (a.precio === null && b.precio === null) return 0
-    if (a.precio === null) return 1
-    if (b.precio === null) return -1
-    return f(a.precio, b.precio)
-  }
-  switch (orden) {
-    case 'precio-asc':
-      return lista.sort((a, b) => sinPrecioAlFinal(a, b, (x, y) => x - y))
-    case 'precio-desc':
-      return lista.sort((a, b) => sinPrecioAlFinal(a, b, (x, y) => y - x))
-    case 'nombre':
-      return lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-    default:
-      return lista
-  }
 }

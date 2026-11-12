@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import GlassPanel from '../components/GlassPanel.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { COMPLEMENTOS, lineaPorId } from '../tienda/lineas.js'
 import { BotonFavorito, Disponibilidad, ImagenProducto, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
@@ -9,6 +8,8 @@ import Riel from '../tienda/Riel.jsx'
 import { IconoCamion, IconoCarrito, IconoCheck, IconoEscudo, IconoLocal, IconoTecnico, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from '../tienda/whatsapp.js'
 import { formatoPrecio } from '../tienda/formato.js'
+import { PreHeader } from '../components/Navbar.jsx'
+import { etiquetaMp } from '../tienda/specs.js'
 import Pagina, { usePagina } from './Pagina.jsx'
 
 const RESPALDO = [
@@ -54,6 +55,38 @@ function useEsquemaProducto(producto) {
     document.head.appendChild(nodo)
     return () => nodo.remove()
   }, [producto])
+}
+
+/* Ficha tecnica: solo lo que el ERP o el texto del producto dicen */
+function TablaSpecs({ specs }) {
+  if (!specs) return null
+  const fmt = (n) => String(n).replace('.', ',')
+  const filas = [
+    ['Tipo de equipo', specs.forma],
+    ['Resolución', specs.mp && etiquetaMp(specs.mp)],
+    ['Tecnologías', specs.tecnologias?.length ? specs.tecnologias.join(' · ') : null],
+    ['Lente', specs.varifocal ? 'Varifocal / motorizada' : specs.lente && `${fmt(specs.lente)} mm`],
+    ['Alcance de visión nocturna', specs.ir && `${specs.ir} m`],
+    ['Canales', specs.canales],
+    ['Capacidad', specs.tb && `${fmt(specs.tb)} TB`],
+    ['Puertos', specs.puertos],
+    ['Alimentación PoE', specs.poe ? 'Sí' : null],
+    ['Instalación', specs.uso],
+  ].filter(([, v]) => v)
+  if (!filas.length) return null
+  return (
+    <div className="rv-solido p-5 sm:p-7">
+      <h2 className="rv-eyebrow mb-3">Especificaciones</h2>
+      <dl className="divide-y divide-black/[0.07] text-sm dark:divide-white/10">
+        {filas.map(([k, v]) => (
+          <div key={k} className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-3 py-2.5">
+            <dt className="text-black/60 dark:text-white/60">{k}</dt>
+            <dd className="font-semibold text-black dark:text-white">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
 }
 
 export default function Producto() {
@@ -102,8 +135,8 @@ export default function Producto() {
     return (
       <Pagina>
         <div className="grid gap-6 lg:grid-cols-2" aria-busy="true">
-          <div className="aspect-square animate-pulse rounded-glass" style={{ background: 'var(--glass-bg-thin)' }} />
-          <div className="h-80 animate-pulse rounded-glass" style={{ background: 'var(--glass-bg-thin)' }} />
+          <div className="rv-solido aspect-square animate-pulse" />
+          <div className="rv-solido h-80 animate-pulse" />
         </div>
       </Pagina>
     )
@@ -112,7 +145,7 @@ export default function Producto() {
   if (!producto) {
     return (
       <Pagina>
-        <GlassPanel className="mx-auto max-w-xl p-8 text-center">
+        <div className="rv-solido mx-auto max-w-xl p-8 text-center">
           <h1 className="text-onglass font-display text-2xl font-bold">Este producto ya no está publicado</h1>
           <p className="rv-muted mt-2 text-sm">Puede que haya cambiado de código o que se haya discontinuado. Lo ayudamos a encontrar un equivalente.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -124,7 +157,7 @@ export default function Producto() {
               Consultar
             </a>
           </div>
-        </GlassPanel>
+        </div>
       </Pagina>
     )
   }
@@ -172,14 +205,14 @@ export default function Producto() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
         <div className="lg:sticky lg:top-[150px] lg:self-start">
-          <GlassPanel variant="strong" className="group relative overflow-hidden p-0">
+          <div className="rv-solido group relative overflow-hidden">
             <ImagenProducto producto={producto} tamano="lg" className="aspect-square w-full" />
             <BotonFavorito id={producto.id} className="absolute right-4 top-4" />
-          </GlassPanel>
+          </div>
         </div>
 
         <div className="flex flex-col gap-5">
-          <GlassPanel variant="strong" className="p-5 sm:p-7">
+          <div className="rv-solido p-5 sm:p-7">
             {producto.marca && (
               <p className="font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-black/60 dark:text-white/65">
                 {producto.marca.nombre}
@@ -190,6 +223,7 @@ export default function Producto() {
               {producto.sku && <span className="rv-muted text-xs">Código {producto.sku}</span>}
               <Disponibilidad valor={producto.disponibilidad} />
             </div>
+            {producto.marca?.slug?.includes('dahua') && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
 
             <div className="mt-5 border-t rv-hairline pt-5">
               <Precio valor={producto.precio} grande />
@@ -223,9 +257,9 @@ export default function Producto() {
               <IconoWhatsapp className="h-4 w-4" />
               ¿Dudas? Consulte a un técnico por WhatsApp
             </a>
-          </GlassPanel>
+          </div>
 
-          <GlassPanel variant="thin" className="p-5">
+          <div className="rv-solido p-5">
             <ul className="grid gap-3 sm:grid-cols-2">
               {RESPALDO.map(({ Icono, texto }) => (
                 <li key={texto} className="flex items-center gap-3 text-sm text-black/85 dark:text-white/85">
@@ -234,13 +268,15 @@ export default function Producto() {
                 </li>
               ))}
             </ul>
-          </GlassPanel>
+          </div>
+
+          <TablaSpecs specs={producto.specs} />
 
           {producto.descripcion && (
-            <GlassPanel className="p-5 sm:p-7">
+            <div className="rv-solido p-5 sm:p-7">
               <h2 className="rv-eyebrow mb-3">Descripción</h2>
               <p className="text-onglass whitespace-pre-line text-sm leading-relaxed sm:text-base">{producto.descripcion}</p>
-            </GlassPanel>
+            </div>
           )}
         </div>
       </div>
