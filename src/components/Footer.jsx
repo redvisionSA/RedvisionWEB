@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
 import EMPRESA from '../datos/empresa.js'
@@ -6,19 +7,22 @@ const COLUMNAS = [
   {
     titulo: 'Catálogo',
     enlaces: [
-      { href: '#catalogo', label: 'Videovigilancia' },
-      { href: '#catalogo', label: 'Control de accesos' },
-      { href: '#catalogo', label: 'Detección de intrusión' },
-      { href: '#catalogo', label: 'Redes y energía' },
+      { href: '/productos/cctv', label: 'Videovigilancia' },
+      { href: '/productos/accesos', label: 'Control de accesos' },
+      { href: '/productos/alarmas', label: 'Detección de intrusión' },
+      { href: '/productos/redes', label: 'Redes y conectividad' },
+      { href: '/productos/energia', label: 'Energía y respaldo' },
+      { href: '/productos', label: 'Todos los productos' },
     ],
   },
   {
     titulo: 'Compañía',
     enlaces: [
-      { href: '#proyectos', label: 'Departamento de proyectos' },
-      { href: '#proyectos', label: 'La empresa' },
-      { href: '#capacitaciones', label: 'Capacitaciones' },
-      { href: '#contacto', label: 'Contacto' },
+      { href: '/empresa', label: 'La empresa' },
+      { href: '/proyectos', label: 'Departamento de proyectos' },
+      { href: '/tecnologia', label: 'Tecnología' },
+      { href: '/capacitaciones', label: 'Capacitaciones' },
+      { href: '/contacto', label: 'Contacto' },
     ],
   },
 ]
@@ -117,9 +121,9 @@ export default function Footer() {
               <ul className="mt-5 space-y-3">
                 {columna.enlaces.map((enlace) => (
                   <li key={enlace.label}>
-                    <a href={enlace.href} className="rv-link text-sm">
+                    <Link to={enlace.href} className="rv-link text-sm">
                       {enlace.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

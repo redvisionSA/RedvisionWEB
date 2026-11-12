@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import GlassPanel from './GlassPanel.jsx'
 
 /**
@@ -116,9 +117,9 @@ export default function TileProyectos({ className = '' }) {
             operaciones multisitio. El mismo equipo que releva es el que ejecuta y el que responde
             después de la entrega.
           </p>
-          <a href="#contacto" className="rv-btn-primary mt-6">
+          <Link to="/contacto?tipo=proyecto" className="rv-btn-primary mt-6">
             Solicitar relevamiento
-          </a>
+          </Link>
         </header>
 
         <ol className="grid gap-3 sm:grid-cols-2 lg:col-span-7 lg:grid-cols-3">
@@ -276,9 +277,9 @@ export function TileCapacitaciones({ className = '' }) {
       </ul>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
-        <a href="#contacto" className="rv-btn-primary">
+        <Link to="/contacto?tipo=capacitacion" className="rv-btn-primary">
           Inscribirse
-        </a>
+        </Link>
         <p className="rv-muted text-xs">Cupos limitados. Fecha y temario se informan por correo.</p>
       </div>
     </GlassPanel>

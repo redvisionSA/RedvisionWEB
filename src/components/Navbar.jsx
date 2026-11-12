@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
+import Buscador from '../tienda/Buscador.jsx'
+import { useTienda } from '../tienda/TiendaContext.jsx'
+import { LINEAS } from '../tienda/lineas.js'
+import { IconoCarrito, IconoCorazon, IconoWhatsapp } from '../tienda/Iconos.jsx'
+import EMPRESA from '../datos/empresa.js'
 
-const NAV_LINKS = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'catalogo', label: 'Catálogo' },
-  { id: 'proyectos', label: 'Proyectos' },
-  { id: 'capacitaciones', label: 'Capacitaciones' },
-  { id: 'contacto', label: 'Contacto' },
+/* Pestañas institucionales: cada una es una pagina propia. La tienda es el
+   centro del sitio; lo institucional queda a un clic y tambien resumido en
+   el inicio. */
+const SECCIONES = [
+  { to: '/empresa', label: 'Empresa' },
+  { to: '/proyectos', label: 'Proyectos' },
+  { to: '/tecnologia', label: 'Tecnología' },
+  { to: '/capacitaciones', label: 'Capacitación' },
+  { to: '/contacto', label: 'Contacto' },
 ]
+
 
 const RADIO_IMAN = 110 // px: alcance de la magnificacion tipo dock
 
@@ -150,16 +160,107 @@ export function LensSwitch({ className = '' }) {
   )
 }
 
+
+/* ============================================================ Carrito */
+function BotonCarrito() {
+  const { resumen, setCarritoAbierto, ultimoAgregado } = useTienda()
+  const [latido, setLatido] = useState(false)
+
+  /* Pulso breve en cada agregado: confirma la accion donde el ojo la busca */
+  useEffect(() => {
+    if (!ultimoAgregado) return undefined
+    setLatido(true)
+    const id = window.setTimeout(() => setLatido(false), 650)
+    return () => window.clearTimeout(id)
+  }, [ultimoAgregado])
+
+  return (
+    <button
+      type="button"
+      onClick={() => setCarritoAbierto(true)}
+      aria-label={`Abrir carrito (${resumen.unidades} ${resumen.unidades === 1 ? 'unidad' : 'unidades'})`}
+      className={`relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-pill text-white
+                  transition-transform duration-300 ease-apple active:scale-90 ${latido ? 'scale-110' : ''}`}
+      style={{ background: '#D61922', boxShadow: '0 8px 22px -10px rgba(214,25,34,0.9)' }}
+    >
+      <IconoCarrito className="h-5 w-5" />
+      {resumen.unidades > 0 && (
+        <span className="num absolute -right-1 -top-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-pill bg-black px-1 text-[11px] font-bold text-white ring-2 ring-white dark:bg-white dark:text-black dark:ring-black">
+          {resumen.unidades > 99 ? '99+' : resumen.unidades}
+        </span>
+      )}
+    </button>
+  )
+}
+
+function BotonFavoritos({ className = '' }) {
+  const { favoritos } = useTienda()
+  return (
+    <Link
+      to="/favoritos"
+      aria-label={`Favoritos (${favoritos.length})`}
+      title="Favoritos"
+      className={`relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-pill text-black transition-all duration-300 ease-apple hover:text-rv-red active:scale-90 dark:text-white ${className}`}
+      style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+    >
+      <IconoCorazon className="h-5 w-5" lleno={favoritos.length > 0} />
+    </Link>
+  )
+}
+
+/* ========================================================= Mega menu */
+function MenuProductos({ abierto, onCerrar }) {
+  if (!abierto) return null
+  return (
+    <GlassPanel
+      variant="chrome"
+      className="pointer-events-auto absolute left-0 right-0 top-full mt-2 rounded-glass p-4"
+      onMouseLeave={onCerrar}
+    >
+      <ul className="grid grid-cols-3 gap-2">
+        {LINEAS.map((l) => (
+          <li key={l.id}>
+            <Link
+              to={`/productos/${l.id}`}
+              onClick={onCerrar}
+              className="group flex items-start gap-3 rounded-2xl p-3 transition-colors hover:bg-black/[0.05] dark:hover:bg-white/10"
+            >
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-black text-white transition-colors group-hover:bg-rv-red dark:bg-white dark:text-black dark:group-hover:bg-rv-red dark:group-hover:text-white">
+                <l.Icono className="h-5 w-5" />
+              </span>
+              <span>
+                <span className="block font-display text-sm font-semibold text-black group-hover:text-rv-red dark:text-white">{l.titulo}</span>
+                <span className="rv-muted block text-xs leading-snug">{l.resumen}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 flex items-center justify-between border-t rv-hairline px-2 pt-3">
+        <p className="rv-muted text-xs">¿Es instalador o empresa? Consulte por la lista mayorista.</p>
+        <Link to="/productos" onClick={onCerrar} className="rv-btn-primary px-5 py-2 text-xs">
+          Ver todos los productos
+        </Link>
+      </div>
+    </GlassPanel>
+  )
+}
+
 /* ================================================================== Navbar */
+const claseEnlace = ({ isActive }) =>
+  `relative block cursor-pointer rounded-pill px-3.5 py-1.5 font-display text-[13px] font-medium
+   transition-[color,background-color,transform] duration-200 ease-apple
+   ${isActive ? 'bg-rv-red text-white shadow-[0_8px_22px_-10px_rgba(214,25,34,0.9)]' : 'text-black/75 hover:text-rv-red dark:text-white/75 dark:hover:text-rv-red'}`
+
 export default function Navbar() {
   const { canHover, isDark } = useSite()
+  const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
-  const [activo, setActivo] = useState('inicio')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [megaOpen, setMegaOpen] = useState(false)
   const [progreso, setProgreso] = useState(0)
   const itemsRef = useRef([])
 
-  /* Scroll: estado compacto + barra de progreso de lectura */
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY
@@ -172,21 +273,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* Seccion activa */
   useEffect(() => {
-    const secciones = NAV_LINKS.map((l) => document.getElementById(l.id)).filter(Boolean)
-    if (!secciones.length) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible) setActivo(visible.target.id)
-      },
-      { rootMargin: '-45% 0px -45% 0px', threshold: [0, 0.25, 0.5, 1] }
-    )
-    secciones.forEach((s) => observer.observe(s))
-    return () => observer.disconnect()
-  }, [])
+    setMenuOpen(false)
+    setMegaOpen(false)
+  }, [location.pathname, location.search])
 
   /* Magnificacion tipo dock de macOS */
   const onDockMove = useCallback(
@@ -198,7 +288,7 @@ export default function Navbar() {
         const centro = rect.left + rect.width / 2
         const distancia = Math.abs(event.clientX - centro)
         const fuerza = Math.max(0, 1 - distancia / RADIO_IMAN)
-        node.style.transform = `scale(${(1 + fuerza * 0.22).toFixed(3)}) translateY(${(-fuerza * 3).toFixed(2)}px)`
+        node.style.transform = `scale(${(1 + fuerza * 0.16).toFixed(3)}) translateY(${(-fuerza * 2).toFixed(2)}px)`
       })
     },
     [canHover]
@@ -211,14 +301,20 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && setMenuOpen(false)
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        setMegaOpen(false)
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const enTienda = location.pathname.startsWith('/producto')
+
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
-      {/* Barra de progreso de lectura */}
       <div className="h-[3px] w-full bg-transparent">
         <div
           className="h-full origin-left bg-rv-red transition-transform duration-150 ease-linear"
@@ -228,114 +324,146 @@ export default function Navbar() {
       </div>
 
       <div className="pt-safe mx-auto flex max-w-[1400px] items-start gap-3 px-3 sm:px-5">
-        {/* ---------------- Capsula principal ---------------- */}
-        <GlassPanel
-          as="nav"
-          aria-label="Navegación principal"
-          variant="chrome"
-          className={`pointer-events-auto flex flex-1 items-center gap-3 rounded-pill transition-all duration-400 ease-apple
-                      ${scrolled ? 'px-2.5 py-2 sm:px-4' : 'px-3 py-2.5 sm:px-5 sm:py-3'}`}
-          style={{ borderRadius: 999 }}
-        >
-          {/* Logotipo institucional: protagonista */}
-          <a
-            href="#inicio"
-            aria-label="REDVISION - Inicio"
-            className="group flex min-w-0 shrink cursor-pointer items-center pl-1 pr-1 sm:pr-2"
+        <div className="relative flex min-w-0 flex-1 flex-col gap-2">
+          {/* ---------------- Capsula principal ---------------- */}
+          <GlassPanel
+            as="nav"
+            aria-label="Navegación principal"
+            variant="chrome"
+            className={`pointer-events-auto flex items-center gap-2 rounded-pill transition-all duration-400 ease-apple sm:gap-3
+                        ${scrolled ? 'px-2.5 py-2 sm:px-4' : 'px-3 py-2.5 sm:px-5 sm:py-3'}`}
+            style={{ borderRadius: 999 }}
           >
-            <img
-              src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
-              alt="REDVISION - Tecnología sin límites"
-              width="300"
-              height="62"
-              className={`w-auto max-w-full object-contain transition-all duration-400 ease-apple group-hover:scale-[1.04]
-                          ${scrolled ? 'h-7 xs:h-8 sm:h-10' : 'h-8 xs:h-10 sm:h-14'}`}
-              loading="eager"
-              decoding="async"
-            />
-          </a>
+            <Link to="/" aria-label="REDVISION - Inicio" className="group flex min-w-0 shrink-0 cursor-pointer items-center pl-1 pr-1 sm:pr-2">
+              <img
+                src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
+                alt="REDVISION - Tecnología sin límites"
+                width="300"
+                height="62"
+                className={`w-auto max-w-[108px] object-contain xs:max-w-[150px] transition-all duration-400 ease-apple group-hover:scale-[1.04] sm:max-w-none
+                            ${scrolled ? 'h-7 sm:h-9' : 'h-8 sm:h-11 lg:h-12'}`}
+                loading="eager"
+                decoding="async"
+              />
+            </Link>
 
-          {/* Dock de enlaces */}
-          <ul
-            className="mx-auto hidden items-center gap-1 lg:flex"
-            onPointerMove={onDockMove}
-            onPointerLeave={onDockLeave}
+            <Buscador atajo className="mx-auto hidden w-full max-w-xl md:block" />
+
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 md:ml-0">
+              <LensSwitch className="hidden xl:inline-flex" />
+              <ThemeSwitch />
+              <BotonFavoritos className="hidden sm:inline-flex" />
+              <BotonCarrito />
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-expanded={menuOpen}
+                aria-controls="rv-sheet"
+                aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black
+                           transition-all duration-300 ease-apple hover:text-rv-red active:scale-90 dark:text-white lg:hidden"
+                style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+              >
+                {menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+              </button>
+            </div>
+          </GlassPanel>
+
+          {/* ---------------- Segunda fila: departamentos e institucional (escritorio) ---------------- */}
+          <div
+            className={`pointer-events-auto relative hidden transition-all duration-400 ease-apple lg:block ${
+              scrolled ? 'pointer-events-none -translate-y-2 opacity-0' : 'opacity-100'
+            }`}
+            aria-hidden={scrolled}
           >
-            {NAV_LINKS.map((link, i) => {
-              const esActivo = activo === link.id
-              return (
-                <li key={link.id}>
-                  <a
-                    ref={(node) => (itemsRef.current[i] = node)}
-                    href={`#${link.id}`}
-                    aria-current={esActivo ? 'true' : undefined}
-                    className={`relative block cursor-pointer rounded-pill px-4 py-2 font-display text-sm font-medium
-                                transition-[color,background-color,transform] duration-200 ease-apple
-                                ${esActivo ? 'text-white' : 'text-black/75 hover:text-rv-red dark:text-white/75 dark:hover:text-rv-red'}`}
-                    style={esActivo ? { background: '#D61922', boxShadow: '0 8px 22px -10px rgba(214,25,34,0.9)' } : undefined}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              )
-            })}
-          </ul>
+            <GlassPanel variant="chrome" className="flex items-center gap-2 rounded-pill px-2 py-1.5" style={{ borderRadius: 999 }}>
+              <button
+                type="button"
+                onClick={() => setMegaOpen((v) => !v)}
+                onMouseEnter={() => canHover && setMegaOpen(true)}
+                aria-expanded={megaOpen}
+                tabIndex={scrolled ? -1 : 0}
+                className={`inline-flex cursor-pointer items-center gap-2 rounded-pill px-4 py-1.5 font-display text-[13px] font-semibold transition-colors
+                            ${megaOpen || enTienda ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-black hover:text-rv-red dark:text-white'}`}
+              >
+                <MenuIcon className="h-4 w-4" />
+                Productos
+              </button>
 
-          {/* Acciones */}
-          <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
-            <LensSwitch />
-            <ThemeSwitch />
+              <ul className="flex items-center gap-0.5" onPointerMove={onDockMove} onPointerLeave={onDockLeave}>
+                {SECCIONES.map((s, i) => (
+                  <li key={s.to}>
+                    <NavLink ref={(node) => (itemsRef.current[i] = node)} to={s.to} className={claseEnlace} tabIndex={scrolled ? -1 : 0}>
+                      {s.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
 
-            <a href="#contacto" className="rv-btn-primary hidden px-5 py-2.5 text-xs xl:inline-flex">
-              Cotizar
-            </a>
-
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-expanded={menuOpen}
-              aria-controls="rv-sheet"
-              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black
-                         transition-all duration-300 ease-apple hover:text-rv-red active:scale-90 dark:text-white lg:hidden"
-              style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-            >
-              {menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-            </button>
+              <p className="rv-muted ml-auto hidden items-center gap-2 pr-3 text-[12px] xl:flex">
+                <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
+                Envíos a todo el país · Retiro en el local · Asesoramiento técnico sin cargo
+              </p>
+            </GlassPanel>
+            <MenuProductos abierto={megaOpen && !scrolled} onCerrar={() => setMegaOpen(false)} />
           </div>
-        </GlassPanel>
 
-        {/* ---------------- Pastilla Dahua ---------------- */}
-        <PreHeader className="pointer-events-auto hidden shrink-0 md:flex" />
+          {/* ---------------- Buscador en telefono ---------------- */}
+          <div
+            className={`pointer-events-auto transition-all duration-400 ease-apple md:hidden ${
+              scrolled ? 'pointer-events-none -translate-y-2 opacity-0' : 'opacity-100'
+            }`}
+          >
+            <Buscador />
+          </div>
+        </div>
+
+        <PreHeader className="pointer-events-auto hidden shrink-0 2xl:flex" />
       </div>
 
       {/* ---------------- Hoja movil ---------------- */}
-      <div
-        id="rv-sheet"
-        hidden={!menuOpen}
-        className="pointer-events-auto mx-3 mt-3 sm:mx-5 lg:hidden"
-      >
-        <GlassPanel variant="chrome" className="rounded-glass-lg p-4">
-          <PreHeader className="mb-4 w-full justify-center md:hidden" />
-          <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
-              <li key={link.id}>
-                <a
-                  href={`#${link.id}`}
-                  onClick={() => setMenuOpen(false)}
-                  className={`flex min-h-[52px] cursor-pointer items-center rounded-2xl px-4 font-display text-base font-medium
-                              transition-colors duration-200
-                              ${activo === link.id ? 'text-white' : 'text-black hover:text-rv-red dark:text-white dark:hover:text-rv-red'}`}
-                  style={activo === link.id ? { background: '#D61922' } : undefined}
+      <div id="rv-sheet" hidden={!menuOpen} className="pointer-events-auto mx-3 mt-2 sm:mx-5 lg:hidden">
+        <GlassPanel variant="chrome" className="max-h-[calc(100svh-120px)] overflow-y-auto rounded-glass-lg p-4">
+          <p className="rv-eyebrow mb-2 px-2">Productos</p>
+          <ul className="grid grid-cols-2 gap-1.5">
+            {LINEAS.map((l) => (
+              <li key={l.id}>
+                <Link
+                  to={`/productos/${l.id}`}
+                  className="flex min-h-[52px] items-center gap-2.5 rounded-2xl px-3 font-display text-sm font-medium text-black hover:text-rv-red dark:text-white"
+                  style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
                 >
-                  {link.label}
-                </a>
+                  <l.Icono className="h-5 w-5 shrink-0" />
+                  <span className="leading-tight">{l.titulo}</span>
+                </Link>
               </li>
             ))}
           </ul>
-          <a href="#contacto" onClick={() => setMenuOpen(false)} className="rv-btn-primary mt-4 w-full">
-            Pedir cotización
+          <Link to="/productos" className="rv-btn-primary mt-3 w-full">
+            Ver todos los productos
+          </Link>
+
+          <p className="rv-eyebrow mb-2 mt-5 px-2">REDVISION</p>
+          <ul className="flex flex-col gap-1">
+            {[{ to: '/favoritos', label: 'Mis favoritos' }, ...SECCIONES].map((s) => (
+              <li key={s.to}>
+                <NavLink
+                  to={s.to}
+                  className={({ isActive }) =>
+                    `flex min-h-[48px] items-center rounded-2xl px-4 font-display text-base font-medium transition-colors
+                     ${isActive ? 'bg-rv-red text-white' : 'text-black hover:text-rv-red dark:text-white'}`
+                  }
+                >
+                  {s.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+          <a href={EMPRESA.telefono.whatsapp} target="_blank" rel="noopener noreferrer" className="rv-btn-glass mt-4 w-full">
+            <IconoWhatsapp className="h-4 w-4" />
+            Hablar con un asesor
           </a>
+          <PreHeader className="mt-4 w-full justify-center" />
         </GlassPanel>
       </div>
     </header>

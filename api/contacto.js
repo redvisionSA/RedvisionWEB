@@ -31,6 +31,7 @@ const REMITENTE = process.env.RESEND_FROM || 'REDVISION Web <onboarding@resend.d
 
 const TIPO_LABEL = {
   compra: 'Compra de equipamiento',
+  mayorista: 'Alta de cuenta mayorista',
   proyecto: 'Proyecto llave en mano',
   capacitacion: 'Capacitación técnica',
 }

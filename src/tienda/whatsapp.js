@@ -1,0 +1,31 @@
+import EMPRESA from '../datos/empresa.js'
+import { formatoPrecio } from './formato.js'
+
+const NUMERO = EMPRESA.telefono.tel.replace(/\D/g, '')
+
+export function enlaceWhatsapp(texto) {
+  return `https://wa.me/${NUMERO}?text=${encodeURIComponent(texto)}`
+}
+
+export function mensajeProducto(producto) {
+  const url = typeof window !== 'undefined' ? `${window.location.origin}/producto/${producto.slug}` : ''
+  return `Hola, quisiera consultar por: ${producto.nombre}${producto.sku ? ` (código ${producto.sku})` : ''}. ${url}`.trim()
+}
+
+/** Pedido como texto: sirve de respaldo si el envio por correo falla. */
+export function mensajePedido({ numero, lineas, cliente }) {
+  const filas = lineas
+    .filter((l) => l.producto)
+    .map((l) => {
+      const precio = l.subtotal !== null ? ` — ${formatoPrecio(l.subtotal)}` : ' — precio a confirmar'
+      return `• ${l.cantidad} x ${l.producto.nombre}${l.producto.sku ? ` [${l.producto.sku}]` : ''}${precio}`
+    })
+  return [
+    `Hola, quiero confirmar el pedido${numero ? ` ${numero}` : ''} hecho en redvision.com.ar:`,
+    ...filas,
+    cliente?.nombre ? `Nombre: ${cliente.nombre}` : null,
+    cliente?.entrega ? `Entrega: ${cliente.entrega}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+}

@@ -2,6 +2,12 @@ import { useCallback, useState } from 'react'
 import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
 import RobotDahua from './RobotDahua.jsx'
+import { Link } from 'react-router-dom'
+import Buscador from '../tienda/Buscador.jsx'
+import { LINEAS } from '../tienda/lineas.js'
+import { useTienda } from '../tienda/TiendaContext.jsx'
+import { IconoEstrella } from '../tienda/Iconos.jsx'
+import { useResenas } from '../paginas/Pagina.jsx'
 
 /* Pastillas de dato. En pantallas medianas y grandes flotan sobre el robot;
    en telefono pasan a una fila debajo del lienzo, donde no lo tapan. */
@@ -10,6 +16,40 @@ const HUD = [
   { valor: 'Mayorista', etiqueta: 'Condiciones para instaladores', pos: 'right-0 top-[44%]', delay: '260ms' },
   { valor: 'Oficial', etiqueta: 'Garantía de fábrica', pos: 'left-[2%] bottom-[8%]', delay: '400ms' },
 ]
+
+/* Prueba social real (ficha de Google) y recordatorio del carrito guardado */
+function PruebaSocial() {
+  const resenas = useResenas()
+  const { resumen } = useTienda()
+  return (
+    <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+      {resenas?.puntaje && (
+        <a
+          href={resenas.perfil}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm text-black/80 hover:text-rv-red dark:text-white/85"
+        >
+          <span className="inline-flex text-rv-red" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <IconoEstrella key={i} className="h-4 w-4" />
+            ))}
+          </span>
+          <span className="text-onglass">
+            <strong className="num font-semibold">{String(resenas.puntaje).replace('.', ',')}</strong> en Google ·{' '}
+            <span className="num">{resenas.total}</span> opiniones
+          </span>
+        </a>
+      )}
+      {resumen.unidades > 0 && (
+        <Link to="/carrito" className="rv-chip text-black hover:text-rv-red dark:text-white">
+          <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
+          Su carrito lo espera · {resumen.unidades} {resumen.unidades === 1 ? 'unidad' : 'unidades'}
+        </Link>
+      )}
+    </div>
+  )
+}
 
 const TICKER = ['Full-color', 'WizSense', 'TiOC', 'WizMind', 'HDCVI', 'DSS Pro', 'Airshield', 'SMD Plus', 'ANPR', 'EPoE']
 
@@ -95,20 +135,20 @@ export default function Hero3D({ onRobotListo }) {
   return (
     <section
       id="inicio"
-      className="relative min-h-[100svh] overflow-hidden pb-8 pt-[108px] sm:pb-10 sm:pt-[140px] lg:pt-[150px]"
+      className="relative overflow-hidden pb-6 pt-[150px] sm:pb-8 md:pt-[118px] lg:pt-[176px]"
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-5">
         {/* Maquetado asimetrico en escritorio; apilado en telefono y tablet */}
         <div className="relative grid gap-8 lg:grid-cols-12 lg:gap-5">
           {/* ---------------- Titular ---------------- */}
-          <div className="animate-rv-rise lg:col-span-7 lg:pt-10 xl:col-span-6">
+          <div className="animate-rv-rise lg:col-span-7 lg:pt-4 xl:col-span-6">
             <span className="rv-chip mb-5 text-rv-red sm:mb-6">
               <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
-              <span className="hidden xs:inline">Comercialización y proyectos de seguridad electrónica</span>
-              <span className="xs:hidden">Seguridad electrónica</span>
+              <span className="hidden xs:inline">Tienda de seguridad electrónica · Mayorista y minorista</span>
+              <span className="xs:hidden">Tienda de seguridad</span>
             </span>
 
-            <h1 className="text-onglass font-display text-[clamp(2.4rem,9vw,5.4rem)] font-bold leading-[0.95]">
+            <h1 className="text-onglass font-display text-[clamp(2.2rem,7.4vw,4.6rem)] font-bold leading-[0.95]">
               Todo el equipamiento
               <br />
               <span className="inline-block text-rv-red">de seguridad</span>
@@ -116,24 +156,35 @@ export default function Hero3D({ onRobotListo }) {
               <span className="font-light">en un solo proveedor</span>
             </h1>
 
-            <p className="rv-muted text-onglass mt-6 max-w-xl text-base leading-relaxed sm:mt-7 sm:text-lg">
-              REDVISION provee equipamiento de seguridad electrónica a instaladores, empresas e
-              integradores: <strong className="font-semibold">videovigilancia, control de accesos,
-              detección de intrusión, redes y energía</strong>. Trabajamos con las principales marcas
-              del mercado, con <strong className="font-semibold">Dahua Technology</strong> como
-              plataforma de referencia, y contamos con un{' '}
-              <strong className="font-semibold">departamento de proyectos</strong> que cubre el ciclo
-              completo, del relevamiento al servicio posventa.
+            <p className="rv-muted text-onglass mt-5 max-w-xl text-base leading-relaxed sm:text-lg">
+              Videovigilancia, control de accesos, alarmas, redes y energía de las principales marcas,
+              con <strong className="font-semibold">Dahua Technology</strong> como plataforma de referencia.
+              Precio final con IVA, envío a todo el país y asesoramiento técnico antes de comprar.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap sm:items-center">
-              <a href="#contacto" className="rv-btn-primary animate-rv-pulse-ring w-full sm:w-auto">
-                Solicitar cotización
-              </a>
-              <a href="#catalogo" className="rv-btn-glass w-full sm:w-auto">
-                Ver catálogo
-              </a>
+            <Buscador grande className="mt-7 hidden max-w-xl md:block" />
+
+            <ul className="mt-3 flex max-w-xl flex-wrap gap-1.5">
+              {LINEAS.map((l) => (
+                <li key={l.id}>
+                  <Link to={`/productos/${l.id}`} className="rv-chip text-black/80 hover:text-rv-red dark:text-white/85">
+                    <l.Icono className="h-3.5 w-3.5" />
+                    {l.titulo}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link to="/productos" className="rv-btn-primary animate-rv-pulse-ring w-full sm:w-auto">
+                Ver productos
+              </Link>
+              <Link to="/contacto" className="rv-btn-glass w-full sm:w-auto">
+                Asesoramiento técnico
+              </Link>
             </div>
+
+            <PruebaSocial />
           </div>
 
           {/* ---------------- Robot 3D ---------------- */}

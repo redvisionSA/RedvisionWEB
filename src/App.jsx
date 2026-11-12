@@ -1,16 +1,43 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { SiteContext } from './context/SiteContext.jsx'
 import VideoBackground from './components/VideoBackground.jsx'
 import PantallaCarga from './components/PantallaCarga.jsx'
 import Navbar from './components/Navbar.jsx'
-import Hero3D from './components/Hero3D.jsx'
+import { TiendaProvider } from './tienda/TiendaContext.jsx'
+import CarritoDrawer from './tienda/CarritoDrawer.jsx'
+import BotonWhatsapp from './tienda/BotonWhatsapp.jsx'
+import { AvisoDemo } from './tienda/piezas.jsx'
 
-/* Todo lo que esta debajo del Hero se descarga en un chunk aparte. En el
-   primer pintado el navegador solo ejecuta la barra, el Hero y el robot; el
-   resto llega mientras el visitante mira la PantallaCarga. */
-const BentoCanvas = lazy(() => import('./components/BentoCanvas.jsx'))
-const Contacto = lazy(() => import('./components/Contacto.jsx'))
+/* Cada pagina es un chunk propio. El inicio arrastra el robot (three, ~1 MB):
+   al ser diferido, quien entra directo a un producto no descarga WebGL. */
+const Inicio = lazy(() => import('./paginas/Inicio.jsx'))
+const Catalogo = lazy(() => import('./paginas/Catalogo.jsx'))
+const Producto = lazy(() => import('./paginas/Producto.jsx'))
+const Carrito = lazy(() => import('./paginas/Carrito.jsx'))
+const Favoritos = lazy(() => import('./paginas/Favoritos.jsx'))
+const institucional = (nombre) => lazy(() => import('./paginas/Institucionales.jsx').then((m) => ({ default: m[nombre] })))
+const Empresa = institucional('Empresa')
+const Proyectos = institucional('Proyectos')
+const TecnologiaPagina = institucional('TecnologiaPagina')
+const Capacitaciones = institucional('Capacitaciones')
+const ContactoPagina = institucional('ContactoPagina')
+const NoEncontrada = institucional('NoEncontrada')
 const Footer = lazy(() => import('./components/Footer.jsx'))
+
+/* Al cambiar de pagina se vuelve arriba (salvo que la URL traiga un ancla);
+   cambiar filtros (?q=, ?marca=) no mueve el scroll. */
+function AlCambiarDePagina() {
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname, hash])
+  return null
+}
 
 /**
  * El sitio SIEMPRE arranca en clear mode.
@@ -44,8 +71,11 @@ export default function App() {
      render (ver VideoBackground.jsx y RobotDahua.jsx): lo que antes generaba
      el render disparejo era mostrar la pagina antes de que ambos estuvieran
      listos, no la descarga en si. */
+  /* El robot solo existe en el inicio. Si la visita entra por otra pagina
+     (un producto compartido, un buscador), la compuerta no lo espera. */
+  const [entraPorInicio] = useState(() => window.location.pathname === '/')
   const [videoListo, setVideoListo] = useState(false)
-  const [robotListo, setRobotListo] = useState(false)
+  const [robotListo, setRobotListo] = useState(!entraPorInicio)
   const [fuentesListas, setFuentesListas] = useState(false)
   const [tiempoMinimoCumplido, setTiempoMinimoCumplido] = useState(false)
 
@@ -122,30 +152,48 @@ export default function App() {
 
   return (
     <SiteContext.Provider value={value}>
-      <PantallaCarga listo={listo} />
+      <TiendaProvider>
+        <PantallaCarga listo={listo} />
+        <AlCambiarDePagina />
 
-      <VideoBackground onListo={marcarVideoListo} />
+        <VideoBackground onListo={marcarVideoListo} />
 
-      <a
-        href="#contenido"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-rv-red focus:px-5 focus:py-2.5 focus:text-white"
-      >
-        Saltar al contenido principal
-      </a>
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-rv-red focus:px-5 focus:py-2.5 focus:text-white"
+        >
+          Saltar al contenido principal
+        </a>
 
-      <Navbar />
+        <Navbar />
 
-      <main id="contenido" className="relative z-10">
-        <Hero3D onRobotListo={marcarRobotListo} />
-        <Suspense fallback={<div className="min-h-[40vh]" aria-hidden="true" />}>
-          <BentoCanvas />
-          <Contacto />
+        <main id="contenido" className="relative z-10 min-h-[70vh]">
+          <Suspense fallback={<div className="min-h-[100svh]" aria-hidden="true" />}>
+            <Routes>
+              <Route path="/" element={<Inicio onRobotListo={marcarRobotListo} />} />
+              <Route path="/productos" element={<Catalogo />} />
+              <Route path="/productos/:linea" element={<Catalogo />} />
+              <Route path="/producto/:slug" element={<Producto />} />
+              <Route path="/carrito" element={<Carrito />} />
+              <Route path="/favoritos" element={<Favoritos />} />
+              <Route path="/empresa" element={<Empresa />} />
+              <Route path="/proyectos" element={<Proyectos />} />
+              <Route path="/tecnologia" element={<TecnologiaPagina />} />
+              <Route path="/capacitaciones" element={<Capacitaciones />} />
+              <Route path="/contacto" element={<ContactoPagina />} />
+              <Route path="*" element={<NoEncontrada />} />
+            </Routes>
+          </Suspense>
+        </main>
+
+        <Suspense fallback={null}>
+          <Footer />
         </Suspense>
-      </main>
 
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+        <CarritoDrawer />
+        <BotonWhatsapp />
+        <AvisoDemo />
+      </TiendaProvider>
     </SiteContext.Provider>
   )
 }

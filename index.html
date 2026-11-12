@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/redvision-logo.png" />
 
-    <title>REDVISION | Comercialización y proyectos de seguridad electrónica</title>
+    <title>REDVISION | Tienda de seguridad electrónica</title>
     <meta
       name="description"
       content="REDVISION comercializa equipamiento de seguridad electrónica de las principales marcas del mercado: videovigilancia, control de accesos, detección de intrusión, redes y energía. Venta mayorista y minorista, departamento de proyectos llave en mano y formación técnica. Dahua Technology como plataforma de referencia."
@@ -44,9 +44,25 @@
       y no lo que tarda la descarga.
       El decodificador Draco viaja en paralelo porque el GLB lo exige.
     -->
-    <link rel="preload" as="fetch" type="model/gltf-binary" href="/Dahua_Robot_Replica.glb" crossorigin="anonymous" />
-    <link rel="preload" as="fetch" href="/draco/draco_decoder.wasm" crossorigin="anonymous" />
-    <link rel="preload" as="script" href="/draco/draco_wasm_wrapper.js" crossorigin="anonymous" />
+    <!-- Solo en el inicio: es la unica pagina con robot. Quien entra directo
+         a un producto no descarga el modelo ni el decodificador. -->
+    <script>
+      if (location.pathname === '/') {
+        ;[
+          ['fetch', '/Dahua_Robot_Replica.glb', 'model/gltf-binary'],
+          ['fetch', '/draco/draco_decoder.wasm'],
+          ['script', '/draco/draco_wasm_wrapper.js'],
+        ].forEach(function (r) {
+          var l = document.createElement('link')
+          l.rel = 'preload'
+          l.as = r[0]
+          l.href = r[1]
+          if (r[2]) l.type = r[2]
+          l.crossOrigin = 'anonymous'
+          document.head.appendChild(l)
+        })
+      }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

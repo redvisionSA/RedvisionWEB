@@ -631,6 +631,36 @@
   }
 }
 
+@layer components {
+  /* --- Tienda ---------------------------------------------------------- */
+
+  /* Cifras de precio y cantidad: ancho fijo para que no "bailen" al cambiar */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Superficies donde se lee y se escribe mucho (cajon del carrito, filtros,
+     barra fija de compra): vidrio casi opaco. El video no compite con el
+     texto en el momento de decidir la compra. */
+  .rv-panel-solido {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+  .dark .rv-panel-solido {
+    background: rgba(18, 18, 20, 0.94);
+  }
+
+  /* Rieles horizontales: desplazamiento nativo sin barra visible */
+  .rv-riel {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rv-riel::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer utilities {
   /* Texto con halo: garantiza legibilidad sobre el video en movimiento.
      En clear mode el vidrio ahora deja ver mucho mas video detras (ver los

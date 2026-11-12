@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import GlassPanel from './GlassPanel.jsx'
 import { TileMapa, TileResenas } from './Ubicacion.jsx'
 import EMPRESA from '../datos/empresa.js'
@@ -25,6 +26,11 @@ const TIPOS = [
     id: 'compra',
     label: 'Compra de equipamiento',
     ayuda: 'Cotización, lista de precios o consulta de disponibilidad.',
+  },
+  {
+    id: 'mayorista',
+    label: 'Cuenta mayorista',
+    ayuda: 'Alta de cuenta para instaladores y empresas: lista diferencial y cuenta corriente.',
   },
   {
     id: 'proyecto',
@@ -88,7 +94,8 @@ const DATOS = [
 ]
 
 export default function Contacto() {
-  const [tipo, setTipo] = useState(TIPOS[0].id)
+  const [params] = useSearchParams()
+  const [tipo, setTipo] = useState(() => (TIPOS.some((t) => t.id === params.get('tipo')) ? params.get('tipo') : TIPOS[0].id))
   const [enviado, setEnviado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [errorEnvio, setErrorEnvio] = useState('')

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import GlassPanel from './GlassPanel.jsx'
 
 /**
@@ -314,9 +315,46 @@ export function TileComoComprar({ className = '' }) {
         ))}
       </ul>
 
-      <a href="#contacto" className="rv-btn-primary mt-5 self-start">
-        Solicitar lista de precios
-      </a>
+      <Link to="/contacto?tipo=mayorista" className="rv-btn-primary mt-5 self-start">
+        Solicitar lista mayorista
+      </Link>
+    </GlassPanel>
+  )
+}
+
+/* =========================================================================
+ * RESPALDO DE CADA OPERACION (antes en BentoCanvas.jsx)
+ * ====================================================================== */
+const RESPALDO = [
+  'Producto ingresado por canal oficial, con garantía de fábrica y trazabilidad de número de serie',
+  'Asesoramiento técnico previo a la operación, sin cargo adicional',
+  'Dimensionamiento de ancho de banda y almacenamiento calculado sobre el proyecto',
+  'Soporte durante la instalación y servicio posventa sostenido',
+]
+
+export function TileRespaldo({ className = '' }) {
+  return (
+    <GlassPanel tilt={2} className={`p-6 sm:p-7 ${className}`}>
+      <p className="rv-eyebrow mb-4">Respaldo de cada operación</p>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {RESPALDO.map((item) => (
+          <li key={item} className="rv-muted flex items-start gap-3 text-sm leading-relaxed">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mt-0.5 h-4 w-4 shrink-0 text-black/55 dark:text-white/60"
+              aria-hidden="true"
+            >
+              <path d="m4 12 5 5L20 6" />
+            </svg>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </GlassPanel>
   )
 }
