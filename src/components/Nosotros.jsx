@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { enlaceConsulta } from '../tienda/whatsapp.js'
 import GlassPanel from './GlassPanel.jsx'
 
 /**
@@ -117,9 +117,9 @@ export default function TileProyectos({ className = '' }) {
             operaciones multisitio. El mismo equipo que releva es el que ejecuta y el que responde
             después de la entrega.
           </p>
-          <Link to="/contacto?tipo=proyecto" className="rv-btn-primary mt-6">
+          <a href={enlaceConsulta('proyecto')} target="_blank" rel="noopener noreferrer" className="rv-btn-primary mt-6">
             Solicitar relevamiento
-          </Link>
+          </a>
         </header>
 
         <ol className="grid gap-3 sm:grid-cols-2 lg:col-span-7 lg:grid-cols-3">
@@ -277,9 +277,9 @@ export function TileCapacitaciones({ className = '' }) {
       </ul>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
-        <Link to="/contacto?tipo=capacitacion" className="rv-btn-primary">
+        <a href={enlaceConsulta('capacitacion')} target="_blank" rel="noopener noreferrer" className="rv-btn-primary">
           Inscribirse
-        </Link>
+        </a>
         <p className="rv-muted text-xs">Cupos limitados. Fecha y temario se informan por correo.</p>
       </div>
     </GlassPanel>

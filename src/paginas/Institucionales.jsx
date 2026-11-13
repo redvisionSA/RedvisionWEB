@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import TileCatalogo, { TileComoComprar, TileMarcas, TileRespaldo } from '../components/Servicios.jsx'
 import TileTecnologia, { TileFullColor } from '../components/Tecnologia.jsx'
 import TileProyectos, { TileAsesoramiento, TileCapacitaciones, TileDivisiones, TileNosotros } from '../components/Nosotros.jsx'
-import Contacto from '../components/Contacto.jsx'
+import { TileMapa } from '../components/Ubicacion.jsx'
 import GlassPanel from '../components/GlassPanel.jsx'
 import { Migas } from '../tienda/piezas.jsx'
 import Pagina, { usePagina } from './Pagina.jsx'
@@ -68,6 +68,9 @@ export function Empresa() {
           <TileRespaldo />
         </div>
         <TileMarcas className="md:col-span-6 lg:col-span-5" />
+        <div id="ubicacion" className="scroll-mt-40 md:col-span-6 lg:col-span-12">
+          <TileMapa />
+        </div>
       </div>
       <PuenteTienda />
     </Pagina>
@@ -148,21 +151,6 @@ export function Capacitaciones() {
       </div>
       <PuenteTienda />
     </Pagina>
-  )
-}
-
-export function ContactoPagina() {
-  usePagina({
-    titulo: 'Contacto',
-    descripcion: 'Contacto, ubicación y horarios de REDVISION. Ventas, cuentas mayoristas, proyectos y capacitación.',
-  })
-  return (
-    <div className="pt-[136px] lg:pt-[156px]">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-5">
-        <Migas items={[{ label: 'Inicio', to: '/' }, { label: 'Contacto' }]} />
-      </div>
-      <Contacto />
-    </div>
   )
 }
 

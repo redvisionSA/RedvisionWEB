@@ -3,8 +3,7 @@ import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
 import RobotDahua from './RobotDahua.jsx'
 import { Link } from 'react-router-dom'
-import Buscador from '../tienda/Buscador.jsx'
-import { LINEAS } from '../tienda/lineas.js'
+import { enlaceConsulta } from '../tienda/whatsapp.js'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { IconoEstrella } from '../tienda/Iconos.jsx'
 import { useResenas } from '../paginas/Pagina.jsx'
@@ -137,7 +136,7 @@ export default function Hero3D({ onRobotListo }) {
   return (
     <section
       id="inicio"
-      className="relative overflow-hidden pb-6 pt-[150px] sm:pb-8 lg:pt-[176px]"
+      className="relative overflow-hidden pb-6 pt-[104px] sm:pb-8 sm:pt-[112px] lg:pt-[124px]"
     >
       <div className="mx-auto max-w-[1400px] px-4 sm:px-5">
         {/* Maquetado asimetrico en escritorio; apilado en telefono y tablet */}
@@ -164,19 +163,6 @@ export default function Hero3D({ onRobotListo }) {
               Precio final con IVA, envío a todo el país y asesoramiento técnico antes de comprar.
             </p>
 
-            <Buscador grande className="mt-7 hidden max-w-xl lg:block" />
-
-            <ul className="mt-3 flex max-w-xl flex-wrap gap-1.5">
-              {LINEAS.map((l) => (
-                <li key={l.id}>
-                  <Link to={`/productos/${l.id}`} className="rv-chip text-black/80 hover:text-rv-red dark:text-white/85">
-                    <l.Icono className="h-3.5 w-3.5" />
-                    {l.titulo}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
             <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">
               <Link to="/productos" className="rv-btn-primary animate-rv-pulse-ring min-h-[52px] w-full px-8 text-[15px] sm:w-auto">
                 Ver todos los productos
@@ -184,9 +170,9 @@ export default function Hero3D({ onRobotListo }) {
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </Link>
-              <Link to="/contacto" className="rv-btn-glass w-full sm:w-auto">
+              <a href={enlaceConsulta('asesor')} target="_blank" rel="noopener noreferrer" className="rv-btn-glass w-full sm:w-auto">
                 Asesoramiento técnico
-              </Link>
+              </a>
             </div>
 
             <PruebaSocial />

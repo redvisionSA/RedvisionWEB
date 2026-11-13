@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { cargarCatalogo, normalizarCatalogo } from './catalogo.js'
+import { registrarEvento } from './popularidad.js'
 
 /**
  * TiendaContext
@@ -80,6 +81,7 @@ export function TiendaProvider({ children }) {
         }
         return [...items, { id, cantidad: Math.min(MAX_CANTIDAD, cantidad) }]
       })
+      registrarEvento('carrito', [id])
       setUltimoAgregado({ id, marca: Date.now() })
       if (abrir) setCarritoAbierto(true)
     },

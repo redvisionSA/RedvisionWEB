@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { SiteContext } from './context/SiteContext.jsx'
 import VideoBackground from './components/VideoBackground.jsx'
 import PantallaCarga from './components/PantallaCarga.jsx'
@@ -16,12 +16,12 @@ const Catalogo = lazy(() => import('./paginas/Catalogo.jsx'))
 const Producto = lazy(() => import('./paginas/Producto.jsx'))
 const Carrito = lazy(() => import('./paginas/Carrito.jsx'))
 const Favoritos = lazy(() => import('./paginas/Favoritos.jsx'))
+const Cuenta = lazy(() => import('./paginas/Cuenta.jsx'))
 const institucional = (nombre) => lazy(() => import('./paginas/Institucionales.jsx').then((m) => ({ default: m[nombre] })))
 const Empresa = institucional('Empresa')
 const Proyectos = institucional('Proyectos')
 const TecnologiaPagina = institucional('TecnologiaPagina')
 const Capacitaciones = institucional('Capacitaciones')
-const ContactoPagina = institucional('ContactoPagina')
 const NoEncontrada = institucional('NoEncontrada')
 const Footer = lazy(() => import('./components/Footer.jsx'))
 
@@ -182,11 +182,12 @@ export default function App() {
               <Route path="/producto/:slug" element={<Producto />} />
               <Route path="/carrito" element={<Carrito />} />
               <Route path="/favoritos" element={<Favoritos />} />
+              <Route path="/cuenta" element={<Cuenta />} />
               <Route path="/empresa" element={<Empresa />} />
               <Route path="/proyectos" element={<Proyectos />} />
               <Route path="/tecnologia" element={<TecnologiaPagina />} />
               <Route path="/capacitaciones" element={<Capacitaciones />} />
-              <Route path="/contacto" element={<ContactoPagina />} />
+              <Route path="/contacto" element={<Navigate to="/empresa#ubicacion" replace />} />
               <Route path="*" element={<NoEncontrada />} />
             </Routes>
           </Suspense>

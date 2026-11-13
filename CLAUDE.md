@@ -41,7 +41,7 @@ dice este archivo manda:**
 - **Cloudflare** (zona `redvision.com.ar`, DNS completo). **No tocar**: MX `mail.redvision.com.ar`, TXT (SPF hostmar, brevo-code,
   google-site-verification, DMARC, DKIM brevo/mail), ni los subdominios del servidor en la nube
   (`ftp`, `mail`, `autoconfig`, `autodiscover`, `tech`, `lista-*` y sus `www.*`, todos → `66.97.35.140`).
-- **Correo del formulario**: `api/contacto.js` (función serverless) envía por **Resend** a
+- **Correo de pedidos** (`api/pedido.js`; el formulario de contacto se eliminó el 13/11): envía por **Resend** a
   `ecommerce2.redvision@gmail.com` con `reply_to` = cliente y honeypot `_hp`. Requiere en el proyecto de Pages
   `RESEND_API_KEY` (obligatoria), `RESEND_FROM` y `CONTACTO_EMAIL_DESTINO` (opcionales); ver `.env.example`.
   **Estado de la key al exportar: desconocido** (estaba pendiente de crear la cuenta). Sin key el
@@ -84,8 +84,11 @@ siguientes.
 - Rutas (`react-router-dom` 6, `BrowserRouter`; `vercel.json` reescribe todo lo que no es `api/` ni
   archivo a `index.html`): `/` tienda + resumen institucional · `/productos` y `/productos/:linea`
   (filtros en la URL: `q`, `marca`, `stock`, `orden`) · `/producto/:slug` · `/carrito` (checkout) ·
-  `/favoritos` · `/empresa` · `/proyectos` · `/tecnologia` · `/capacitaciones` · `/contacto`
-  (`?tipo=compra|mayorista|proyecto|capacitacion`) · 404. Cada página es `React.lazy`.
+  `/favoritos` · `/cuenta` (ingreso: hoy explica que el login llega con las listas mayorista y
+  distribuidor) · `/empresa` (con el mapa en `#ubicacion`) · `/proyectos` · `/tecnologia` ·
+  `/capacitaciones` · 404. **`/contacto` y su formulario se eliminaron (13/11)**: la ruta redirige a
+  `/empresa#ubicacion`; las consultas van por WhatsApp con mensaje armado (`CONSULTAS` en
+  `src/tienda/whatsapp.js`: asesor, mayorista, proyecto, capacitación). Cada página es `React.lazy`.
 - Datos: `src/tienda/catalogo.js` lee `VITE_CATALOGO_URL` (contrato en `docs/CATALOGO_API.md`). Sin
   esa variable: en dev, `src/tienda/demo.js` con la franja "Datos de demostración"; en producción, el
   endpoint del ERP `https://api-erp.redvision.com.ar/storefront/catalog` (público, no es un secreto;
@@ -109,18 +112,35 @@ siguientes.
   del inicio también son sólidos. El vidrio queda para lo institucional (hero, barra, pestañas).
 - Sello **"Distribuidor oficial Dahua"** (`PreHeader` en `Navbar.jsx`, logo oficial
   `public/dahua-logo.png` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
-- **Acceso a la tienda bien visible:** botón rojo «Productos» fijo en la cápsula de la barra (también
-  compacta y en teléfono; el carrito pasó a negro), botón principal del hero «Ver todos los
-  productos» y una banda roja grande justo debajo del hero y otra al final del inicio.
-- **Marcas** (`src/tienda/marcas.js`, `LogoMarca` en `piezas.jsx`): Dahua, Hikvision e Imou con logo
-  oficial y color propio en tarjetas (franja superior), ficha, filtro de marca, portada de marca
-  (`/productos?marca=…` con una sola marca) y tarjetas del inicio. Logos oficiales en `public/marcas/`
-  (Dahua SVG; Hikvision WebP 240×30 en color para tamaños chicos y PNG negativo 1520×192 sobre su
-  rojo para tamaños grandes; Imou PNG 300×81). Colores tomados de los archivos: Dahua `#E50214`,
-  Hikvision `#D8171F` (medido sobre WebP con pérdida: confirmar con manual), Imou `#F08C00`. Sin
-  archivo se muestra el nombre en texto, nunca un dibujo propio. Las marcas genéricas o
-  alternativas no se nombran nunca; sus productos van a la línea de su categoría (13/11: antes
-  iban todos a Accesorios y dejaban Energía y Alarmas vacías).
+- **Barra en una sola fila (13/11):** logo · «Productos» (clic al catálogo, flecha o cursor: líneas y
+  marcas) · «Empresa ▾» (Empresa, Proyectos, Tecnología, Capacitación) · buscador · sello Dahua (2xl) ·
+  ingresar · favoritos · tema · carrito. En teléfono: logo · lupa (despliega el buscador) · carrito ·
+  menú. Hero y páginas arrancan a ~104–124 px.
+- **Inicio sin saturar (13/11):** hero con «Ver todos los productos», banda roja, **un solo carrusel
+  automático** (`CarruselProductos`: avanza solo, se pausa al usarlo, quieto con reduced-motion) con
+  **lo más buscado y cotizado de la semana** y **cinta automática de marcas** (`CarruselMarcas`).
+  Sin departamentos ni otros rieles en el inicio: la variedad está en `/productos`.
+- **Popularidad** (`src/tienda/popularidad.js`, `functions/api/evento.js`, `functions/api/populares.js`):
+  el navegador avisa búsqueda elegida (1), agregado al carrito (3) y pedido (5); se cuenta una vez por
+  visitante, producto y gesto por día con un hash de IP+día+sal (no se guarda la IP), últimos 7 días,
+  respuesta cacheada 10 min. Base **D1** con binding `DB` (esquema `docs/popularidad.sql`) y sal
+  `POPULARIDAD_SAL`. Sin la base o con menos de 4 productos rankeados, el carrusel muestra
+  «Productos destacados» (el título no promete lo que no hay).
+- **Buscador:** sugerencias mientras se escribe (espera 180 ms), por palabras parciales, sinónimos y
+  errores de tipeo, y **por código parcial escrito como sea** («DH-IPC-HFW», «dh ipc hfw», «ipchfw»):
+  se compara la consulta compactada contra el código compactado.
+- **Pastilla de marca de tamaño fijo** en las tarjetas (`LogoMarca uniforme`: 96×28, logo contenido).
+- **Marcas** (`src/tienda/marcas.js`, `LogoMarca` en `piezas.jsx`): Dahua, Hikvision, Imou, EZVIZ, TP-Link
+  y Tenda con logo oficial (`public/marcas/`, archivos de la empresa, siempre sobre blanco) y color tomado
+  del archivo: Dahua **azul secundario `#326795`** (el rojo queda para Hikvision `#D71820` y los botones),
+  Imou `#F08C00`, EZVIZ `#989A9C`, TP-Link `#4ACBD6`, Tenda `#E8511B`. Franja en tarjetas, ficha, filtro,
+  portada de marca y cinta del inicio. Sin archivo, nombre en texto. Genéricas: nunca se nombran.
+- **Similares y compatibles** (`src/tienda/similares.js`, ficha de producto): reglas fijas sobre las specs.
+  Similares = misma línea, mismo tipo de equipo, nunca menos resolución/canales/capacidad ni otro sistema
+  (IP vs HDCVI). Compatibles = cámara IP → NVR, switch PoE, disco; HDCVI → XVR, fuente, disco; grabador →
+  disco y cámaras de su tecnología; switch → cable y cámaras IP. Si el producto no tiene entrega
+  inmediata, primero «Alternativas con stock». La equivalencia de Hikvision de Kike (rama
+  `crmovil/2026-11-05-equivalencias`, sin mergear) va a llegar por el ERP y tiene prioridad.
 - Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
   línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).
 - Las teselas institucionales se reutilizan sin cambiar su copy (`src/paginas/Institucionales.jsx`).
@@ -134,7 +154,10 @@ siguientes.
 1. ~~Endpoint del ERP~~: en producción desde el 13/11 (`https://api-erp.redvision.com.ar/storefront/catalog`,
    precio = lista Gremio de RV con IVA; RV todavía sin stock: todo «a pedido»).
 2. `RESEND_API_KEY` en las variables del proyecto `redvision-web` de Cloudflare Pages y prueba real de
-   `/api/pedido` y `/api/contacto` (sin la key responden un error controlado y el carrito ofrece WhatsApp).
+   `/api/pedido` (sin la key responden un error controlado y el carrito ofrece WhatsApp).
+3b. **D1 para «lo más buscado»**: `npx wrangler d1 create redvision-web`, aplicar `docs/popularidad.sql`
+   (`wrangler d1 execute redvision-web --remote --file docs/popularidad.sql`), vincularla al proyecto
+   Pages como `DB` y cargar `POPULARIDAD_SAL` (secreto). Hace falta un login de wrangler con permiso de D1.
 4. SEO por producto: prerender o SSR y `sitemap.xml` (hoy es SPA; título, descripción, canónica y
    JSON-LD `Product` se ponen en el navegador).
 5. Fases 2–4 del contrato: pedido → presupuesto en el ERP, Mercado Pago, precios por perfil.

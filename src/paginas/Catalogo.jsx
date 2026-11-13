@@ -427,7 +427,7 @@ export default function Catalogo() {
 
       <div className="grid gap-5 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-6">
         <aside className="hidden lg:block" aria-label="Filtros">
-          <div className="rv-solido sticky top-[150px] max-h-[calc(100svh-170px)] overflow-y-auto overscroll-contain px-4 py-1">{panelFiltros}</div>
+          <div className="rv-solido sticky top-[110px] max-h-[calc(100svh-130px)] overflow-y-auto overscroll-contain px-4 py-1">{panelFiltros}</div>
         </aside>
 
         <div className="min-w-0">

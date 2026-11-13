@@ -7,26 +7,25 @@ import { normalizarTexto } from './formato.js'
  * deja que cada marca de dispositivos aparezca con SU logo oficial y SU color
  * donde se habla de esa marca: tarjeta, ficha, filtro, portada de marca.
  *
- * Logos: archivos oficiales en public/marcas/ (provistos por la empresa). Si
- * un logo no esta cargado (`logo: null`), la tienda muestra el nombre en
- * texto, nunca un dibujo propio de la marca.
- *   - dahua.svg              color, vectorial (img/dahuaLogo.svg)
- *   - hikvision.webp         color, 240x30: para tamaños chicos sobre blanco
- *   - hikvision-blanco.png   negativo 1520x192: sobre el rojo de la marca,
- *                            para tamaños grandes (no se pixela)
- *   - imou.png               color, 300x81 (recortado del original, sin
- *                            alterar el color)
+ * Logos: archivos oficiales en public/marcas/ (provistos por la empresa, sin
+ * redibujar ni recolorear; siempre sobre blanco). Si una marca no tiene logo
+ * (`logo: null`), se muestra su nombre en texto, nunca un dibujo propio.
  *
- * Colores: tomados de los archivos oficiales. Dahua #E50214 (del SVG), Imou
- * #F08C00 (del PNG). Hikvision #D8171F se midio sobre el WebP (con perdida):
- * confirmarlo con el manual de marca si se consigue el vectorial.
+ * Colores (franjas y detalles): tomados de los archivos oficiales.
+ *   Dahua      #326795  azul de su identidad secundaria (decision 13/11: el rojo
+ *                       queda para Hikvision y para los botones de REDVISION)
+ *   Hikvision  #D71820  rojo del logo oficial (11.png, 1024x137)
+ *   Imou       #F08C00
+ *   TP-Link    #4ACBD6
+ *   EZVIZ      #989A9C  gris del logotipo (el isotipo es multicolor)
+ *   Tenda      #E8511B
  */
 
 export const MARCAS_DISPOSITIVOS = [
   {
     clave: 'dahua',
     nombre: 'Dahua Technology',
-    color: '#E50214',
+    color: '#326795',
     logo: '/marcas/dahua.svg',
     proporcion: 2560 / 762,
     oficial: true,
@@ -36,11 +35,9 @@ export const MARCAS_DISPOSITIVOS = [
   {
     clave: 'hikvision',
     nombre: 'Hikvision',
-    color: '#D8171F',
-    logo: '/marcas/hikvision.webp',
-    logoNegativo: '/marcas/hikvision-blanco.png',
-    altoMaximoLogo: 24,
-    proporcion: 8,
+    color: '#D71820',
+    logo: '/marcas/hikvision.png',
+    proporcion: 1024 / 137,
     oficial: false,
     patron: /hikvision|hik ?connect|hilook/,
     texto: 'Videovigilancia, grabación y control de accesos Hikvision.',
@@ -54,6 +51,36 @@ export const MARCAS_DISPOSITIVOS = [
     oficial: false,
     patron: /\bimou\b/,
     texto: 'Cámaras Wi-Fi y seguridad para hogar y pequeño comercio, con aplicación propia.',
+  },
+  {
+    clave: 'ezviz',
+    nombre: 'EZVIZ',
+    color: '#989A9C',
+    logo: '/marcas/ezviz.webp',
+    proporcion: 2000 / 619,
+    oficial: false,
+    patron: /ezviz/,
+    texto: 'Cámaras Wi-Fi, timbres y seguridad inteligente para hogar y comercio.',
+  },
+  {
+    clave: 'tp-link',
+    nombre: 'TP-Link',
+    color: '#4ACBD6',
+    logo: '/marcas/tp-link.png',
+    proporcion: 1280 / 488,
+    oficial: false,
+    patron: /tp[\s-]?link|omada|vigi/,
+    texto: 'Switches PoE, routers, Wi-Fi y enlaces para la red de cada instalación.',
+  },
+  {
+    clave: 'tenda',
+    nombre: 'Tenda',
+    color: '#E8511B',
+    logo: '/marcas/tenda.webp',
+    proporcion: 2000 / 428,
+    oficial: false,
+    patron: /\btenda\b/,
+    texto: 'Routers, switches y enlaces inalámbricos para hogar y pyme.',
   },
 ]
 

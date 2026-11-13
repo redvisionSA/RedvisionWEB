@@ -5,6 +5,7 @@ import { COMPLEMENTOS, lineaPorId } from '../tienda/lineas.js'
 import { BotonFavorito, Disponibilidad, ImagenProducto, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
 import { Cantidad } from '../tienda/LineaCarrito.jsx'
 import Riel from '../tienda/Riel.jsx'
+import { alternativasConStock, compatibles, similares } from '../tienda/similares.js'
 import { IconoCamion, IconoCarrito, IconoCheck, IconoEscudo, IconoLocal, IconoTecnico, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from '../tienda/whatsapp.js'
 import { formatoPrecio } from '../tienda/formato.js'
@@ -111,20 +112,12 @@ export default function Producto() {
     setAgregado(false)
   }, [producto, registrarVisto])
 
-  const complementos = useMemo(() => {
-    if (!producto) return []
-    const objetivo = COMPLEMENTOS[producto.linea] || []
-    return catalogo.datos.productos
-      .filter((p) => objetivo.includes(p.linea) && sePuedeComprar(p))
-      .slice(0, 10)
-  }, [producto, catalogo.datos.productos])
-
-  const misma = useMemo(() => {
-    if (!producto) return []
-    return catalogo.datos.productos
-      .filter((p) => p.linea === producto.linea && p.id !== producto.id && sePuedeComprar(p))
-      .slice(0, 10)
-  }, [producto, catalogo.datos.productos])
+  const complementos = useMemo(
+    () => compatibles(producto, catalogo.datos.productos, COMPLEMENTOS[producto?.linea] || []),
+    [producto, catalogo.datos.productos]
+  )
+  const misma = useMemo(() => similares(producto, catalogo.datos.productos), [producto, catalogo.datos.productos])
+  const conStock = useMemo(() => alternativasConStock(producto, catalogo.datos.productos), [producto, catalogo.datos.productos])
 
   const recientes = useMemo(
     () => vistos.filter((id) => id !== producto?.id).map((id) => catalogo.datos.porId.get(id)).filter(Boolean),
@@ -204,7 +197,7 @@ export default function Producto() {
       />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
-        <div className="lg:sticky lg:top-[150px] lg:self-start">
+        <div className="lg:sticky lg:top-[110px] lg:self-start">
           <div className="rv-solido group relative overflow-hidden">
             <ImagenProducto producto={producto} tamano="lg" className="aspect-square w-full" />
             <BotonFavorito id={producto.id} className="absolute right-4 top-4" />
@@ -285,8 +278,9 @@ export default function Producto() {
       </div>
 
       <div className="mt-10 flex flex-col gap-10">
-        <Riel eyebrow="Venta técnica" titulo="Complete la instalación" productos={complementos} />
-        <Riel eyebrow={linea?.titulo} titulo="Alternativas de la misma línea" productos={misma} verTodo={linea ? `/productos/${linea.id}` : undefined} />
+        <Riel eyebrow="Entrega inmediata" titulo="Alternativas con stock para llevar hoy" productos={conStock} />
+        <Riel eyebrow="Compatibles" titulo="Complete la instalación" productos={complementos} />
+        <Riel eyebrow={linea?.titulo} titulo="Productos similares" productos={misma} verTodo={linea ? `/productos/${linea.id}` : undefined} />
         <Riel eyebrow="Para retomar" titulo="Vistos recientemente" productos={recientes} />
       </div>
 

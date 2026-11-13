@@ -22,7 +22,6 @@ const COLUMNAS = [
       { href: '/proyectos', label: 'Departamento de proyectos' },
       { href: '/tecnologia', label: 'Tecnología' },
       { href: '/capacitaciones', label: 'Capacitaciones' },
-      { href: '/contacto', label: 'Contacto' },
     ],
   },
 ]

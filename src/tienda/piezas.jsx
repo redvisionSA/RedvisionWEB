@@ -149,25 +149,21 @@ export function Migas({ items }) {
 /* ------------------------------------------------------- Logo de marca
    Logo oficial si esta cargado en public/marcas/; si no, el nombre en texto
    (con el color de la marca cuando se conoce). Nunca un dibujo propio. */
-export function LogoMarca({ marca, alto = 16, className = '', conChip = false }) {
+export function LogoMarca({ marca, alto = 16, className = '', conChip = false, uniforme = false }) {
   if (!marca) return null
   const id = marca.identidad
-  /* Logo chico en color pierde nitidez en tamaño grande: se usa el negativo
-     oficial sobre el color de la marca */
-  if (id?.logoNegativo && id.altoMaximoLogo && alto > id.altoMaximoLogo) {
-    const proporcionNeg = 1520 / 192
+  /* Pastilla de tamaño fijo (tarjetas de producto): todas las marcas ocupan lo
+     mismo, sea cual sea la proporcion de su logo. */
+  if (uniforme) {
     return (
-      <span className={`inline-flex items-center rounded-lg ${className}`} style={{ background: id.color, padding: `${Math.round(alto * 0.28)}px ${Math.round(alto * 0.45)}px` }}>
-        <img
-          src={id.logoNegativo}
-          alt={marca.nombre}
-          height={alto}
-          width={Math.round(alto * proporcionNeg)}
-          loading="lazy"
-          decoding="async"
-          className="block object-contain"
-          style={{ height: Math.round(alto * 0.62), width: 'auto' }}
-        />
+      <span className={`rv-chip-marca inline-flex h-7 w-[96px] items-center justify-center overflow-hidden px-2 ${className}`}>
+        {id?.logo ? (
+          <img src={id.logo} alt={marca.nombre} loading="lazy" decoding="async" className="block max-h-[16px] max-w-full object-contain" />
+        ) : (
+          <span className="truncate font-display text-[10px] font-bold uppercase tracking-[0.08em] text-black/75" style={id?.color ? { color: id.color } : undefined}>
+            {id?.nombre || marca.nombre}
+          </span>
+        )}
       </span>
     )
   }

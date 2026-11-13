@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { enlaceConsulta } from '../tienda/whatsapp.js'
 import GlassPanel from './GlassPanel.jsx'
 
 /**
@@ -315,9 +315,9 @@ export function TileComoComprar({ className = '' }) {
         ))}
       </ul>
 
-      <Link to="/contacto?tipo=mayorista" className="rv-btn-primary mt-5 self-start">
+      <a href={enlaceConsulta('mayorista')} target="_blank" rel="noopener noreferrer" className="rv-btn-primary mt-5 self-start">
         Solicitar lista mayorista
-      </Link>
+      </a>
     </GlassPanel>
   )
 }

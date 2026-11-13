@@ -30,7 +30,7 @@ export function usePagina({ titulo, descripcion } = {}) {
 /** Contenedor de pagina interior: deja lugar a la barra de dos filas. */
 export default function Pagina({ children, className = '' }) {
   return (
-    <div className={`mx-auto max-w-[1400px] px-4 pb-10 pt-[148px] sm:px-5 lg:pt-[168px] ${className}`}>
+    <div className={`mx-auto max-w-[1400px] px-4 pb-10 pt-[100px] sm:px-5 sm:pt-[108px] lg:pt-[116px] ${className}`}>
       {children}
     </div>
   )

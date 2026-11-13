@@ -123,9 +123,25 @@ export function buscarRanking(motor, consulta) {
   const tokens = q.split(' ').filter(Boolean)
   if (!tokens.length) return { resultados: motor.indice.map((d) => ({ p: d.p, puntaje: 0 })), correccion: null, aproximado: false }
 
+  /* Codigo de producto escrito como sea: "DH-IPC-HFW", "dh ipc hfw", "ipchfw2441".
+     Se compara la consulta compactada (sin espacios ni signos) contra el codigo
+     compactado, por inclusion: no hace falta escribirlo completo ni exacto. */
+  const compacta = normalizarTexto(consulta).replace(/[^a-z0-9]/g, '')
+  const porCodigo = (doc) => {
+    if (compacta.length < 3 || !doc.sku) return 0
+    if (doc.sku === compacta) return 80
+    if (doc.sku.startsWith(compacta)) return 60
+    return doc.sku.includes(compacta) ? 40 : 0
+  }
+
   const evaluar = (toks, exigirTodos) => {
     const out = []
     for (const doc of motor.indice) {
+      const codigo = porCodigo(doc)
+      if (codigo) {
+        out.push({ p: doc.p, puntaje: codigo + (doc.p.disponibilidad === 'disponible' ? 0.5 : 0) })
+        continue
+      }
       let total = 0
       let coinciden = 0
       for (const t of toks) {

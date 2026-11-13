@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
 import { buscarRanking } from './motor.js'
+import { registrarEvento } from './popularidad.js'
 import { formatoPrecio } from './formato.js'
 import { IconoBuscar } from './Iconos.jsx'
 import { ImagenProducto } from './piezas.jsx'
@@ -24,10 +25,17 @@ export default function Buscador({ className = '', grande = false, atajo = false
   const cajaRef = useRef(null)
   const listaId = useId()
 
+  /* Sugerencias mientras se escribe, con una espera corta: no se recalcula en
+     cada tecla, sino cuando el visitante hace una pausa. */
+  const [diferida, setDiferida] = useState('')
+  useEffect(() => {
+    const id = window.setTimeout(() => setDiferida(consulta), 180)
+    return () => window.clearTimeout(id)
+  }, [consulta])
   const busqueda = useMemo(() => {
-    if (consulta.trim().length < 2) return { resultados: [], correccion: null }
-    return buscarRanking(catalogo.datos.motor, consulta)
-  }, [catalogo.datos.motor, consulta])
+    if (diferida.trim().length < 2) return { resultados: [], correccion: null }
+    return buscarRanking(catalogo.datos.motor, diferida)
+  }, [catalogo.datos.motor, diferida])
   const resultados = busqueda.resultados.map((r) => r.p)
   const sugerencias = resultados.slice(0, 6)
 
@@ -52,6 +60,11 @@ export default function Buscador({ className = '', grande = false, atajo = false
     return () => document.removeEventListener('pointerdown', fuera)
   }, [])
 
+  function irAProducto(p) {
+    registrarEvento('busqueda', [p.id])
+    ir(`/producto/${p.slug}`)
+  }
+
   function ir(ruta) {
     setAbierto(false)
     setActivo(-1)
@@ -62,7 +75,7 @@ export default function Buscador({ className = '', grande = false, atajo = false
 
   function onSubmit(e) {
     e.preventDefault()
-    if (activo >= 0 && sugerencias[activo]) return ir(`/producto/${sugerencias[activo].slug}`)
+    if (activo >= 0 && sugerencias[activo]) return irAProducto(sugerencias[activo])
     const q = consulta.trim()
     ir(q ? `/productos?q=${encodeURIComponent(q)}` : '/productos')
   }
@@ -127,7 +140,9 @@ export default function Buscador({ className = '', grande = false, atajo = false
           role="listbox"
           className="rv-solido absolute inset-x-0 top-full z-50 mt-2 overflow-hidden p-2"
         >
-          {sugerencias.length === 0 ? (
+          {sugerencias.length === 0 && consulta !== diferida ? (
+            <p className="rv-muted px-3 py-4 text-sm">Buscando…</p>
+          ) : sugerencias.length === 0 ? (
             <p className="rv-muted px-3 py-4 text-sm">
               Sin coincidencias para «{consulta.trim()}». Pruebe con otra palabra o consúltenos por WhatsApp.
             </p>
@@ -146,7 +161,7 @@ export default function Buscador({ className = '', grande = false, atajo = false
                   role="option"
                   aria-selected={activo === i}
                   onMouseEnter={() => setActivo(i)}
-                  onClick={() => ir(`/producto/${p.slug}`)}
+                  onClick={() => irAProducto(p)}
                   className={`group flex w-full cursor-pointer items-center gap-3 rounded-2xl p-2 text-left transition-colors ${
                     activo === i ? 'bg-black/[0.06] dark:bg-white/10' : ''
                   }`}

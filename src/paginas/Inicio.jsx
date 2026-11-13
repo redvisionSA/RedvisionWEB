@@ -5,25 +5,26 @@ import GlassPanel from '../components/GlassPanel.jsx'
 import { TileFullColor } from '../components/Tecnologia.jsx'
 import { TileResenas } from '../components/Ubicacion.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
-import { LINEAS } from '../tienda/lineas.js'
-import { LogoMarca, sePuedeComprar } from '../tienda/piezas.jsx'
-import { MARCAS_DISPOSITIVOS } from '../tienda/marcas.js'
-import Riel from '../tienda/Riel.jsx'
+import { sePuedeComprar } from '../tienda/piezas.jsx'
+import CarruselProductos from '../tienda/CarruselProductos.jsx'
+import CarruselMarcas from '../tienda/CarruselMarcas.jsx'
+import { usePopulares } from '../tienda/popularidad.js'
 import { IconoCamion, IconoEscudo, IconoFlecha, IconoLocal, IconoTecnico, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import EMPRESA from '../datos/empresa.js'
+import { enlaceConsulta } from '../tienda/whatsapp.js'
 import { usePagina } from './Pagina.jsx'
 
 /**
  * Inicio = tienda.
  *
  * Orden pensado para la decision de compra:
- *   1. Hero: busqueda y lineas a la vista (intencion), robot (marca).
- *   2. Departamentos con cantidad real de productos.
- *   3. Destacados y lo que el visitante ya miro (continuidad).
+ *   1. Hero: busqueda y "Ver todos los productos" (intencion), robot (marca).
+ *   2. Un solo carrusel automatico de productos: lo mas buscado y cotizado
+ *      de la semana. Pocas opciones ayudan a decidir; el resto, en la tienda.
+ *   3. Marcas en cinta automatica.
  *   4. Respaldo: garantia, asesoramiento, envio, retiro (reduce el riesgo percibido).
  *   5. Canal mayorista (el cliente que mas factura).
- *   6. Lo institucional, resumido y enlazado a su pestaña: tecnologia,
- *      proyectos, capacitacion, empresa, reseñas.
+ *   6. Lo institucional, resumido y enlazado a su pestaña.
  */
 
 const BENEFICIOS = [
@@ -86,109 +87,6 @@ function BandaTienda({ compacta = false }) {
   )
 }
 
-/* Marcas de dispositivos con su logo y su color; los accesorios, aparte */
-function Marcas() {
-  const { catalogo } = useTienda()
-  const { marcas, productos } = catalogo.datos
-  const items = MARCAS_DISPOSITIVOS.map((id) => {
-    const enCatalogo = marcas.find((m) => m.identidad?.clave === id.clave)
-    const slug = enCatalogo?.slug || id.clave
-    const n = productos.filter((p) => p.marca?.identidad?.clave === id.clave).length
-    return { id, slug, n, marca: enCatalogo || { slug, nombre: id.nombre, identidad: id } }
-  })
-  return (
-    <section aria-labelledby="titulo-marcas">
-      <div className="mb-4 px-1">
-        <p className="rv-eyebrow mb-1.5">Marcas</p>
-        <h2 id="titulo-marcas" className="text-onglass font-display text-xl font-bold sm:text-2xl">
-          Las marcas líderes de la seguridad electrónica
-        </h2>
-      </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-        {items.map(({ id, slug, n, marca }) => (
-          <li key={id.clave}>
-            <Link
-              to={`/productos?marca=${encodeURIComponent(slug)}`}
-              className="rv-solido rv-solido-hover group relative flex h-full flex-col overflow-hidden p-5"
-            >
-              <span className="absolute inset-x-0 top-0 h-1" style={{ background: id.color || '#0b0b0d' }} aria-hidden="true" />
-              <span className="flex h-12 items-center">
-                <LogoMarca marca={marca} alto={30} />
-              </span>
-              <span className="mt-3 text-sm leading-relaxed text-black/70 dark:text-white/70">{id.texto}</span>
-              <span className="mt-auto flex items-center justify-between pt-4 font-display text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
-                {n > 0 ? `Ver ${n} productos` : 'Ver productos'}
-                <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" style={id.color ? { color: id.color } : undefined} />
-              </span>
-              {id.oficial && (
-                <span className="absolute right-3 top-3 rounded-md bg-black px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white dark:bg-white dark:text-black">
-                  Distribuidor oficial
-                </span>
-              )}
-            </Link>
-          </li>
-        ))}
-        <li>
-          <Link to="/productos/accesorios" className="rv-solido rv-solido-hover group relative flex h-full flex-col overflow-hidden p-5">
-            <span className="absolute inset-x-0 top-0 h-1 bg-black dark:bg-white" aria-hidden="true" />
-            <span className="flex h-12 items-center font-display text-xl font-bold text-black dark:text-white">Accesorios</span>
-            <span className="mt-3 text-sm leading-relaxed text-black/70 dark:text-white/70">
-              Soportes, cajas, conectores, cableado, energía e instrumental de las principales marcas del mercado.
-            </span>
-            <span className="mt-auto flex items-center justify-between pt-4 font-display text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
-              Ver accesorios
-              <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </span>
-          </Link>
-        </li>
-      </ul>
-    </section>
-  )
-}
-
-function Departamentos() {
-  const { catalogo } = useTienda()
-  const conteo = useMemo(() => {
-    const c = {}
-    catalogo.datos.productos.forEach((p) => {
-      c[p.linea] = (c[p.linea] || 0) + 1
-    })
-    return c
-  }, [catalogo.datos.productos])
-
-  return (
-    <section aria-labelledby="titulo-departamentos">
-      <div className="mb-4 px-1">
-        <p className="rv-eyebrow mb-1.5">Comprar por línea</p>
-        <h2 id="titulo-departamentos" className="text-onglass font-display text-xl font-bold sm:text-2xl">
-          Todo lo que lleva una instalación profesional
-        </h2>
-      </div>
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {LINEAS.map((l) => (
-          <li key={l.id}>
-            <div className="rv-solido rv-solido-hover group h-full">
-              <Link to={`/productos/${l.id}`} className="flex h-full flex-col p-4 sm:p-5">
-                <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-white transition-colors duration-300 group-hover:bg-rv-red dark:bg-white dark:text-black dark:group-hover:bg-rv-red dark:group-hover:text-white">
-                  <l.Icono className="h-5 w-5" />
-                </span>
-                <span className="text-onglass font-display text-sm font-semibold leading-tight group-hover:text-rv-red sm:text-base">
-                  {l.titulo}
-                </span>
-                <span className="rv-muted mt-1 text-xs leading-snug">{l.resumen}</span>
-                <span className="mt-auto flex items-center justify-between pt-4 font-display text-[11px] font-semibold uppercase tracking-wide text-black/60 dark:text-white/65">
-                  {conteo[l.id] ? `${conteo[l.id]} productos` : 'Ver línea'}
-                  <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-rv-red" />
-                </span>
-              </Link>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
-
 function Beneficios() {
   return (
     <div className="rv-solido p-4 sm:p-6">
@@ -224,9 +122,9 @@ function BandaMayorista() {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
-          <Link to="/contacto?tipo=mayorista" className="rv-btn-primary w-full sm:w-auto lg:min-w-[260px]">
+          <a href={enlaceConsulta('mayorista')} target="_blank" rel="noopener noreferrer" className="rv-btn-primary w-full sm:w-auto lg:min-w-[260px]">
             Solicitar cuenta mayorista
-          </Link>
+          </a>
           <a
             href={EMPRESA.telefono.whatsapp}
             target="_blank"
@@ -300,21 +198,24 @@ function SinCatalogo() {
 
 export default function Inicio({ onRobotListo }) {
   usePagina({})
-  const { catalogo, vistos } = useTienda()
+  const { catalogo } = useTienda()
   const { productos, porId } = catalogo.datos
+  const populares = usePopulares()
 
-  const destacados = useMemo(() => {
-    const marcados = productos.filter((p) => p.destacado && sePuedeComprar(p))
-    const base = marcados.length >= 4 ? marcados : productos.filter((p) => sePuedeComprar(p) && p.precio !== null)
-    return base.slice(0, 12)
-  }, [productos])
-
-  const videovigilancia = useMemo(
-    () => productos.filter((p) => p.linea === 'cctv' && sePuedeComprar(p)).slice(0, 12),
-    [productos]
+  /* Un solo carrusel: lo mas buscado y cotizado de la semana. Mientras no haya
+     ranking (base sin datos o sin configurar), los destacados con precio. El
+     titulo dice la verdad sobre que se esta mostrando. */
+  const ranking = useMemo(
+    () => (populares || []).map((id) => porId.get(id)).filter((p) => p && sePuedeComprar(p)),
+    [populares, porId]
   )
-
-  const recientes = useMemo(() => vistos.map((id) => porId.get(id)).filter(Boolean), [vistos, porId])
+  const hayRanking = ranking.length >= 4
+  const carrusel = useMemo(() => {
+    if (hayRanking) return ranking.slice(0, 12)
+    const marcados = productos.filter((p) => p.destacado && sePuedeComprar(p))
+    const base = marcados.length >= 4 ? marcados : productos.filter((p) => sePuedeComprar(p) && p.precio !== null && p.imagen)
+    return base.slice(0, 12)
+  }, [hayRanking, ranking, productos])
 
   return (
     <>
@@ -322,13 +223,14 @@ export default function Inicio({ onRobotListo }) {
 
       <div className="mx-auto flex max-w-[1400px] flex-col gap-10 px-4 pb-10 sm:gap-12 sm:px-5">
         <BandaTienda />
-        <Departamentos />
         <SinCatalogo />
-        <Riel eyebrow="Selección" titulo="Productos destacados" productos={destacados} verTodo="/productos" />
-        {recientes.length > 0 && <Riel eyebrow="Para retomar" titulo="Vistos recientemente" productos={recientes} />}
-        <Marcas />
+        <CarruselProductos
+          eyebrow={hayRanking ? 'Tendencia' : 'Selección'}
+          titulo={hayRanking ? 'Lo más buscado y cotizado de la semana' : 'Productos destacados'}
+          productos={carrusel}
+        />
+        <CarruselMarcas />
         <Beneficios />
-        <Riel eyebrow="Videovigilancia" titulo="Cámaras y grabación" productos={videovigilancia} verTodo="/productos/cctv" />
         <BandaMayorista />
 
         <section aria-label="Tecnología Full-Color">

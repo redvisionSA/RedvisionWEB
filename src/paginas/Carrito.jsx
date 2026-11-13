@@ -7,6 +7,7 @@ import { formatoPrecio } from '../tienda/formato.js'
 import { enlaceWhatsapp, mensajePedido } from '../tienda/whatsapp.js'
 import { IconoCheck, IconoEscudo, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import EMPRESA from '../datos/empresa.js'
+import { registrarEvento } from '../tienda/popularidad.js'
 import Pagina, { usePagina } from './Pagina.jsx'
 
 /**
@@ -164,6 +165,7 @@ export default function Carrito() {
       entrega === 'envio' ? `Envío a ${d.direccion}, ${d.localidad}, ${d.provincia} (${d.cp})` : 'Retiro en el local'
     const respaldo = mensajePedido({ lineas: validas, cliente: { nombre: d.nombre, entrega: textoEntrega } })
 
+    registrarEvento('pedido', validas.map((l) => l.id))
     setErrorEnvio('')
     setMensajeRespaldo('')
     setEnviando(true)
@@ -325,7 +327,7 @@ export default function Carrito() {
             </div>
           </div>
 
-          <div className="lg:sticky lg:top-[150px] lg:self-start">
+          <div className="lg:sticky lg:top-[110px] lg:self-start">
             <div className="rv-solido p-5 sm:p-6">
               <h2 className="text-onglass font-display text-lg font-bold">Resumen</h2>
               <dl className="mt-4 space-y-2 text-sm">

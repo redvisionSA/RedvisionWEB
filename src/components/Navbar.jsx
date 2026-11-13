@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
@@ -17,11 +17,9 @@ const SECCIONES = [
   { to: '/proyectos', label: 'Proyectos' },
   { to: '/tecnologia', label: 'Tecnología' },
   { to: '/capacitaciones', label: 'Capacitación' },
-  { to: '/contacto', label: 'Contacto' },
 ]
 
 
-const RADIO_IMAN = 110 // px: alcance de la magnificacion tipo dock
 
 /* ------------------------------------------------------------------ iconos */
 const svg = {
@@ -172,29 +170,6 @@ export function LensSwitch({ className = '' }) {
 }
 
 
-/* ============================================================ Tienda */
-/* Acceso a todo el catalogo: el boton mas visible de la barra, siempre a la
-   vista (tambien con la barra compacta y en telefono). */
-function BotonTienda() {
-  const { pathname } = useLocation()
-  const activo = pathname.startsWith('/producto')
-  return (
-    <Link
-      to="/productos"
-      aria-current={activo ? 'page' : undefined}
-      className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-pill px-3 font-display text-[13px] font-semibold text-white transition-all duration-200 ease-apple active:scale-95 sm:px-4
-                  ${activo ? 'bg-black dark:bg-white dark:text-black' : 'bg-rv-red hover:bg-rv-red-press'}`}
-      style={activo ? undefined : { boxShadow: '0 8px 22px -10px rgba(214,25,34,0.9)' }}
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]" aria-hidden="true">
-        <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
-      </svg>
-      <span className="hidden sm:inline">Productos</span>
-      <span className="sr-only sm:hidden">Todos los productos</span>
-    </Link>
-  )
-}
-
 /* ============================================================ Carrito */
 function BotonCarrito() {
   const { resumen, setCarritoAbierto, ultimoAgregado } = useTienda()
@@ -304,10 +279,72 @@ function MenuProductos({ abierto, onCerrar }) {
 }
 
 /* ================================================================== Navbar */
-const claseEnlace = ({ isActive }) =>
-  `relative block cursor-pointer rounded-pill px-3.5 py-1.5 font-display text-[13px] font-medium
-   transition-[color,background-color,transform] duration-200 ease-apple
-   ${isActive ? 'bg-rv-red text-white shadow-[0_8px_22px_-10px_rgba(214,25,34,0.9)]' : 'text-black/75 hover:text-rv-red dark:text-white/75 dark:hover:text-rv-red'}`
+const Chevron = ({ abierto, className = '' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={`h-3.5 w-3.5 transition-transform duration-200 ${abierto ? 'rotate-180' : ''} ${className}`} aria-hidden="true">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)
+
+const IconoPersona = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </svg>
+)
+
+const IconoLupa = (p) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true" {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4.2-4.2" />
+  </svg>
+)
+
+const botonRedondo =
+  'inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-pill text-black transition-all duration-300 ease-apple hover:text-rv-red active:scale-90 dark:text-white'
+const fondoBoton = { background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }
+
+/* Menu desplegable simple (Empresa): se abre con clic o, con cursor, al pasar */
+function MenuEmpresa({ abierto, setAbierto, canHover }) {
+  const { pathname } = useLocation()
+  const activo = SECCIONES.some((s) => pathname.startsWith(s.to))
+  return (
+    <div className="relative" onMouseEnter={() => canHover && setAbierto(true)} onMouseLeave={() => canHover && setAbierto(false)}>
+      <button
+        type="button"
+        onClick={() => setAbierto((v) => !v)}
+        aria-expanded={abierto}
+        aria-haspopup="true"
+        className={`inline-flex h-11 items-center gap-1.5 rounded-pill px-3.5 font-display text-[13px] font-semibold transition-colors
+                    ${activo ? 'text-rv-red' : 'text-black/80 hover:text-rv-red dark:text-white/85'}`}
+      >
+        Empresa
+        <Chevron abierto={abierto} />
+      </button>
+      {abierto && (
+        <div className="absolute left-0 top-full pt-2">
+          <GlassPanel variant="chrome" className="w-56 rounded-3xl p-2">
+            <ul className="flex flex-col">
+              {SECCIONES.map((s) => (
+                <li key={s.to}>
+                  <NavLink
+                    to={s.to}
+                    onClick={() => setAbierto(false)}
+                    className={({ isActive }) =>
+                      `flex min-h-[44px] items-center rounded-2xl px-3.5 font-display text-sm font-medium transition-colors
+                       ${isActive ? 'bg-rv-red text-white' : 'text-black hover:bg-black/[0.05] hover:text-rv-red dark:text-white dark:hover:bg-white/10'}`
+                    }
+                  >
+                    {s.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </GlassPanel>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Navbar() {
   const { canHover, isDark } = useSite()
@@ -315,8 +352,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [megaOpen, setMegaOpen] = useState(false)
+  const [empresaOpen, setEmpresaOpen] = useState(false)
+  const [buscarOpen, setBuscarOpen] = useState(false)
   const [progreso, setProgreso] = useState(0)
-  const itemsRef = useRef([])
 
   useEffect(() => {
     const onScroll = () => {
@@ -333,35 +371,17 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
     setMegaOpen(false)
+    setEmpresaOpen(false)
+    setBuscarOpen(false)
   }, [location.pathname, location.search])
-
-  /* Magnificacion tipo dock de macOS */
-  const onDockMove = useCallback(
-    (event) => {
-      if (!canHover) return
-      itemsRef.current.forEach((node) => {
-        if (!node) return
-        const rect = node.getBoundingClientRect()
-        const centro = rect.left + rect.width / 2
-        const distancia = Math.abs(event.clientX - centro)
-        const fuerza = Math.max(0, 1 - distancia / RADIO_IMAN)
-        node.style.transform = `scale(${(1 + fuerza * 0.16).toFixed(3)}) translateY(${(-fuerza * 2).toFixed(2)}px)`
-      })
-    },
-    [canHover]
-  )
-
-  const onDockLeave = useCallback(() => {
-    itemsRef.current.forEach((node) => {
-      if (node) node.style.transform = ''
-    })
-  }, [])
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         setMenuOpen(false)
         setMegaOpen(false)
+        setEmpresaOpen(false)
+        setBuscarOpen(false)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -380,116 +400,122 @@ export default function Navbar() {
         />
       </div>
 
-      <div className="pt-safe mx-auto flex max-w-[1400px] items-start gap-3 px-3 sm:px-5">
-        <div className="relative flex min-w-0 flex-1 flex-col gap-2">
-          {/* ---------------- Capsula principal ---------------- */}
-          <GlassPanel
-            as="nav"
-            aria-label="Navegación principal"
-            variant="chrome"
-            className={`pointer-events-auto flex items-center gap-2 rounded-pill transition-all duration-400 ease-apple sm:gap-3
-                        ${scrolled ? 'px-2.5 py-2 sm:px-4' : 'px-3 py-2.5 sm:px-5 sm:py-3'}`}
-            style={{ borderRadius: 999 }}
+      <div className="pt-safe relative mx-auto max-w-[1400px] px-3 sm:px-5">
+        {/* ---------------- Una sola barra con todo ---------------- */}
+        <GlassPanel
+          as="nav"
+          aria-label="Navegación principal"
+          variant="chrome"
+          className={`pointer-events-auto flex items-center gap-1.5 rounded-pill transition-all duration-400 ease-apple sm:gap-2
+                      ${scrolled ? 'px-2.5 py-1.5 sm:px-3' : 'px-3 py-2 sm:px-4'}`}
+          style={{ borderRadius: 999 }}
+        >
+          <Link to="/" aria-label="REDVISION - Inicio" className="group flex shrink-0 items-center pl-1 pr-1">
+            <img
+              src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
+              alt="REDVISION - Tecnología sin límites"
+              width="300"
+              height="62"
+              className={`w-auto max-w-[118px] object-contain transition-all duration-400 ease-apple group-hover:scale-[1.04] xs:max-w-[150px] lg:max-w-[180px]
+                          ${scrolled ? 'h-7 sm:h-8' : 'h-8 sm:h-10'}`}
+              loading="eager"
+              decoding="async"
+            />
+          </Link>
+
+          {/* Productos: clic va al catalogo; la flecha (o el cursor) abre lineas y marcas */}
+          <div
+            className="hidden shrink-0 items-center lg:flex"
+            onMouseEnter={() => canHover && setMegaOpen(true)}
           >
-            <Link to="/" aria-label="REDVISION - Inicio" className="group flex min-w-0 shrink-0 cursor-pointer items-center pl-1 pr-1 sm:pr-2">
-              <img
-                src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
-                alt="REDVISION - Tecnología sin límites"
-                width="300"
-                height="62"
-                className={`w-auto max-w-[108px] object-contain xs:max-w-[150px] transition-all duration-400 ease-apple group-hover:scale-[1.04] sm:max-w-none
-                            ${scrolled ? 'h-7 sm:h-9' : 'h-8 sm:h-11 lg:h-12'}`}
-                loading="eager"
-                decoding="async"
-              />
+            <Link
+              to="/productos"
+              aria-current={enTienda ? 'page' : undefined}
+              className={`inline-flex h-11 items-center gap-2 rounded-l-pill pl-4 pr-2 font-display text-[13px] font-semibold text-white transition-colors
+                          ${enTienda ? 'bg-black dark:bg-white dark:text-black' : 'bg-rv-red hover:bg-rv-red-press'}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-[18px] w-[18px]" aria-hidden="true">
+                <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+              </svg>
+              Productos
             </Link>
-
-            <Buscador atajo className="mx-auto hidden w-full max-w-xl lg:block" />
-
-            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 md:ml-0">
-              <BotonTienda />
-              <LensSwitch className="hidden xl:inline-flex" />
-              <ThemeSwitch className="hidden sm:inline-flex" />
-              <BotonFavoritos className="hidden sm:inline-flex" />
-              <BotonCarrito />
-              <button
-                type="button"
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-expanded={menuOpen}
-                aria-controls="rv-sheet"
-                aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black
-                           transition-all duration-300 ease-apple hover:text-rv-red active:scale-90 dark:text-white lg:hidden"
-                style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-              >
-                {menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-              </button>
-            </div>
-          </GlassPanel>
-
-          {/* ---------------- Segunda fila: departamentos e institucional (escritorio) ---------------- */}
-          <div
-            className={`pointer-events-auto relative hidden transition-all duration-400 ease-apple lg:block ${
-              scrolled ? 'pointer-events-none -translate-y-2 opacity-0' : 'opacity-100'
-            }`}
-            aria-hidden={scrolled}
-          >
-            <GlassPanel variant="chrome" className="flex items-center gap-2 rounded-pill px-2 py-1.5" style={{ borderRadius: 999 }}>
-              <button
-                type="button"
-                onClick={() => setMegaOpen((v) => !v)}
-                onMouseEnter={() => canHover && setMegaOpen(true)}
-                aria-expanded={megaOpen}
-                tabIndex={scrolled ? -1 : 0}
-                className={`inline-flex cursor-pointer items-center gap-2 rounded-pill px-4 py-1.5 font-display text-[13px] font-semibold transition-colors
-                            ${megaOpen || enTienda ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-black hover:text-rv-red dark:text-white'}`}
-              >
-                <MenuIcon className="h-4 w-4" />
-                Líneas y marcas
-              </button>
-
-              <ul className="flex items-center gap-0.5" onPointerMove={onDockMove} onPointerLeave={onDockLeave}>
-                {SECCIONES.map((s, i) => (
-                  <li key={s.to}>
-                    <NavLink ref={(node) => (itemsRef.current[i] = node)} to={s.to} className={claseEnlace} tabIndex={scrolled ? -1 : 0}>
-                      {s.label}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="rv-muted ml-auto hidden items-center gap-2 pr-2 text-[12px] 2xl:flex">
-                <span className="h-1.5 w-1.5 animate-rv-breathe rounded-full bg-rv-red" aria-hidden="true" />
-                Envíos a todo el país · Asesoramiento técnico sin cargo
-              </p>
-              <PreHeader compacto className="ml-auto shrink-0 2xl:ml-0" />
-            </GlassPanel>
-            <MenuProductos abierto={megaOpen && !scrolled} onCerrar={() => setMegaOpen(false)} />
+            <button
+              type="button"
+              onClick={() => setMegaOpen((v) => !v)}
+              aria-expanded={megaOpen}
+              aria-label="Ver líneas y marcas"
+              className={`inline-flex h-11 items-center rounded-r-pill border-l border-white/25 pl-2 pr-3 text-white transition-colors
+                          ${enTienda ? 'bg-black dark:bg-white dark:text-black' : 'bg-rv-red hover:bg-rv-red-press'}`}
+            >
+              <Chevron abierto={megaOpen} />
+            </button>
           </div>
 
-          {/* ---------------- Buscador en telefono ---------------- */}
-          <div
-            className={`pointer-events-auto transition-all duration-400 ease-apple lg:hidden ${
-              scrolled ? 'pointer-events-none -translate-y-2 opacity-0' : 'opacity-100'
-            }`}
-          >
-            <Buscador />
+          <div className="hidden lg:block">
+            <MenuEmpresa abierto={empresaOpen} setAbierto={setEmpresaOpen} canHover={canHover} />
           </div>
+
+          <Buscador atajo className="mx-1 hidden min-w-0 flex-1 lg:block" />
+
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 lg:ml-0">
+            <PreHeader compacto className="hidden 2xl:flex" />
+            <button
+              type="button"
+              onClick={() => setBuscarOpen((v) => !v)}
+              aria-expanded={buscarOpen}
+              aria-label="Buscar productos"
+              className={`${botonRedondo} lg:hidden`}
+              style={fondoBoton}
+            >
+              <IconoLupa className="h-5 w-5" />
+            </button>
+            <Link to="/cuenta" aria-label="Ingresar" title="Ingresar" className={`${botonRedondo} hidden xs:inline-flex`} style={fondoBoton}>
+              <IconoPersona className="h-5 w-5" />
+            </Link>
+            <BotonFavoritos className="hidden sm:inline-flex" />
+            <ThemeSwitch className="hidden sm:inline-flex" />
+            <BotonCarrito />
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-expanded={menuOpen}
+              aria-controls="rv-sheet"
+              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              className={`${botonRedondo} lg:hidden`}
+              style={fondoBoton}
+            >
+              {menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+            </button>
+          </div>
+        </GlassPanel>
+
+        {/* Lineas y marcas (escritorio) */}
+        <div className="hidden lg:block" onMouseLeave={() => canHover && setMegaOpen(false)}>
+          <MenuProductos abierto={megaOpen} onCerrar={() => setMegaOpen(false)} />
         </div>
 
+        {/* Buscador en telefono y tablet: se despliega desde la lupa de la barra */}
+        {buscarOpen && (
+          <div className="pointer-events-auto mt-2 lg:hidden">
+            <Buscador autoFocus onBuscar={() => setBuscarOpen(false)} />
+          </div>
+        )}
       </div>
 
       {/* ---------------- Hoja movil ---------------- */}
       <div id="rv-sheet" hidden={!menuOpen} className="pointer-events-auto mx-3 mt-2 sm:mx-5 lg:hidden">
-        <GlassPanel variant="chrome" className="max-h-[calc(100svh-120px)] overflow-y-auto rounded-glass-lg p-4">
-          <p className="rv-eyebrow mb-2 px-2">Productos</p>
+        <GlassPanel variant="chrome" className="max-h-[calc(100svh-110px)] overflow-y-auto rounded-glass-lg p-4">
+          <Link to="/productos" className="rv-btn-primary w-full">
+            Ver todos los productos
+          </Link>
+          <p className="rv-eyebrow mb-2 mt-5 px-2">Líneas</p>
           <ul className="grid grid-cols-2 gap-1.5">
             {LINEAS.map((l) => (
               <li key={l.id}>
                 <Link
                   to={`/productos/${l.id}`}
                   className="flex min-h-[52px] items-center gap-2.5 rounded-2xl px-3 font-display text-sm font-medium text-black hover:text-rv-red dark:text-white"
-                  style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+                  style={fondoBoton}
                 >
                   <l.Icono className="h-5 w-5 shrink-0" />
                   <span className="leading-tight">{l.titulo}</span>
@@ -497,13 +523,10 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <Link to="/productos" className="rv-btn-primary mt-3 w-full">
-            Ver todos los productos
-          </Link>
 
           <p className="rv-eyebrow mb-2 mt-5 px-2">REDVISION</p>
           <ul className="flex flex-col gap-1">
-            {[{ to: '/favoritos', label: 'Mis favoritos' }, ...SECCIONES].map((s) => (
+            {[{ to: '/cuenta', label: 'Ingresar' }, { to: '/favoritos', label: 'Mis favoritos' }, ...SECCIONES].map((s) => (
               <li key={s.to}>
                 <NavLink
                   to={s.to}
@@ -517,7 +540,7 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-2" style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}>
+          <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-2" style={fondoBoton}>
             <span className="font-display text-sm font-medium text-black dark:text-white">Tema claro / oscuro</span>
             <ThemeSwitch />
           </div>
