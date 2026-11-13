@@ -122,6 +122,38 @@ export function AvisoDemo() {
   )
 }
 
+/* ---------------------------------------------------------- Formularios */
+export function Campo({ id, label, error, ayuda, children, className = '' }) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-black/80 dark:text-white/85">
+        {label}
+      </label>
+      {children}
+      {ayuda && !error && <p className="rv-muted mt-1 text-xs">{ayuda}</p>}
+      {error && (
+        <p id={`${id}-error`} className="mt-1 text-xs font-semibold text-rv-red">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Error de un envio: borde rojo y role=alert para lectores de pantalla. */
+export function AvisoError({ children, className = '' }) {
+  if (!children) return null
+  return (
+    <div
+      className={`rounded-2xl p-4 text-sm ${className}`}
+      style={{ border: '1px solid #D61922', background: 'rgba(214,25,34,0.06)' }}
+      role="alert"
+    >
+      <div className="font-semibold text-rv-red">{children}</div>
+    </div>
+  )
+}
+
 /* ---------------------------------------------------------- Migas */
 export function Migas({ items }) {
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import LineaCarrito from '../tienda/LineaCarrito.jsx'
-import { Migas } from '../tienda/piezas.jsx'
+import { Campo, Migas } from '../tienda/piezas.jsx'
 import { formatoPrecio } from '../tienda/formato.js'
 import { enlaceWhatsapp, mensajePedido } from '../tienda/whatsapp.js'
 import { IconoCheck, IconoEscudo, IconoWhatsapp } from '../tienda/Iconos.jsx'
@@ -60,22 +60,6 @@ function Pasos({ actual }) {
         </li>
       ))}
     </ol>
-  )
-}
-
-function Campo({ id, label, error, children, className = '' }) {
-  return (
-    <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-black/80 dark:text-white/85">
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p id={`${id}-error`} className="mt-1 text-xs font-semibold text-rv-red">
-          {error}
-        </p>
-      )}
-    </div>
   )
 }
 

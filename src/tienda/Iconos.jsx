@@ -30,6 +30,21 @@ export const IconoCorazon = ({ lleno, ...p }) => (
   </svg>
 )
 
+export const IconoUsuario = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="8.5" r="3.8" />
+    <path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" />
+  </svg>
+)
+
+export const IconoOjo = ({ tachado, ...p }) => (
+  <svg {...base} {...p}>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="2.8" />
+    {tachado && <path d="m4 4 16 16" />}
+  </svg>
+)
+
 export const IconoCheck = (p) => (
   <svg {...base} strokeWidth="2.4" {...p}>
     <path d="m4 12 5 5L20 6" />

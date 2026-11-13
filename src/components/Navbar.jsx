@@ -5,7 +5,8 @@ import GlassPanel from './GlassPanel.jsx'
 import Buscador from '../tienda/Buscador.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { LINEAS } from '../tienda/lineas.js'
-import { IconoCarrito, IconoCorazon, IconoWhatsapp } from '../tienda/Iconos.jsx'
+import { IconoCarrito, IconoCorazon, IconoUsuario, IconoWhatsapp } from '../tienda/Iconos.jsx'
+import { useCuenta } from '../cuenta/CuentaContext.jsx'
 import { LogoMarca } from '../tienda/piezas.jsx'
 import EMPRESA from '../datos/empresa.js'
 
@@ -217,6 +218,36 @@ function BotonFavoritos({ className = '' }) {
   )
 }
 
+/* ============================================================ Cuenta */
+/* Cliente con sesion: su nombre (desde xl) y acceso a «Mi cuenta». Sin
+   sesion: «Ingresar». En telefono angosto (< xs) vive solo en la hoja del menu. */
+function BotonCuenta({ className = '' }) {
+  const { cuenta } = useCuenta()
+  const { pathname } = useLocation()
+  const activo = pathname.startsWith('/cuenta')
+  return (
+    <Link
+      to={cuenta ? '/cuenta' : '/cuenta/ingresar'}
+      aria-label={cuenta ? `Mi cuenta: ${cuenta.name}` : 'Ingresar a mi cuenta'}
+      title={cuenta ? cuenta.name : 'Ingresar'}
+      aria-current={activo ? 'page' : undefined}
+      className={`relative h-11 min-w-[44px] shrink-0 items-center justify-center gap-2 rounded-pill px-2.5 font-display text-[13px] font-semibold transition-all duration-300 ease-apple hover:text-rv-red active:scale-95
+                  ${activo ? 'text-rv-red' : 'text-black dark:text-white'} ${className}`}
+      style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
+    >
+      <IconoUsuario className="h-5 w-5 shrink-0" />
+      {cuenta ? (
+        <>
+          <span className="hidden max-w-[130px] truncate xl:inline">{cuenta.name}</span>
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rv-red ring-2 ring-white dark:ring-black xl:hidden" aria-hidden="true" />
+        </>
+      ) : (
+        <span className="hidden pr-1 xl:inline">Ingresar</span>
+      )}
+    </Link>
+  )
+}
+
 /* ========================================================= Mega menu */
 function MarcasMenu({ onCerrar }) {
   const { catalogo } = useTienda()
@@ -285,13 +316,6 @@ const Chevron = ({ abierto, className = '' }) => (
   </svg>
 )
 
-const IconoPersona = (p) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...p}>
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 21a8 8 0 0 1 16 0" />
-  </svg>
-)
-
 const IconoLupa = (p) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true" {...p}>
     <circle cx="11" cy="11" r="6.5" />
@@ -348,6 +372,7 @@ function MenuEmpresa({ abierto, setAbierto, canHover }) {
 
 export default function Navbar() {
   const { canHover, isDark } = useSite()
+  const { cuenta } = useCuenta()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -469,9 +494,7 @@ export default function Navbar() {
             >
               <IconoLupa className="h-5 w-5" />
             </button>
-            <Link to="/cuenta" aria-label="Ingresar" title="Ingresar" className={`${botonRedondo} hidden xs:inline-flex`} style={fondoBoton}>
-              <IconoPersona className="h-5 w-5" />
-            </Link>
+            <BotonCuenta className="hidden xs:inline-flex" />
             <BotonFavoritos className="hidden sm:inline-flex" />
             <ThemeSwitch className="hidden sm:inline-flex" />
             <BotonCarrito />
@@ -526,7 +549,11 @@ export default function Navbar() {
 
           <p className="rv-eyebrow mb-2 mt-5 px-2">REDVISION</p>
           <ul className="flex flex-col gap-1">
-            {[{ to: '/cuenta', label: 'Ingresar' }, { to: '/favoritos', label: 'Mis favoritos' }, ...SECCIONES].map((s) => (
+            {[
+              cuenta ? { to: '/cuenta', label: `Mi cuenta · ${cuenta.name}` } : { to: '/cuenta/ingresar', label: 'Ingresar a mi cuenta' },
+              { to: '/favoritos', label: 'Mis favoritos' },
+              ...SECCIONES,
+            ].map((s) => (
               <li key={s.to}>
                 <NavLink
                   to={s.to}

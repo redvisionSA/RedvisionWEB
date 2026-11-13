@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 
 const SITIO = 'REDVISION'
+/* El mismo valor que index.html; las paginas de cuenta lo cambian a noindex */
+const ROBOTS_BASE = 'index, follow, max-image-preview:large'
 const DESCRIPCION_BASE =
   'Tienda de equipamiento de seguridad electrónica: videovigilancia, control de accesos, detección de intrusión, redes y energía. Precios con IVA, envíos a todo el país y asesoramiento técnico.'
 
@@ -15,16 +17,17 @@ function fijarMeta(nombre, valor, atributo = 'name') {
 }
 
 /** Titulo, descripcion y canonica por ruta (SPA: lo leen navegadores y Google al renderizar). */
-export function usePagina({ titulo, descripcion } = {}) {
+export function usePagina({ titulo, descripcion, indexar = true } = {}) {
   useEffect(() => {
     const tituloCompleto = titulo ? `${titulo} | ${SITIO}` : `${SITIO} | Tienda de seguridad electrónica`
     document.title = tituloCompleto
+    fijarMeta('robots', indexar ? ROBOTS_BASE : 'noindex, nofollow')
     fijarMeta('description', descripcion || DESCRIPCION_BASE)
     fijarMeta('og:title', tituloCompleto, 'property')
     fijarMeta('og:description', descripcion || DESCRIPCION_BASE, 'property')
     const canonica = document.head.querySelector('link[rel="canonical"]')
     if (canonica) canonica.setAttribute('href', `https://redvision.com.ar${window.location.pathname}`)
-  }, [titulo, descripcion])
+  }, [titulo, descripcion, indexar])
 }
 
 /** Contenedor de pagina interior: deja lugar a la barra de dos filas. */

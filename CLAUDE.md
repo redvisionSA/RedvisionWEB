@@ -150,6 +150,27 @@ siguientes.
   espera"), venta cruzada técnica ("Complete la instalación", `COMPLEMENTOS`), barra fija de compra en
   teléfono, WhatsApp flotante con el producto en el mensaje.
 
+### Cuentas de clientes (13/11)
+Solo clientes de los puntos de venta (Gremio, Mayorista, Distribuidor) dados de alta por el vendedor
+en el ERP; no hay registro abierto. API: módulo `customer_portal` del ERP (CONTRACTS.md del backend),
+base `VITE_CUENTAS_URL` (por defecto `https://api-erp.redvision.com.ar/shop/redvision`). En producción
+el ERP la tiene apagada (`SHOP_ACCOUNTS_ENABLED=false` → 404) y la web muestra «El acceso de clientes
+todavía no está habilitado»; se prende recién cuando estas páginas estén publicadas.
+- Rutas (`src/paginas/Cuenta.jsx`, `noindex`, zona tienda): `/cuenta` (datos, cambiar contraseña,
+  cerrar sesión) · `/cuenta/ingresar?volver=` · `/cuenta/activar?token=` (enlace de la invitación) ·
+  `/cuenta/activar-codigo` (código `XXXX-XXXX` del vendedor) · `/cuenta/olvide` (contraseña y usuario:
+  siempre el mismo mensaje) · `/cuenta/restablecer?token=`. Los errores muestran el `message` del ERP.
+- Sesión (`src/cuenta/sesion.js`): accessToken solo en memoria; refreshToken rotativo + datos de la
+  cuenta en `localStorage` (`rv-cuenta-v1`), sin cookies. **La renovación corre bajo Web Locks entre
+  pestañas** y lee el refreshToken vigente justo antes de usarlo: reusar uno viejo cierra todas las
+  sesiones de la cuenta en el ERP. Salir o entrar en otra pestaña se refleja por el evento `storage`.
+- Barra: `BotonCuenta` en `Navbar.jsx` ocupa el lugar del ícono de persona del nav de una fila (con
+  sesión muestra el nombre desde `xl` y un punto rojo debajo); en la hoja del menú es la primera entrada.
+- Probar en local: ERP con `SHOP_ACCOUNTS_ENABLED=true SHOP_MAIL_MODE=log SHOP_RV_URL=http://localhost:5180`
+  sobre una base descartable (nunca `rvcr_dev`), `.env.local` con `VITE_CUENTAS_URL` y Vite en 5180;
+  los enlaces de los correos salen en el log del ERP. **Borrar `.env.local` antes de compilar para
+  publicar** (Vite lo incrusta en el build).
+
 ### Pendientes de la tienda
 1. ~~Endpoint del ERP~~: en producción desde el 13/11 (`https://api-erp.redvision.com.ar/storefront/catalog`,
    precio = lista Gremio de RV con IVA; RV todavía sin stock: todo «a pedido»).

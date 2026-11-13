@@ -5,6 +5,7 @@ import VideoBackground from './components/VideoBackground.jsx'
 import PantallaCarga from './components/PantallaCarga.jsx'
 import Navbar from './components/Navbar.jsx'
 import { TiendaProvider } from './tienda/TiendaContext.jsx'
+import { CuentaProvider } from './cuenta/CuentaContext.jsx'
 import CarritoDrawer from './tienda/CarritoDrawer.jsx'
 import BotonWhatsapp from './tienda/BotonWhatsapp.jsx'
 import { AvisoDemo } from './tienda/piezas.jsx'
@@ -16,13 +17,19 @@ const Catalogo = lazy(() => import('./paginas/Catalogo.jsx'))
 const Producto = lazy(() => import('./paginas/Producto.jsx'))
 const Carrito = lazy(() => import('./paginas/Carrito.jsx'))
 const Favoritos = lazy(() => import('./paginas/Favoritos.jsx'))
-const Cuenta = lazy(() => import('./paginas/Cuenta.jsx'))
 const institucional = (nombre) => lazy(() => import('./paginas/Institucionales.jsx').then((m) => ({ default: m[nombre] })))
 const Empresa = institucional('Empresa')
 const Proyectos = institucional('Proyectos')
 const TecnologiaPagina = institucional('TecnologiaPagina')
 const Capacitaciones = institucional('Capacitaciones')
 const NoEncontrada = institucional('NoEncontrada')
+const cuenta = (nombre) => lazy(() => import('./paginas/Cuenta.jsx').then((m) => ({ default: m[nombre] })))
+const Ingresar = cuenta('Ingresar')
+const Activar = cuenta('Activar')
+const ActivarCodigo = cuenta('ActivarCodigo')
+const Olvide = cuenta('Olvide')
+const Restablecer = cuenta('Restablecer')
+const MiCuenta = cuenta('MiCuenta')
 const Footer = lazy(() => import('./components/Footer.jsx'))
 
 /* Al cambiar de pagina se vuelve arriba (salvo que la URL traiga un ancla);
@@ -31,7 +38,7 @@ function AlCambiarDePagina() {
   const { pathname, hash } = useLocation()
   /* Zona tienda: superficies solidas y video atenuado (ver index.css) */
   useEffect(() => {
-    const tienda = /^\/(productos|producto|carrito|favoritos)(\/|$)/.test(pathname)
+    const tienda = /^\/(productos|producto|carrito|favoritos|cuenta)(\/|$)/.test(pathname)
     if (tienda) document.documentElement.dataset.zona = 'tienda'
     else delete document.documentElement.dataset.zona
   }, [pathname])
@@ -158,49 +165,56 @@ export default function App() {
 
   return (
     <SiteContext.Provider value={value}>
-      <TiendaProvider>
-        <PantallaCarga listo={listo} />
-        <AlCambiarDePagina />
+      <CuentaProvider>
+        <TiendaProvider>
+          <PantallaCarga listo={listo} />
+          <AlCambiarDePagina />
 
-        <VideoBackground onListo={marcarVideoListo} />
+          <VideoBackground onListo={marcarVideoListo} />
 
-        <a
-          href="#contenido"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-rv-red focus:px-5 focus:py-2.5 focus:text-white"
-        >
-          Saltar al contenido principal
-        </a>
+          <a
+            href="#contenido"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-rv-red focus:px-5 focus:py-2.5 focus:text-white"
+          >
+            Saltar al contenido principal
+          </a>
 
-        <Navbar />
+          <Navbar />
 
-        <main id="contenido" className="relative z-10 min-h-[70vh]">
-          <Suspense fallback={<div className="min-h-[100svh]" aria-hidden="true" />}>
-            <Routes>
-              <Route path="/" element={<Inicio onRobotListo={marcarRobotListo} />} />
-              <Route path="/productos" element={<Catalogo />} />
-              <Route path="/productos/:linea" element={<Catalogo />} />
-              <Route path="/producto/:slug" element={<Producto />} />
-              <Route path="/carrito" element={<Carrito />} />
-              <Route path="/favoritos" element={<Favoritos />} />
-              <Route path="/cuenta" element={<Cuenta />} />
-              <Route path="/empresa" element={<Empresa />} />
-              <Route path="/proyectos" element={<Proyectos />} />
-              <Route path="/tecnologia" element={<TecnologiaPagina />} />
-              <Route path="/capacitaciones" element={<Capacitaciones />} />
-              <Route path="/contacto" element={<Navigate to="/empresa#ubicacion" replace />} />
-              <Route path="*" element={<NoEncontrada />} />
-            </Routes>
+          <main id="contenido" className="relative z-10 min-h-[70vh]">
+            <Suspense fallback={<div className="min-h-[100svh]" aria-hidden="true" />}>
+              <Routes>
+                <Route path="/" element={<Inicio onRobotListo={marcarRobotListo} />} />
+                <Route path="/productos" element={<Catalogo />} />
+                <Route path="/productos/:linea" element={<Catalogo />} />
+                <Route path="/producto/:slug" element={<Producto />} />
+                <Route path="/carrito" element={<Carrito />} />
+                <Route path="/favoritos" element={<Favoritos />} />
+                <Route path="/cuenta" element={<MiCuenta />} />
+                <Route path="/cuenta/ingresar" element={<Ingresar />} />
+                <Route path="/cuenta/activar" element={<Activar />} />
+                <Route path="/cuenta/activar-codigo" element={<ActivarCodigo />} />
+                <Route path="/cuenta/olvide" element={<Olvide />} />
+                <Route path="/cuenta/restablecer" element={<Restablecer />} />
+                <Route path="/empresa" element={<Empresa />} />
+                <Route path="/proyectos" element={<Proyectos />} />
+                <Route path="/tecnologia" element={<TecnologiaPagina />} />
+                <Route path="/capacitaciones" element={<Capacitaciones />} />
+                <Route path="/contacto" element={<Navigate to="/empresa#ubicacion" replace />} />
+                <Route path="*" element={<NoEncontrada />} />
+              </Routes>
+            </Suspense>
+          </main>
+
+          <Suspense fallback={null}>
+            <Footer />
           </Suspense>
-        </main>
 
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-
-        <CarritoDrawer />
-        <BotonWhatsapp />
-        <AvisoDemo />
-      </TiendaProvider>
+          <CarritoDrawer />
+          <BotonWhatsapp />
+          <AvisoDemo />
+        </TiendaProvider>
+      </CuentaProvider>
     </SiteContext.Provider>
   )
 }
