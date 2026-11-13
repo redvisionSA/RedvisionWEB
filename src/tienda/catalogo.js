@@ -19,7 +19,12 @@ import { esGenerica, identidadDe } from './marcas.js'
  *     precios ni stock.
  */
 
-const URL_CATALOGO = import.meta.env.VITE_CATALOGO_URL
+/* Endpoint publico del ERP (no es un secreto: lo lee cualquier navegador). En
+   produccion es el valor por defecto, asi un build sin la variable no deja la
+   tienda vacia; en desarrollo, sin variable, se usa la demostracion. */
+export const CATALOGO_PRODUCCION = 'https://api-erp.redvision.com.ar/storefront/catalog'
+
+const URL_CATALOGO = import.meta.env.VITE_CATALOGO_URL || (import.meta.env.PROD ? CATALOGO_PRODUCCION : '')
 
 export const DISPONIBILIDAD = {
   disponible: { etiqueta: 'Disponible', tono: 'ok' },
@@ -58,7 +63,8 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     .map((p) => {
       const categoria = categorias.get(p.category) || null
       const marcaErp = marcas.get(p.brand) || null
-      /* Marca generica o alternativa: no se nombra y el producto va a Accesorios */
+      /* Marca generica o alternativa: no se nombra, pero el producto va a la linea
+         de su categoria (un cable generico es de Redes, una fuente de Energia) */
       const generico = esGenerica(marcaErp)
       const marca = generico ? null : marcaErp
       const textoCategoria = rutaCategoria(p.category)
@@ -71,7 +77,7 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         descripcion: p.description || '',
         marca: marca ? { slug: marca.slug, nombre: marca.name, identidad: identidadDe(marca) } : null,
         categoria: categoria ? { slug: categoria.slug, nombre: categoria.name } : null,
-        linea: generico ? 'accesorios' : lineaDe(textoCategoria, p.name),
+        linea: lineaDe(textoCategoria, p.name),
         imagen: p.imageUrl || null,
         precio: aNumero(p.price),
         disponibilidad,

@@ -67,7 +67,7 @@ CORS: `Access-Control-Allow-Origin` para `https://redvision.com.ar` y `https://w
 | `name`, `description` | string | Sin HTML. |
 | `brand`, `category` | slug | Deben existir en `brands` / `categories`. |
 | `imageUrl` | string \| null | Sin foto = `null` (la web dibuja un ícono de la línea). |
-| `price` | string decimal \| null | **Lista ECOMMERCE de REDVISION, en pesos, final con IVA**, convertida con la cotización del día que usa el ERP (BNA billete vendedor). `null` = "Consultar precio". Nunca `0`. |
+| `price` | string decimal \| null | **Lista GREMIO de REDVISION, en pesos, final con IVA** (decisión del 12/11: el precio público de la web es Gremio), convertida con la cotización del día que usa el ERP (BNA billete vendedor). `null` = "Consultar precio". Nunca `0`. |
 | `availability` | enum | `disponible` · `ultimas` (pocas unidades; umbral lo define el ERP) · `a_pedido` · `sin_stock`. **No se publica la cantidad exacta.** |
 | `featured` | bool | Opcional. Destacados del inicio. |
 | `specs` | object | **Opcional**, alimenta los filtros de la tienda. Cada clave puede faltar o ser `null`. Ver abajo. |
@@ -97,15 +97,15 @@ nombre y la descripción (`src/tienda/specs.js`): "4 MP", "Full-Color", "8 canal
   (`src/tienda/marcas.js`). Se reconocen por slug o nombre; los logos oficiales van en
   `public/marcas/` (`dahua.svg`, `hikvision.webp` + `hikvision-blanco.png`, `imou.png`).
 - **Marcas genéricas o alternativas** (slug o nombre con "genérico", "sin marca", "alternativa",
-  "OEM", "varios", "otras marcas", "importado"…): la tienda **no muestra la marca** y ubica el producto
-  en **Accesorios**, sin importar su categoría. Si el ERP tiene un nombre distinto para estas marcas,
+  "OEM", "varios", "otras marcas", "importado"…): la tienda **no muestra la marca**; el producto va a
+  la línea de su categoría, como cualquier otro (13/11). Si el ERP tiene un nombre distinto para estas marcas,
   sumarlo al patrón `GENERICA` de `marcas.js`.
 
 
 
-Costo, rentabilidad, otras listas (Gremio, Mayorista, Distribuidor), stock exacto, stock de
+Costo, rentabilidad, otras listas (Mayorista, Distribuidor, ECOMMERCE), stock exacto, stock de
 Control Red, proveedores, datos de clientes. Solo productos `active` de catálogo con precio de
-la lista ECOMMERCE de RV o marcados para la web.
+la lista GREMIO de RV.
 
 ### Categorías
 
@@ -126,4 +126,5 @@ ERP.
 2. Pedido web → presupuesto en el ERP (en lugar del correo), por un endpoint propio con
    `Idempotency-Key`.
 3. Mercado Pago (Checkout Pro) con webhook verificado; requiere plan Pro de Vercel.
-4. Precio por perfil (gremio/mayorista) con inicio de sesión.
+4. Precio por perfil con inicio de sesión: la cuenta mayorista ve la lista MAYORISTA y la de
+   distribuidor la DISTRIBUIDOR (siempre resuelto en el ERP, nunca en el navegador).

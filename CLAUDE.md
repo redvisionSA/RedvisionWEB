@@ -70,7 +70,7 @@ dice este archivo manda:**
 ## Tienda (rama `ecommerce`, 12/11/2026)
 Decisiones del usuario: **catálogo desde el ERP en solo lectura**; **carrito a pedido** (sin cobro en
 línea en la fase 1: el pedido llega por correo y se confirma por WhatsApp); **precio público visible**
-(lista ECOMMERCE de RV, final con IVA). Gremio/mayorista con inicio de sesión y Mercado Pago, fases
+(lista **GREMIO** de RV, final con IVA; decisión del 12/11). Mayorista y distribuidor, con inicio de sesión y Mercado Pago, fases
 siguientes.
 
 - Rutas (`react-router-dom` 6, `BrowserRouter`; `vercel.json` reescribe todo lo que no es `api/` ni
@@ -79,8 +79,10 @@ siguientes.
   `/favoritos` · `/empresa` · `/proyectos` · `/tecnologia` · `/capacitaciones` · `/contacto`
   (`?tipo=compra|mayorista|proyecto|capacitacion`) · 404. Cada página es `React.lazy`.
 - Datos: `src/tienda/catalogo.js` lee `VITE_CATALOGO_URL` (contrato en `docs/CATALOGO_API.md`). Sin
-  esa variable: en dev, `src/tienda/demo.js` con la franja "Datos de demostración"; en producción, la
-  tienda dice "catálogo en actualización". **Nunca se inventan productos, precios ni stock.**
+  esa variable: en dev, `src/tienda/demo.js` con la franja "Datos de demostración"; en producción, el
+  endpoint del ERP `https://api-erp.redvision.com.ar/storefront/catalog` (público, no es un secreto;
+  `api/pedido.js` usa el mismo por defecto). Si el ERP no responde, la tienda dice "catálogo en
+  actualización". **Nunca se inventan productos, precios ni stock.**
 - Estado: `src/tienda/TiendaContext.jsx` (carrito de `{id, cantidad}`, favoritos y vistos en
   `localStorage`). El navegador nunca manda precios: `api/pedido.js` los vuelve a leer del ERP, valida,
   arma el correo a ventas (Resend, mismas variables que contacto + `CATALOGO_URL`,
@@ -109,7 +111,8 @@ siguientes.
   rojo para tamaños grandes; Imou PNG 300×81). Colores tomados de los archivos: Dahua `#E50214`,
   Hikvision `#D8171F` (medido sobre WebP con pérdida: confirmar con manual), Imou `#F08C00`. Sin
   archivo se muestra el nombre en texto, nunca un dibujo propio. Las marcas genéricas o
-  alternativas no se nombran nunca y sus productos van a Accesorios.
+  alternativas no se nombran nunca; sus productos van a la línea de su categoría (13/11: antes
+  iban todos a Accesorios y dejaban Energía y Alarmas vacías).
 - Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
   línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).
 - Las teselas institucionales se reutilizan sin cambiar su copy (`src/paginas/Institucionales.jsx`).

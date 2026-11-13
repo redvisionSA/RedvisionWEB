@@ -14,9 +14,10 @@ import { LINEAS_CATALOGO } from '../components/Servicios.jsx'
 export const LINEAS = LINEAS_CATALOGO
 
 const REGLAS = [
-  ['accesorios', /soporte|caja de (conexi|paso)|conector|ficha|balun|herramienta|crimp|canaliz|instrumental|tester|rotul/i],
+  ['accesorios', /^accesorios\b|soporte|caja de (conexi|paso)|conector|ficha|balun|herramienta|crimp|canaliz|instrumental|tester|rotul/i],
   ['cctv', /c[aá]mara|domo|bullet|ptz|nvr|xvr|dvr|grabador|disco|video|cctv|lente|monitor|hdcvi|ip\b/i],
-  ['accesos', /acceso|lector|biom|facial|cerradura|molinete|barrera vehicular|portero|intercom|presentismo|tarjeta|llavero/i],
+  /* acceso(?!ri): "accesorios" no es control de accesos */
+  ['accesos', /acceso(?!ri)|lector|biom|facial|cerradura|molinete|barrera vehicular|portero|intercom|presentismo|tarjeta|llavero/i],
   ['alarmas', /alarma|intrusi|panel|sensor|detector|sirena|infrarroj|pir\b|magn[eé]tico/i],
   ['redes', /red(es)?\b|switch|router|enrutador|wifi|inal[aá]mbric|antena|enlace|utp|cable|fibra|patch|rack/i],
   ['energia', /fuente|ups|bater[ií]a|energ[ií]a|transformador|protector|estabilizador/i],

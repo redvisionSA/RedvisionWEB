@@ -15,14 +15,18 @@
  *   RESEND_FROM              opcional; con dominio verificado tambien se envia
  *                            copia al cliente
  *   PEDIDOS_EMAIL_DESTINO    opcional; si falta, CONTACTO_EMAIL_DESTINO o la casilla de ventas
- *   CATALOGO_URL             endpoint del ERP (si falta, se usa VITE_CATALOGO_URL)
+ *   CATALOGO_URL             endpoint del ERP (si falta, VITE_CATALOGO_URL y despues el de produccion)
  */
 
 const DESTINATARIO =
   process.env.PEDIDOS_EMAIL_DESTINO || process.env.CONTACTO_EMAIL_DESTINO || 'ecommerce2.redvision@gmail.com'
 const REMITENTE = process.env.RESEND_FROM || 'REDVISION Web <onboarding@resend.dev>'
 const DOMINIO_VERIFICADO = Boolean(process.env.RESEND_FROM)
-const CATALOGO_URL = process.env.CATALOGO_URL || process.env.VITE_CATALOGO_URL || ''
+// El mismo endpoint publico que usa la tienda (src/tienda/catalogo.js): sin variable, el de produccion.
+const CATALOGO_URL =
+  process.env.CATALOGO_URL ||
+  process.env.VITE_CATALOGO_URL ||
+  'https://api-erp.redvision.com.ar/storefront/catalog'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_ITEMS = 60

@@ -216,7 +216,7 @@ function BandaMayorista() {
         <div>
           <p className="rv-eyebrow mb-2">Canal mayorista</p>
           <h2 className="text-onglass font-display text-2xl font-bold leading-tight sm:text-3xl">
-            ¿Instalador, integrador o empresa? <span className="text-rv-red">Compre con condiciones de gremio.</span>
+            ¿Instalador, integrador o empresa? <span className="text-rv-red">Acceda a precios mayoristas.</span>
           </h2>
           <p className="rv-muted mt-3 max-w-2xl text-sm leading-relaxed sm:text-base">
             Lista de precios diferencial, condiciones por volumen y cuenta corriente para instaladores y
