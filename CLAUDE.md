@@ -155,9 +155,9 @@ siguientes.
    precio = lista Gremio de RV con IVA; RV todavía sin stock: todo «a pedido»).
 2. `RESEND_API_KEY` en las variables del proyecto `redvision-web` de Cloudflare Pages y prueba real de
    `/api/pedido` (sin la key responden un error controlado y el carrito ofrece WhatsApp).
-3b. **D1 para «lo más buscado»**: `npx wrangler d1 create redvision-web`, aplicar `docs/popularidad.sql`
-   (`wrangler d1 execute redvision-web --remote --file docs/popularidad.sql`), vincularla al proyecto
-   Pages como `DB` y cargar `POPULARIDAD_SAL` (secreto). Hace falta un login de wrangler con permiso de D1.
+3b. ~~D1 para «lo más buscado»~~ **Hecho 13/11:** base D1 `redvision-web` (id `98d1c3d8-fd9a-4dcc-9ad5-87dcc7e433b4`)
+   con `docs/popularidad.sql`, vinculada a producción como `DB` y con el secreto `POPULARIDAD_SAL`, por la API
+   de Pages (sin `wrangler.toml`, que pasaría a mandar sobre la configuración del panel).
 4. SEO por producto: prerender o SSR y `sitemap.xml` (hoy es SPA; título, descripción, canónica y
    JSON-LD `Product` se ponen en el navegador).
 5. Fases 2–4 del contrato: pedido → presupuesto en el ERP, Mercado Pago, precios por perfil.
