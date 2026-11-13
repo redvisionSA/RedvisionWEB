@@ -10,7 +10,11 @@
  * Si el catalogo no responde, el pedido igual se registra con "precio a
  * confirmar": no se pierde una venta por una caida momentanea.
  *
- * Variables de entorno (Vercel):
+ * Corre en Cloudflare Pages (functions/api/pedido.js la adapta; produccion)
+ * y en Vercel. Las variables se leen en cada pedido: en Cloudflare llegan en
+ * `req.env`, en Vercel en `process.env`.
+ *
+ * Variables de entorno:
  *   RESEND_API_KEY           obligatoria (la misma del formulario de contacto)
  *   RESEND_FROM              opcional; con dominio verificado tambien se envia
  *                            copia al cliente
@@ -18,15 +22,17 @@
  *   CATALOGO_URL             endpoint del ERP (si falta, VITE_CATALOGO_URL y despues el de produccion)
  */
 
-const DESTINATARIO =
-  process.env.PEDIDOS_EMAIL_DESTINO || process.env.CONTACTO_EMAIL_DESTINO || 'ecommerce2.redvision@gmail.com'
-const REMITENTE = process.env.RESEND_FROM || 'REDVISION Web <onboarding@resend.dev>'
-const DOMINIO_VERIFICADO = Boolean(process.env.RESEND_FROM)
-// El mismo endpoint publico que usa la tienda (src/tienda/catalogo.js): sin variable, el de produccion.
-const CATALOGO_URL =
-  process.env.CATALOGO_URL ||
-  process.env.VITE_CATALOGO_URL ||
-  'https://api-erp.redvision.com.ar/storefront/catalog'
+function configuracion(req) {
+  const env = req?.env || globalThis.process?.env || {}
+  return {
+    apiKey: env.RESEND_API_KEY,
+    destinatario: env.PEDIDOS_EMAIL_DESTINO || env.CONTACTO_EMAIL_DESTINO || 'ecommerce2.redvision@gmail.com',
+    remitente: env.RESEND_FROM || 'REDVISION Web <onboarding@resend.dev>',
+    dominioVerificado: Boolean(env.RESEND_FROM),
+    // El mismo endpoint publico que usa la tienda (src/tienda/catalogo.js): sin variable, el de produccion.
+    catalogoUrl: env.CATALOGO_URL || env.VITE_CATALOGO_URL || 'https://api-erp.redvision.com.ar/storefront/catalog',
+  }
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_ITEMS = 60
@@ -69,12 +75,12 @@ function numeroPedido() {
   return `RV-W-${fecha}-${azar}`
 }
 
-async function leerCatalogo() {
-  if (!CATALOGO_URL) return null
+async function leerCatalogo(url) {
+  if (!url) return null
   try {
     const control = new AbortController()
     const corte = setTimeout(() => control.abort(), 6000)
-    const r = await fetch(CATALOGO_URL, { headers: { Accept: 'application/json' }, signal: control.signal })
+    const r = await fetch(url, { headers: { Accept: 'application/json' }, signal: control.signal })
     clearTimeout(corte)
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     const json = await r.json()
@@ -149,16 +155,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'El carrito está vacío.' })
   }
 
-  const apiKey = process.env.RESEND_API_KEY
+  const { apiKey, destinatario, remitente, dominioVerificado, catalogoUrl } = configuracion(req)
   if (!apiKey) {
-    console.error('[api/pedido] Falta RESEND_API_KEY en Vercel.')
+    console.error('[api/pedido] Falta la variable RESEND_API_KEY.')
     return res.status(500).json({
       ok: false,
       error: 'El envío de pedidos no está configurado todavía. Envíelo por WhatsApp con el botón de abajo.',
     })
   }
 
-  const catalogo = await leerCatalogo()
+  const catalogo = await leerCatalogo(catalogoUrl)
   const lineas = limpios.map((i) => {
     const p = catalogo?.get(i.id)
     const unitario = p ? aCentavos(p.price) : null
@@ -237,8 +243,8 @@ export default async function handler(req, res) {
 
   try {
     await enviarCorreo(apiKey, {
-      from: REMITENTE,
-      to: [DESTINATARIO],
+      from: remitente,
+      to: [destinatario],
       reply_to: cliente.email,
       subject: asunto,
       html,
@@ -252,9 +258,9 @@ export default async function handler(req, res) {
   /* Copia al cliente: solo con dominio propio verificado en Resend. Si falla,
      el pedido ya llego a ventas: no se informa error al cliente. Se espera
      la respuesta porque la funcion se congela al responder. */
-  if (DOMINIO_VERIFICADO) {
+  if (dominioVerificado) {
     await enviarCorreo(apiKey, {
-      from: REMITENTE,
+      from: remitente,
       to: [cliente.email],
       subject: `Recibimos su pedido ${numero} — REDVISION`,
       html: `<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:640px;color:#111;"><p>Hola ${escaparHtml(cliente.nombre)}, recibimos su pedido <b>${numero}</b>. Un asesor confirma stock, precio final y envío, y le envía los datos de pago. No se realizó ningún cobro.</p>${html}</div>`,

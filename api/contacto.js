@@ -26,8 +26,16 @@
  *      tocar codigo. Por defecto usa la casilla de EMPRESA.email.
  */
 
-const DESTINATARIO = process.env.CONTACTO_EMAIL_DESTINO || 'ecommerce2.redvision@gmail.com'
-const REMITENTE = process.env.RESEND_FROM || 'REDVISION Web <onboarding@resend.dev>'
+/* Corre en Cloudflare Pages (functions/api/contacto.js la adapta; produccion)
+   y en Vercel: las variables llegan en `req.env` o en `process.env`. */
+function configuracion(req) {
+  const env = req?.env || globalThis.process?.env || {}
+  return {
+    apiKey: env.RESEND_API_KEY,
+    destinatario: env.CONTACTO_EMAIL_DESTINO || 'ecommerce2.redvision@gmail.com',
+    remitente: env.RESEND_FROM || 'REDVISION Web <onboarding@resend.dev>',
+  }
+}
 
 const TIPO_LABEL = {
   compra: 'Compra de equipamiento',
@@ -52,7 +60,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Método no permitido.' })
   }
 
-  const cuerpo = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+  let cuerpo
+  try {
+    cuerpo = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {}
+  } catch {
+    return res.status(400).json({ ok: false, error: 'Solicitud inválida.' })
+  }
   const { nombre, empresa, email, telefono, tipo, mensaje, _hp } = cuerpo
 
   /* Honeypot: un campo oculto para humanos, irresistible para un bot que
@@ -71,9 +84,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: `Datos inválidos o faltantes: ${faltantes.join(', ')}.` })
   }
 
-  const apiKey = process.env.RESEND_API_KEY
+  const { apiKey, destinatario, remitente } = configuracion(req)
   if (!apiKey) {
-    console.error('[api/contacto] Falta la variable de entorno RESEND_API_KEY en Vercel.')
+    console.error('[api/contacto] Falta la variable de entorno RESEND_API_KEY.')
     return res.status(500).json({
       ok: false,
       error: 'El envío de correo no está configurado todavía. Contacte a REDVISION por WhatsApp mientras tanto.',
@@ -120,8 +133,8 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: REMITENTE,
-        to: [DESTINATARIO],
+        from: remitente,
+        to: [destinatario],
         reply_to: String(email).trim(),
         subject: asunto,
         html,

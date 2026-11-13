@@ -5,11 +5,19 @@ propias. Rama `ecommerce` (12/11/2026): el inicio es la tienda; el robot, el vid
 conservan. Ver sección "Tienda".
 
 - Repo: `github.com/redvisionSA/RedvisionWEB`, rama `main`. Último commit al exportar: `46f73b7`.
-- Producción: https://redvision.com.ar (Vercel, proyecto `redvision-maqueta`, equipo "REDVISION IT",
-  plan Hobby). También en `redvision-maqueta.vercel.app`. Cada push a `main` despliega solo.
+- Producción: https://redvision.com.ar y `www` = **Cloudflare Pages, proyecto `redvision-web`**
+  (cuenta tecnol.redvision, desde el 16/10). **Subida directa, sin Git conectado: un push a `main` NO
+  publica.** Se publica con:
+  `npm run build && npx wrangler pages deploy dist --project-name redvision-web --branch main`
+  (desde la raíz del repo: sube `dist/` y compila `functions/`; pide `wrangler login` la primera vez).
+  Variables del proyecto (Settings → Variables and secrets): `RESEND_API_KEY` y las opcionales de
+  `.env.example`. Vercel (`redvision-maqueta.vercel.app`) sigue publicando cada push a `main`, pero ya
+  no tiene el dominio.
 - Stack: Vite 5 + React 18 + Tailwind 3 + React Three Fiber (`three` 0.169). ESM (`"type": "module"`).
-- Comandos: `npm run dev` (5173), `npm run build`. Las funciones de `api/` **no corren en `npm run dev`**
-  (solo en Vercel o con `vercel dev`).
+- Comandos: `npm run dev` (5173), `npm run build`. Las funciones de `api/` **no corren en `npm run dev`**:
+  probarlas con `npx wrangler pages dev dist` (el mismo runtime de producción). En Pages las expone
+  `functions/` (`functions/_vercel.js` adapta la firma `(req, res)` de `api/`; la lógica vive una sola vez
+  en `api/` y las variables llegan por `req.env`).
 
 ## Leer primero
 `README.md` es la documentación técnica detallada (material Liquid Glass, robot 3D, contrato del GLB en
@@ -27,14 +35,14 @@ dice este archivo manda:**
 | Paleta estricta blanco/negro/rojo | Sigue vigente, con **dos excepciones deliberadas**: el degradé multicolor de `.rv-fullcolor-badge` (cita el wordmark de Dahua) y el verde del filtro IR de esa tesela. |
 
 ## Infra y despliegue
-- **Vercel**: dominio `redvision.com.ar` agregado a producción, SSL emitido. Sin redirección apex→www.
-- **Cloudflare** (zona `redvision.com.ar`, DNS completo): el apex era un A a `66.97.35.140` (servidor
-  viejo) y pasó a **CNAME `724dfa929cc19eb8.vercel-dns-017.com`, DNS only**. `www` es CNAME al apex →
-  también va a Vercel. **No tocar**: MX `mail.redvision.com.ar`, TXT (SPF hostmar, brevo-code,
+- **Cloudflare Pages** (`redvision-web`): dominios `redvision.com.ar`, `www.redvision.com.ar` y
+  `redvision-web.pages.dev`. Antes del 16/10 el dominio apuntaba a Vercel; ese proyecto quedó solo con
+  su URL `.vercel.app`.
+- **Cloudflare** (zona `redvision.com.ar`, DNS completo). **No tocar**: MX `mail.redvision.com.ar`, TXT (SPF hostmar, brevo-code,
   google-site-verification, DMARC, DKIM brevo/mail), ni los subdominios del servidor en la nube
   (`ftp`, `mail`, `autoconfig`, `autodiscover`, `tech`, `lista-*` y sus `www.*`, todos → `66.97.35.140`).
 - **Correo del formulario**: `api/contacto.js` (función serverless) envía por **Resend** a
-  `ecommerce2.redvision@gmail.com` con `reply_to` = cliente y honeypot `_hp`. Requiere en Vercel
+  `ecommerce2.redvision@gmail.com` con `reply_to` = cliente y honeypot `_hp`. Requiere en el proyecto de Pages
   `RESEND_API_KEY` (obligatoria), `RESEND_FROM` y `CONTACTO_EMAIL_DESTINO` (opcionales); ver `.env.example`.
   **Estado de la key al exportar: desconocido** (estaba pendiente de crear la cuenta). Sin key el
   formulario muestra un error controlado, nunca un falso "enviado". Sin `RESEND_FROM` sale desde
@@ -123,10 +131,10 @@ siguientes.
   teléfono, WhatsApp flotante con el producto en el mensaje.
 
 ### Pendientes de la tienda
-1. **Endpoint del ERP** según `docs/CATALOGO_API.md` (sin él, producción queda sin productos: no
-   publicar `main` antes).
-2. `RESEND_API_KEY` en Vercel y prueba real de `/api/pedido` (en `npm run dev` no corre).
-3. Plan **Pro** de Vercel antes de vender (Hobby es no comercial).
+1. ~~Endpoint del ERP~~: en producción desde el 13/11 (`https://api-erp.redvision.com.ar/storefront/catalog`,
+   precio = lista Gremio de RV con IVA; RV todavía sin stock: todo «a pedido»).
+2. `RESEND_API_KEY` en las variables del proyecto `redvision-web` de Cloudflare Pages y prueba real de
+   `/api/pedido` y `/api/contacto` (sin la key responden un error controlado y el carrito ofrece WhatsApp).
 4. SEO por producto: prerender o SSR y `sitemap.xml` (hoy es SPA; título, descripción, canónica y
    JSON-LD `Product` se ponen en el navegador).
 5. Fases 2–4 del contrato: pedido → presupuesto en el ERP, Mercado Pago, precios por perfil.

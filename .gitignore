@@ -22,3 +22,6 @@ push-*.bat
 limpiar-repo.bat
 Claude outputs/
 lista-repo.txt
+
+# Estado local de wrangler (pages dev / deploy)
+.wrangler/
