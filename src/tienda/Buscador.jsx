@@ -166,7 +166,7 @@ export default function Buscador({ className = '', grande = false, atajo = false
                     activo === i ? 'bg-black/[0.06] dark:bg-white/10' : ''
                   }`}
                 >
-                  <ImagenProducto producto={p} className="h-12 w-12 shrink-0 rounded-xl" />
+                  <ImagenProducto producto={p} tamano="xs" className="h-12 w-12 shrink-0 rounded-xl" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-black dark:text-white">{p.nombre}</span>
                     <span className="rv-muted block truncate text-xs">

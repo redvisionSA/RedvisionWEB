@@ -108,6 +108,19 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
   }
 }
 
+/* Catalogo con los productos reemplazados (precios o stock de la sesion):
+   mismos mapas e indice de busqueda, apuntando a los productos nuevos. */
+function conProductos(datos, productos) {
+  const porId = new Map(productos.map((p) => [p.id, p]))
+  return {
+    ...datos,
+    productos,
+    porId,
+    porSlug: new Map(productos.map((p) => [p.slug, p])),
+    motor: { ...datos.motor, indice: datos.motor.indice.map((e) => ({ ...e, p: porId.get(e.p.id) })) },
+  }
+}
+
 /**
  * Precios de la lista del cliente con sesion, superpuestos por id al catalogo
  * publico (lista Gremio). `canal` = { etiqueta, precios: Map(id -> numero) }
@@ -116,21 +129,57 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
  */
 export function conPreciosDeCanal(datos, canal) {
   if (!canal) return datos
-  const productos = datos.productos.map((p) => ({ ...p, precio: canal.precios.get(p.id) ?? null, canal: canal.etiqueta }))
-  const porId = new Map(productos.map((p) => [p.id, p]))
-  return {
-    ...datos,
-    productos,
-    porId,
-    porSlug: new Map(productos.map((p) => [p.slug, p])),
-    /* El indice de busqueda guarda referencias: se apuntan a los productos nuevos */
-    motor: { ...datos.motor, indice: datos.motor.indice.map((e) => ({ ...e, p: porId.get(e.p.id) })) },
-  }
+  return conProductos(
+    datos,
+    datos.productos.map((p) => ({ ...p, precio: canal.precios.get(p.id) ?? null, canal: canal.etiqueta }))
+  )
 }
 
 /** Precios del ERP (`[{ id, price }]`, string decimal) a Map(id -> numero). */
 export function mapaDePrecios(lista) {
   return new Map((lista || []).map((x) => [String(x.id), aNumero(x.price)]).filter(([, precio]) => precio !== null))
+}
+
+/* Hasta cuantas unidades el tramo es «ultimas» (STOREFRONT_LOW_STOCK del ERP) */
+const POCAS_UNIDADES = 3
+
+/**
+ * Stock del ERP para un cliente con sesion (`GET me/stock`:
+ * `{ cap, stock: [{ id, units, more }] }`, topeado en `cap`) a
+ * Map(id -> { unidades, mas }). Lo que no figura no tiene nada disponible.
+ */
+export function stockDeSesion(respuesta) {
+  const filas = Array.isArray(respuesta?.stock) ? respuesta.stock : []
+  return new Map(
+    filas
+      .filter((x) => x && x.id && Number.isInteger(x.units) && x.units > 0)
+      .map((x) => [String(x.id), { unidades: x.units, mas: Boolean(x.more) }])
+  )
+}
+
+/**
+ * Cantidades del cliente con sesion superpuestas por id al catalogo publico.
+ * El ERP las arma con la misma regla que los tramos pero cada minuto (el
+ * catalogo, cada 5), asi que el tramo se recalcula con ellas: un producto que
+ * no figura ya no tiene unidades (queda «a pedido», salvo el que el catalogo
+ * da sin stock). `stock` = Map(id -> { unidades, mas }) o null (sin sesion).
+ */
+export function conStockDeSesion(datos, stock) {
+  if (!stock) return datos
+  return conProductos(
+    datos,
+    datos.productos.map((p) => {
+      const s = stock.get(p.id) || null
+      const disponibilidad = s
+        ? s.mas || s.unidades > POCAS_UNIDADES
+          ? 'disponible'
+          : 'ultimas'
+        : p.disponibilidad === 'sin_stock'
+          ? 'sin_stock'
+          : 'a_pedido'
+      return { ...p, stock: s, disponibilidad }
+    })
+  )
 }
 
 export async function cargarCatalogo({ signal } = {}) {

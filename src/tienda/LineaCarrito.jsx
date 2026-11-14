@@ -60,7 +60,7 @@ export default function LineaCarrito({ linea, onNavegar, compacta = false }) {
   return (
     <li className="flex gap-3 py-3.5">
       <Link to={`/producto/${producto.slug}`} onClick={onNavegar} className="group shrink-0">
-        <ImagenProducto producto={producto} className={`${compacta ? 'h-16 w-16' : 'h-20 w-20 sm:h-24 sm:w-24'} rounded-2xl`} />
+        <ImagenProducto producto={producto} tamano="sm" className={`${compacta ? 'h-16 w-16' : 'h-20 w-20 sm:h-24 sm:w-24'} rounded-2xl`} />
       </Link>
       <div className="min-w-0 flex-1">
         <Link

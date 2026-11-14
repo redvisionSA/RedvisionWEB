@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { COMPLEMENTOS, lineaPorId } from '../tienda/lineas.js'
-import { BotonFavorito, Disponibilidad, ImagenProducto, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
+import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
 import { Cantidad } from '../tienda/LineaCarrito.jsx'
 import Riel from '../tienda/Riel.jsx'
 import { alternativasConStock, compatibles, similares } from '../tienda/similares.js'
@@ -218,7 +218,8 @@ export default function Producto() {
             <h1 className="text-onglass mt-1.5 font-display text-2xl font-bold leading-tight sm:text-3xl">{producto.nombre}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
               {producto.sku && <span className="rv-muted text-xs">Código {producto.sku}</span>}
-              <Disponibilidad valor={producto.disponibilidad} />
+              <Disponibilidad producto={producto} grande />
+              <InvitacionStock producto={producto} />
             </div>
             {producto.marca?.identidad?.oficial && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
 
@@ -229,9 +230,20 @@ export default function Producto() {
                   ? 'Precio final con IVA incluido. Envío no incluido: se cotiza al confirmar el pedido.'
                   : 'Precio según cantidad y proyecto. Un asesor lo cotiza en el día.'}
               </p>
-              {producto.disponibilidad === 'ultimas' && (
-                <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-rv-red/10 px-3 py-1.5 text-xs font-semibold text-rv-red">
+              {/* Con sesion la cantidad ya esta a la vista: «Última en stock», «2 en stock» */}
+              {producto.disponibilidad === 'ultimas' && !producto.stock && (
+                <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-rv-red/10 px-3 py-1.5 text-xs font-semibold text-rv-red dark:bg-rv-red/20 dark:text-rv-red-glow">
                   Quedan pocas unidades en stock
+                </p>
+              )}
+              {producto.disponibilidad === 'a_pedido' && (
+                <p className="mt-3 text-sm text-black/80 dark:text-white/85">
+                  Sin unidades para entrega inmediata: se encarga al proveedor y un asesor le confirma el plazo antes de cerrar el pedido.
+                </p>
+              )}
+              {producto.disponibilidad === 'sin_stock' && (
+                <p className="mt-3 text-sm font-semibold text-rv-red dark:text-rv-red-glow">
+                  Sin stock por el momento. Consulte la fecha de ingreso por WhatsApp.
                 </p>
               )}
             </div>

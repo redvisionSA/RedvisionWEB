@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { pedir } from './api.js'
 import * as sesion from './sesion.js'
-import { mapaDePrecios } from '../tienda/catalogo.js'
+import { mapaDePrecios, stockDeSesion } from '../tienda/catalogo.js'
 
 /**
  * CuentaContext
@@ -15,7 +15,16 @@ import { mapaDePrecios } from '../tienda/catalogo.js'
  * `canal`: precios de la lista del cliente cuando no es Gremio (el catalogo
  * publico ya es Gremio). { tier, etiqueta, precios: Map(id -> numero) } o
  * null. Los superpone TiendaContext sobre el catalogo.
+ *
+ * `stock`: cuantas hay de cada producto (GET me/stock), solo con sesion y
+ * para todos los canales: Map(id -> { unidades, mas }) o null. El ERP la
+ * topea en 10 («+10 en stock») y la guarda un minuto; aca se vuelve a pedir
+ * al volver a la pestana si paso ese minuto. Sin sesion o si falla, la
+ * tienda muestra los tramos publicos.
  */
+
+/* Igual que la cache del ERP para me/stock */
+const STOCK_VIGENCIA_MS = 60_000
 
 export const LISTAS = { GREMIO: 'Gremio', MAYORISTA: 'Mayorista', DISTRIBUIDOR: 'Distribuidor' }
 
@@ -24,6 +33,7 @@ const CuentaContext = createContext(null)
 export function CuentaProvider({ children }) {
   const [cuenta, setCuentaEstado] = useState(() => sesion.leerGuardada()?.cuenta ?? null)
   const [canal, setCanal] = useState(null)
+  const [stock, setStock] = useState(null)
 
   const setCuenta = useCallback((datos) => {
     if (datos) sesion.guardarCuenta(datos)
@@ -75,6 +85,32 @@ export function CuentaProvider({ children }) {
     }
   }, [quien, tier])
 
+  /* Cantidades en stock: al entrar y al volver a la pestana (si vencieron) */
+  useEffect(() => {
+    setStock(null)
+    if (!quien) return undefined
+    let vivo = true
+    let pedido = 0
+    const cargar = () => {
+      pedido = Date.now()
+      sesion
+        .conSesion((token) => pedir('me/stock', { metodo: 'GET', token }))
+        .then((r) => {
+          if (vivo) setStock(stockDeSesion(r))
+        })
+        .catch((error) => console.warn('[cuenta] Stock no disponible:', error.message))
+    }
+    const alVolver = () => {
+      if (document.visibilityState === 'visible' && Date.now() - pedido > STOCK_VIGENCIA_MS) cargar()
+    }
+    cargar()
+    document.addEventListener('visibilitychange', alVolver)
+    return () => {
+      vivo = false
+      document.removeEventListener('visibilitychange', alVolver)
+    }
+  }, [quien])
+
   const conSesionNueva = useCallback(
     async (ruta, cuerpo) => {
       const nueva = sesion.iniciar(await pedir(ruta, { cuerpo }))
@@ -88,6 +124,7 @@ export function CuentaProvider({ children }) {
     () => ({
       cuenta,
       canal,
+      stock,
       actualizar,
       ingresar: (login, password) => conSesionNueva('auth/login', { login, password }),
       activar: (token, password) => conSesionNueva('auth/activate', { token, password }),
@@ -108,7 +145,7 @@ export function CuentaProvider({ children }) {
         setCuentaEstado(null)
       },
     }),
-    [cuenta, canal, actualizar, conSesionNueva]
+    [cuenta, canal, stock, actualizar, conSesionNueva]
   )
 
   return <CuentaContext.Provider value={valor}>{children}</CuentaContext.Provider>

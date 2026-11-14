@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { BotonFavorito, Disponibilidad, ImagenProducto, LogoMarca, Precio, sePuedeComprar } from './piezas.jsx'
+import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Precio, sePuedeComprar } from './piezas.jsx'
 import { IconoCarrito, IconoCheck, IconoWhatsapp } from './Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from './whatsapp.js'
 import { etiquetasClave } from './specs.js'
@@ -65,11 +65,6 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
         aria-hidden="true"
       >
         <ImagenProducto producto={producto} className={`${lista ? 'h-full min-h-[128px]' : 'aspect-square'} w-full`} />
-        {producto.disponibilidad === 'ultimas' && (
-          <span className="absolute left-2.5 top-2.5 rounded-md bg-rv-red px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.1em] text-white">
-            Últimas unidades
-          </span>
-        )}
       </Link>
       {!lista && <BotonFavorito id={producto.id} className="absolute right-2.5 top-2.5" />}
 
@@ -90,12 +85,13 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
               ))}
             </ul>
           )}
-          <Disponibilidad valor={producto.disponibilidad} className="mt-0.5" />
+          <Disponibilidad producto={producto} className="mt-1" />
           {producto.sku && lista && <p className="text-xs text-black/50 dark:text-white/50">Código {producto.sku}</p>}
         </Link>
 
         <div className={lista ? 'flex shrink-0 flex-col gap-2 sm:w-48 sm:items-end' : 'mt-auto px-3.5 pb-3.5 pt-2 sm:px-4 sm:pb-4'}>
           <div className={lista ? 'sm:text-right' : 'mb-2.5'}>
+            <InvitacionStock producto={producto} className="mb-1 sm:ml-auto" />
             <Precio valor={producto.precio} canal={producto.canal} />
             {producto.precio !== null && <p className="text-[11px] text-black/55 dark:text-white/55">IVA incluido</p>}
           </div>

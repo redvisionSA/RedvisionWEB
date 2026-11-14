@@ -129,6 +129,17 @@ siguientes.
 - **Buscador:** sugerencias mientras se escribe (espera 180 ms), por palabras parciales, sinónimos y
   errores de tipeo, y **por código parcial escrito como sea** («DH-IPC-HFW», «dh ipc hfw», «ipchfw»):
   se compara la consulta compactada contra el código compactado.
+- **Disponibilidad visible (14/11, pedido del usuario):** pastilla con icono y texto (`Disponibilidad` en
+  `piezas.jsx`), nunca solo color: Disponible (negro), Últimas unidades (rojo, punto que late), A pedido
+  (gris con reloj; la ficha explica que se encarga y un asesor confirma el plazo), Sin stock (rojo pleno).
+  **Sin stock**: etiqueta roja sobre la foto, con la foto desenfocada, atenuada y en gris debajo
+  (`ImagenProducto`; en miniaturas de 48 px, `tamano="xs"`, solo la foto atenuada); se puede consultar el
+  ingreso por WhatsApp, no agregar al carrito. A pedido sí se agrega (el pedido se confirma con el asesor).
+  En oscuro el rojo de texto pasa a `rv-red-glow` por contraste.
+- **Stock con sesión (14/11):** `CuentaContext` pide `GET me/stock` al ERP para cualquier canal (al entrar y
+  al volver a la pestaña si pasó un minuto) y `TiendaContext` lo superpone (`conStockDeSesion`): «3 en
+  stock», «Última en stock», «+10 en stock» (el ERP topea en 10: la cantidad real nunca llega). Sin sesión,
+  los tramos y «Ingrese para ver el stock» (`InvitacionStock`, no en lo que está sin stock).
 - **Pastilla de marca de tamaño fijo** en las tarjetas (`LogoMarca uniforme`: 96×28, logo contenido).
 - **Marcas** (`src/tienda/marcas.js`, `LogoMarca` en `piezas.jsx`): Dahua, Hikvision, Imou, EZVIZ, TP-Link
   y Tenda con logo oficial (`public/marcas/`, archivos de la empresa, siempre sobre blanco) y color tomado

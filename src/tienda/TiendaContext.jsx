@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { cargarCatalogo, conPreciosDeCanal, normalizarCatalogo } from './catalogo.js'
+import { cargarCatalogo, conPreciosDeCanal, conStockDeSesion, normalizarCatalogo } from './catalogo.js'
 import { useCuenta } from '../cuenta/CuentaContext.jsx'
 import { registrarEvento } from './popularidad.js'
 
@@ -51,7 +51,7 @@ const VACIO = { estado: 'cargando', datos: normalizarCatalogo({}) }
 
 export function TiendaProvider({ children }) {
   const [catalogoPublico, setCatalogo] = useState(VACIO)
-  const { canal } = useCuenta()
+  const { canal, stock } = useCuenta()
   const [intento, setIntento] = useState(0)
   const [carrito, setCarrito] = usePersistido(CLAVES.carrito, [])
   const [favoritos, setFavoritos] = usePersistido(CLAVES.favoritos, [])
@@ -74,10 +74,14 @@ export function TiendaProvider({ children }) {
 
   /* Con sesion de un cliente Mayorista o Distribuidor, sus precios reemplazan
      a los publicos en toda la tienda: tarjetas, ficha, buscador, filtros,
-     carrito y mensaje del pedido. Al salir vuelven los publicos. */
+     carrito y mensaje del pedido. Con cualquier sesion, ademas, la cantidad
+     en stock reemplaza al tramo. Al salir vuelven los publicos. */
   const catalogo = useMemo(
-    () => (canal ? { ...catalogoPublico, datos: conPreciosDeCanal(catalogoPublico.datos, canal) } : catalogoPublico),
-    [catalogoPublico, canal]
+    () =>
+      canal || stock
+        ? { ...catalogoPublico, datos: conStockDeSesion(conPreciosDeCanal(catalogoPublico.datos, canal), stock) }
+        : catalogoPublico,
+    [catalogoPublico, canal, stock]
   )
 
   const reintentar = useCallback(() => setIntento((n) => n + 1), [])
