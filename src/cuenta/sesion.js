@@ -19,7 +19,10 @@ const CLAVE = 'rv-cuenta-v1'
 const CANDADO = 'rv-cuenta-sesion'
 const MARGEN_MS = 30_000 // renovar un poco antes del vencimiento
 
-let acceso = null // { token, vence }
+let acceso = null // { token, vence, usuario }
+
+/* Usuario (documento) o, en una cuenta sin cliente, su correo */
+const identidad = (cuenta) => cuenta?.username || cuenta?.email || null
 
 export function leerGuardada() {
   try {
@@ -50,7 +53,7 @@ export const CLAVE_SESION = CLAVE
 
 /** Guarda la sesion que devolvio el ERP (login, activacion, renovacion). */
 function abrir(dto) {
-  acceso = { token: dto.accessToken, vence: Date.now() + dto.expiresIn * 1000 - MARGEN_MS, usuario: dto.account.username }
+  acceso = { token: dto.accessToken, vence: Date.now() + dto.expiresIn * 1000 - MARGEN_MS, usuario: identidad(dto.account) }
   guardar({ refreshToken: dto.refreshToken, cuenta: dto.account })
   return dto.account
 }
@@ -71,6 +74,25 @@ export function iniciar(dto) {
 /** Sesion que reemplaza a la actual de la misma cuenta (cambio de contrasena). */
 export const reemplazar = abrir
 
+/** Datos frescos de la cuenta (GET me) para el encabezado de la proxima visita. */
+export function guardarCuenta(cuenta) {
+  const guardada = leerGuardada()
+  if (guardada) guardar({ ...guardada, cuenta })
+}
+
+/**
+ * accessToken vigente (renueva si hace falta) o null si no hay sesion o no se
+ * pudo renovar. Para pasarselo a /api/pedido, que lee los precios de la lista
+ * del cliente en el ERP con el.
+ */
+export async function tokenVigente() {
+  try {
+    return await conSesion(async (token) => token)
+  } catch {
+    return null
+  }
+}
+
 /** Olvida la sesion local sin llamar al ERP (ya la cerro el, p. ej. al restablecer). */
 export function olvidar() {
   acceso = null
@@ -83,7 +105,7 @@ export function olvidar() {
  */
 export function sincronizar() {
   const guardada = leerGuardada()
-  if (!guardada || guardada.cuenta?.username !== acceso?.usuario) acceso = null
+  if (!guardada || identidad(guardada.cuenta) !== acceso?.usuario) acceso = null
   return guardada?.cuenta ?? null
 }
 

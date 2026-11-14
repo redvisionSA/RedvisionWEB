@@ -5,7 +5,8 @@
  * subida directa con wrangler). Pages ejecuta lo que esta en functions/; las
  * funciones de la web viven en api/ con la firma de Vercel (req, res). Este
  * adaptador las expone como Pages Functions sin duplicar su logica: arma un
- * `req` con el metodo, el cuerpo y las variables del proyecto (`req.env`) y un
+ * `req` con el metodo, los encabezados (en minusculas, como en Vercel), el cuerpo y
+ * las variables del proyecto (`req.env`) y un
  * `res` minimo (setHeader, status, json) que termina en una Response.
  *
  * El archivo empieza con "_" para que Pages no lo publique como ruta.
@@ -31,7 +32,7 @@ export function adaptar(handler) {
     }
     try {
       const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text()
-      await handler({ method: request.method, body, env }, res)
+      await handler({ method: request.method, headers: Object.fromEntries(request.headers), body, env }, res)
     } catch (error) {
       console.error('[functions] Error no controlado:', error?.message || error)
       status = 500

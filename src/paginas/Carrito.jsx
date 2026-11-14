@@ -9,6 +9,8 @@ import { IconoCheck, IconoEscudo, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import EMPRESA from '../datos/empresa.js'
 import { registrarEvento } from '../tienda/popularidad.js'
 import Pagina, { usePagina } from './Pagina.jsx'
+import { useCuenta } from '../cuenta/CuentaContext.jsx'
+import { tokenVigente } from '../cuenta/sesion.js'
 
 /**
  * Carrito y cierre del pedido.
@@ -101,6 +103,7 @@ function Confirmacion({ pedido }) {
 export default function Carrito() {
   usePagina({ titulo: 'Carrito' })
   const { lineas, resumen, vaciar, catalogo } = useTienda()
+  const { cuenta, canal } = useCuenta()
   const [entrega, setEntrega] = useState('retiro')
   const [errores, setErrores] = useState({})
   const [enviando, setEnviando] = useState(false)
@@ -147,16 +150,19 @@ export default function Carrito() {
     }
     const textoEntrega =
       entrega === 'envio' ? `Envío a ${d.direccion}, ${d.localidad}, ${d.provincia} (${d.cp})` : 'Retiro en el local'
-    const respaldo = mensajePedido({ lineas: validas, cliente: { nombre: d.nombre, entrega: textoEntrega } })
+    const respaldo = mensajePedido({ lineas: validas, cliente: { nombre: d.nombre, entrega: textoEntrega }, lista: canal?.etiqueta })
 
     registrarEvento('pedido', validas.map((l) => l.id))
     setErrorEnvio('')
     setMensajeRespaldo('')
     setEnviando(true)
     try {
+      /* Con sesion, el servidor lee en el ERP los precios de la lista del
+         cliente con su token: el navegador sigue sin mandar precios */
+      const token = cuenta ? await tokenVigente() : null
       const respuesta = await fetch('/api/pedido', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ cliente, items: validas.map((l) => ({ id: l.id, cantidad: l.cantidad })), _hp: d._hp }),
       })
       const r = await respuesta.json().catch(() => ({}))
@@ -164,7 +170,7 @@ export default function Carrito() {
       setPedido({
         numero: r.numero,
         total: typeof r.total === 'number' ? r.total : null,
-        mensaje: mensajePedido({ numero: r.numero, lineas: validas, cliente: { nombre: d.nombre, entrega: textoEntrega } }),
+        mensaje: mensajePedido({ numero: r.numero, lineas: validas, cliente: { nombre: d.nombre, entrega: textoEntrega }, lista: canal?.etiqueta }),
       })
       vaciar()
       window.scrollTo({ top: 0 })
@@ -329,7 +335,7 @@ export default function Carrito() {
                 <span className="num font-display text-3xl font-bold text-black dark:text-white">{formatoPrecio(resumen.subtotal) || '$ 0'}</span>
               </div>
               <p className="rv-muted mt-1 text-xs">
-                IVA incluido.{resumen.hayAConfirmar ? ' Incluye productos con precio a confirmar.' : ''}
+                {canal ? `Precios de su lista ${canal.etiqueta}. ` : ''}IVA incluido.{resumen.hayAConfirmar ? ' Incluye productos con precio a confirmar.' : ''}
               </p>
 
               {errorEnvio && (

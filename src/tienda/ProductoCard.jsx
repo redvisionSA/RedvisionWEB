@@ -96,7 +96,7 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
 
         <div className={lista ? 'flex shrink-0 flex-col gap-2 sm:w-48 sm:items-end' : 'mt-auto px-3.5 pb-3.5 pt-2 sm:px-4 sm:pb-4'}>
           <div className={lista ? 'sm:text-right' : 'mb-2.5'}>
-            <Precio valor={producto.precio} />
+            <Precio valor={producto.precio} canal={producto.canal} />
             {producto.precio !== null && <p className="text-[11px] text-black/55 dark:text-white/55">IVA incluido</p>}
           </div>
           <div className={lista ? 'flex w-full items-center gap-2' : ''}>

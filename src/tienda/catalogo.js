@@ -108,6 +108,31 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
   }
 }
 
+/**
+ * Precios de la lista del cliente con sesion, superpuestos por id al catalogo
+ * publico (lista Gremio). `canal` = { etiqueta, precios: Map(id -> numero) }
+ * o null. Un producto sin precio en su lista queda en «Consultar precio»:
+ * nunca se le muestra el precio Gremio como si fuera el suyo.
+ */
+export function conPreciosDeCanal(datos, canal) {
+  if (!canal) return datos
+  const productos = datos.productos.map((p) => ({ ...p, precio: canal.precios.get(p.id) ?? null, canal: canal.etiqueta }))
+  const porId = new Map(productos.map((p) => [p.id, p]))
+  return {
+    ...datos,
+    productos,
+    porId,
+    porSlug: new Map(productos.map((p) => [p.slug, p])),
+    /* El indice de busqueda guarda referencias: se apuntan a los productos nuevos */
+    motor: { ...datos.motor, indice: datos.motor.indice.map((e) => ({ ...e, p: porId.get(e.p.id) })) },
+  }
+}
+
+/** Precios del ERP (`[{ id, price }]`, string decimal) a Map(id -> numero). */
+export function mapaDePrecios(lista) {
+  return new Map((lista || []).map((x) => [String(x.id), aNumero(x.price)]).filter(([, precio]) => precio !== null))
+}
+
 export async function cargarCatalogo({ signal } = {}) {
   if (URL_CATALOGO) {
     const respuesta = await fetch(URL_CATALOGO, { signal, headers: { Accept: 'application/json' } })

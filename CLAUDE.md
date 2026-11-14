@@ -153,9 +153,9 @@ siguientes.
 ### Cuentas de clientes (13/11)
 Solo clientes de los puntos de venta (Gremio, Mayorista, Distribuidor) dados de alta por el vendedor
 en el ERP; no hay registro abierto. API: módulo `customer_portal` del ERP (CONTRACTS.md del backend),
-base `VITE_CUENTAS_URL` (por defecto `https://api-erp.redvision.com.ar/shop/redvision`). En producción
-el ERP la tiene apagada (`SHOP_ACCOUNTS_ENABLED=false` → 404) y la web muestra «El acceso de clientes
-todavía no está habilitado»; se prende recién cuando estas páginas estén publicadas.
+base `VITE_CUENTAS_URL` (por defecto `https://api-erp.redvision.com.ar/shop/redvision`). Si el ERP
+la apaga (`SHOP_ACCOUNTS_ENABLED=false` → 404) la web muestra «El acceso de clientes todavía no está
+habilitado».
 - Rutas (`src/paginas/Cuenta.jsx`, `noindex`, zona tienda): `/cuenta` (datos, cambiar contraseña,
   cerrar sesión) · `/cuenta/ingresar?volver=` · `/cuenta/activar?token=` (enlace de la invitación) ·
   `/cuenta/activar-codigo` (código `XXXX-XXXX` del vendedor) · `/cuenta/olvide` (contraseña y usuario:
@@ -164,6 +164,17 @@ todavía no está habilitado»; se prende recién cuando estas páginas estén p
   cuenta en `localStorage` (`rv-cuenta-v1`), sin cookies. **La renovación corre bajo Web Locks entre
   pestañas** y lee el refreshToken vigente justo antes de usarlo: reusar uno viejo cierra todas las
   sesiones de la cuenta en el ERP. Salir o entrar en otra pestaña se refleja por el evento `storage`.
+- **Registro propio (14/11)**: `/cuenta/registrarse` en dos pasos (correo → `auth/register/start`, 202
+  siempre; código de 6 números + CUIT/DNI + nombre + contraseña → `auth/register/complete` → sesión).
+  Documento de un cliente con otro correo → cuenta `link: PENDING` (Gremio) hasta que el vendedor la
+  aprueba en el ERP; Mi cuenta lo avisa. `username` puede ser null (entra con el correo).
+- **Precios del canal (14/11)**: con sesión Mayorista o Distribuidor, `CuentaContext` lee `GET me/prices`
+  y `TiendaContext` los superpone por `id` al catálogo (`conPreciosDeCanal` en `catalogo.js`): tarjetas,
+  ficha, buscador, filtros, carrito y WhatsApp usan ese precio; sin precio en su lista, «Consultar
+  precio»; junto al precio, «Precio Mayorista». Gremio no superpone (el público ya es Gremio). El JSON-LD
+  no publica el precio del canal. `api/pedido.js` recibe el token en `Authorization` y lee del ERP
+  `me` y `me/prices` (`CUENTAS_URL`, por defecto el de producción): el correo a ventas lleva el mismo
+  precio y la cuenta del cliente; si el ERP no confirma la sesión, usa los públicos y lo avisa.
 - Barra: `BotonCuenta` en `Navbar.jsx` ocupa el lugar del ícono de persona del nav de una fila (con
   sesión muestra el nombre desde `xl` y un punto rojo debajo); en la hoja del menú es la primera entrada.
 - Probar en local: ERP con `SHOP_ACCOUNTS_ENABLED=true SHOP_MAIL_MODE=log SHOP_RV_URL=http://localhost:5180`

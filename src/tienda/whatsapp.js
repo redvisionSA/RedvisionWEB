@@ -13,7 +13,7 @@ export function mensajeProducto(producto) {
 }
 
 /** Pedido como texto: sirve de respaldo si el envio por correo falla. */
-export function mensajePedido({ numero, lineas, cliente }) {
+export function mensajePedido({ numero, lineas, cliente, lista }) {
   const filas = lineas
     .filter((l) => l.producto)
     .map((l) => {
@@ -23,6 +23,7 @@ export function mensajePedido({ numero, lineas, cliente }) {
   return [
     `Hola, quiero confirmar el pedido${numero ? ` ${numero}` : ''} hecho en redvision.com.ar:`,
     ...filas,
+    lista ? `Precios de mi lista ${lista} (cuenta de la tienda).` : null,
     cliente?.nombre ? `Nombre: ${cliente.nombre}` : null,
     cliente?.entrega ? `Entrega: ${cliente.entrega}` : null,
   ]

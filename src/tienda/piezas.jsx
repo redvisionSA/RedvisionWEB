@@ -6,20 +6,25 @@ import { useTienda } from './TiendaContext.jsx'
 import { IconoCorazon } from './Iconos.jsx'
 
 /* ------------------------------------------------------------- Precio */
-export function Precio({ valor, className = '', grande = false }) {
+/* `canal`: lista del cliente con sesion («Mayorista», «Distribuidor»); se
+   indica junto al precio para que nunca se confunda con el publico. */
+export function Precio({ valor, canal = null, className = '', grande = false }) {
   const texto = formatoPrecio(valor)
+  const lista = canal ? (
+    <span className={`block font-display font-semibold uppercase tracking-wide text-black/60 dark:text-white/65 ${grande ? 'mt-1 text-xs' : 'text-[10px]'}`}>Precio {canal}</span>
+  ) : null
   if (!texto) {
     return (
-      <span className={`font-display font-semibold text-black/80 dark:text-white/85 ${grande ? 'text-xl' : 'text-sm'} ${className}`}>
+      <span className={`inline-block font-display font-semibold text-black/80 dark:text-white/85 ${grande ? 'text-xl' : 'text-sm'} ${className}`}>
         Consultar precio
+        {lista}
       </span>
     )
   }
   return (
-    <span
-      className={`num font-display font-bold tracking-tight text-black dark:text-white ${grande ? 'text-3xl sm:text-4xl' : 'text-lg'} ${className}`}
-    >
-      {texto}
+    <span className={`inline-block ${className}`}>
+      <span className={`num font-display font-bold tracking-tight text-black dark:text-white ${grande ? 'text-3xl sm:text-4xl' : 'text-lg'}`}>{texto}</span>
+      {lista}
     </span>
   )
 }

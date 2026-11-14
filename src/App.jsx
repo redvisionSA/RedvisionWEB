@@ -27,6 +27,7 @@ const cuenta = (nombre) => lazy(() => import('./paginas/Cuenta.jsx').then((m) =>
 const Ingresar = cuenta('Ingresar')
 const Activar = cuenta('Activar')
 const ActivarCodigo = cuenta('ActivarCodigo')
+const Registrarse = cuenta('Registrarse')
 const Olvide = cuenta('Olvide')
 const Restablecer = cuenta('Restablecer')
 const MiCuenta = cuenta('MiCuenta')
@@ -194,6 +195,7 @@ export default function App() {
                 <Route path="/cuenta/ingresar" element={<Ingresar />} />
                 <Route path="/cuenta/activar" element={<Activar />} />
                 <Route path="/cuenta/activar-codigo" element={<ActivarCodigo />} />
+                <Route path="/cuenta/registrarse" element={<Registrarse />} />
                 <Route path="/cuenta/olvide" element={<Olvide />} />
                 <Route path="/cuenta/restablecer" element={<Restablecer />} />
                 <Route path="/empresa" element={<Empresa />} />

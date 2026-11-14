@@ -42,8 +42,9 @@ function useEsquemaProducto(producto) {
       description: producto.descripcion || undefined,
       image: producto.imagen || undefined,
       brand: producto.marca ? { '@type': 'Brand', name: producto.marca.nombre } : undefined,
+      /* El precio de la lista de un cliente con sesion no se publica como oferta */
       offers:
-        producto.precio !== null
+        producto.precio !== null && !producto.canal
           ? {
               '@type': 'Offer',
               priceCurrency: 'ARS',
@@ -101,7 +102,7 @@ export default function Producto() {
   usePagina({
     titulo: producto?.nombre || 'Producto',
     descripcion: producto
-      ? `${producto.nombre}${producto.marca ? ` de ${producto.marca.nombre}` : ''}. ${producto.precio !== null ? `${formatoPrecio(producto.precio)} con IVA. ` : ''}Envío a todo el país y asesoramiento técnico.`
+      ? `${producto.nombre}${producto.marca ? ` de ${producto.marca.nombre}` : ''}. ${producto.precio !== null && !producto.canal ? `${formatoPrecio(producto.precio)} con IVA. ` : ''}Envío a todo el país y asesoramiento técnico.`
       : undefined,
   })
   useEsquemaProducto(producto)
@@ -222,7 +223,7 @@ export default function Producto() {
             {producto.marca?.identidad?.oficial && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
 
             <div className="mt-5 border-t rv-hairline pt-5">
-              <Precio valor={producto.precio} grande />
+              <Precio valor={producto.precio} canal={producto.canal} grande />
               <p className="rv-muted mt-1 text-xs">
                 {producto.precio !== null
                   ? 'Precio final con IVA incluido. Envío no incluido: se cotiza al confirmar el pedido.'
@@ -287,7 +288,7 @@ export default function Producto() {
       {/* Barra fija de compra en telefono: la accion siempre al alcance del pulgar */}
       <div className="rv-panel-solido pb-safe fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t rv-hairline px-4 pt-3 sm:hidden">
         <div className="min-w-0 shrink-0">
-          <Precio valor={producto.precio} className="!text-base" />
+          <Precio valor={producto.precio} canal={producto.canal} className="!text-base" />
         </div>
         <div className="flex flex-1 gap-2">
           {comprable ? (

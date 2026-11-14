@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCuenta } from '../cuenta/CuentaContext.jsx'
+import { LISTAS, useCuenta } from '../cuenta/CuentaContext.jsx'
 import { pedir } from '../cuenta/api.js'
 import { AvisoError, Campo, Migas } from '../tienda/piezas.jsx'
 import { IconoCheck, IconoOjo, IconoUsuario, IconoWhatsapp } from '../tienda/Iconos.jsx'
@@ -10,11 +10,18 @@ import Pagina, { usePagina } from './Pagina.jsx'
 /**
  * Cuenta de cliente de la tienda (Gremio, Mayorista, Distribuidor).
  *
- * Las cuentas las da de alta el vendedor desde el ERP: por invitacion al
- * correo (enlace de un solo uso a /cuenta/activar) o con un codigo que
- * entrega en mano (/cuenta/activar-codigo). No hay registro abierto.
+ * Tres formas de tener cuenta:
+ *   - invitacion del vendedor al correo (enlace de un solo uso a /cuenta/activar);
+ *   - codigo que el vendedor entrega en mano (/cuenta/activar-codigo);
+ *   - registro propio con correo y CUIT/DNI (/cuenta/registrarse, 14/11). Si el
+ *     documento es de un cliente pero el correo no es el de su ficha, la cuenta
+ *     queda «pendiente» (link PENDING) hasta que el vendedor la aprueba, y
+ *     mientras tanto ve la lista Gremio.
  * Los mensajes de error son los que manda el ERP, ya en castellano.
  */
+
+const AVISO_PENDIENTE =
+  'Estamos verificando que la cuenta corresponda a ese cliente. Mientras tanto ve los precios de lista Gremio.'
 
 const MIN = 8
 const MAX = 128
@@ -89,11 +96,11 @@ function Enviar({ enviando, children, textoEnviando }) {
   )
 }
 
-function Aviso({ children }) {
+function Aviso({ children, info = false }) {
   return (
     <div className="rv-sutil mb-5 flex items-start gap-3 rounded-2xl p-4 text-sm" role="status">
-      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-black text-white dark:bg-white dark:text-black">
-        <IconoCheck className="h-3.5 w-3.5" />
+      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-black font-display text-xs font-bold text-white dark:bg-white dark:text-black">
+        {info ? 'i' : <IconoCheck className="h-3.5 w-3.5" />}
       </span>
       <p className="text-black dark:text-white">{children}</p>
     </div>
@@ -116,7 +123,7 @@ function useEnvio() {
       setEnviando(false)
     }
   }
-  return { enviando, error, enviar }
+  return { enviando, error, enviar, limpiar: () => setError('') }
 }
 
 /* Contrasena nueva + repeticion (activar, restablecer, cambiar) */
@@ -179,7 +186,7 @@ export function Ingresar() {
     <Marco
       migas={[{ label: 'Ingresar' }]}
       titulo="Ingresar a su cuenta"
-      bajada="Acceso para clientes de REDVISION: gremio, mayoristas y distribuidores. Si todavía no tiene cuenta, solicítela a su vendedor."
+      bajada="Con su cuenta ve los precios de su lista: gremio, mayorista o distribuidor. Si todavía no tiene una, puede crearla con su correo y su CUIT o DNI."
     >
       {state?.aviso && <Aviso>{state.aviso}</Aviso>}
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
@@ -202,6 +209,9 @@ export function Ingresar() {
           Ingresar
         </Enviar>
       </form>
+      <Link to="/cuenta/registrarse" className="rv-btn-glass mt-3 w-full">
+        Crear cuenta
+      </Link>
       <div className="mt-6 flex flex-col gap-2 border-t rv-hairline pt-5 text-sm">
         <Link to="/cuenta/olvide" className="rv-link font-semibold">
           ¿Olvidó su contraseña o su usuario?
@@ -209,10 +219,6 @@ export function Ingresar() {
         <Link to="/cuenta/activar-codigo" className="rv-link">
           ¿Su vendedor le entregó un código? Active su cuenta
         </Link>
-        <a href={enlaceConsulta('mayorista')} target="_blank" rel="noopener noreferrer" className="rv-link inline-flex items-center gap-1.5">
-          <IconoWhatsapp className="h-4 w-4" />
-          ¿Todavía no tiene cuenta? Solicítela por WhatsApp
-        </a>
       </div>
     </Marco>
   )
@@ -368,6 +374,180 @@ export function ActivarCodigo() {
       <p className="mt-5 text-sm">
         <Link to="/cuenta/ingresar" className="rv-link">
           ¿Ya activó su cuenta? Ingresar
+        </Link>
+      </p>
+    </Marco>
+  )
+}
+
+/* ------------------------------------------------------------ /cuenta/registrarse */
+
+const RESPUESTA_REGISTRO =
+  'Si puede crear una cuenta con ese correo, le enviamos un código de 6 números (vale 15 minutos). Si ya tiene una cuenta, le enviamos su usuario.'
+
+export function Registrarse() {
+  usePagina({ titulo: 'Crear cuenta', indexar: false })
+  const { cuenta, registrar } = useCuenta()
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [enviado, setEnviado] = useState(false)
+  const [code, setCode] = useState('')
+  const [taxId, setTaxId] = useState('')
+  const [name, setName] = useState('')
+  const [errores, setErrores] = useState({})
+  const [reenviado, setReenviado] = useState(false)
+  const nueva = useContrasenaNueva()
+  const paso1 = useEnvio()
+  const paso2 = useEnvio()
+
+  if (cuenta && !paso2.enviando) return <Navigate to="/cuenta" replace />
+
+  /* Paso 1: 202 siempre, exista o no una cuenta con ese correo */
+  async function pedirCodigo(event) {
+    event?.preventDefault()
+    const limpio = email.trim()
+    if (!EMAIL_RE.test(limpio)) {
+      setErrores({ email: 'Verifique el correo (ejemplo: nombre@dominio.com).' })
+      return
+    }
+    setErrores({})
+    const ok = await paso1.enviar(async () => {
+      await pedir('auth/register/start', { cuerpo: { email: limpio } })
+      return true
+    })
+    if (ok) {
+      paso2.limpiar()
+      setReenviado(enviado)
+      setEnviado(true)
+    }
+  }
+
+  async function crear(event) {
+    event.preventDefault()
+    const e = {}
+    if (!/^\d{6}$/.test(code)) e.code = 'El código son 6 números.'
+    const digitos = taxId.replace(/\D/g, '')
+    if (/[^\d\s.-]/.test(taxId) || !(digitos.length === 11 || (digitos.length >= 7 && digitos.length <= 8))) {
+      e.taxId = 'Indique su CUIT (11 números) o su DNI (7 u 8 números).'
+    }
+    if (name.trim().length < 2) e.name = 'Indique su nombre o razón social.'
+    setErrores(e)
+    const okNueva = nueva.validar()
+    if (Object.keys(e).length || !okNueva) return
+    const creada = await paso2.enviar(() => registrar({ email: email.trim(), code, taxId: digitos, name: name.trim(), password: nueva.password }))
+    if (creada) {
+      const aviso =
+        creada.link === 'LINKED' && creada.priceTier !== 'GREMIO'
+          ? `Su cuenta quedó creada. Ya ve los precios de su lista ${LISTAS[creada.priceTier] || creada.priceTier}.`
+          : 'Su cuenta quedó creada.'
+      navigate('/cuenta', { replace: true, state: { aviso } })
+    }
+  }
+
+  return (
+    <Marco
+      migas={[{ label: 'Ingresar', to: '/cuenta/ingresar' }, { label: 'Crear cuenta' }]}
+      titulo="Crear cuenta"
+      bajada="Con su correo y su CUIT o DNI. Si ya es cliente de REDVISION, la cuenta se vincula a su ficha y ve los precios de su lista."
+    >
+      <form onSubmit={pedirCodigo} noValidate className="flex flex-col gap-4">
+        <Campo id="email" label="Correo electrónico" error={errores.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            value={email}
+            readOnly={enviado}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`rv-field text-base ${enviado ? 'opacity-70' : ''}`}
+            aria-invalid={!!errores.email}
+          />
+        </Campo>
+        {!enviado && (
+          <>
+            <AvisoError>{paso1.error}</AvisoError>
+            <Enviar enviando={paso1.enviando} textoEnviando="Enviando…">
+              Enviar código
+            </Enviar>
+          </>
+        )}
+      </form>
+
+      {enviado && (
+        <>
+          <div className="mt-4">
+            <Aviso>{RESPUESTA_REGISTRO}</Aviso>
+          </div>
+          <form onSubmit={crear} noValidate className="flex flex-col gap-4">
+            <Campo id="code" label="Código del correo" error={errores.code}>
+              <input
+                id="code"
+                name="code"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="rv-field num text-base tracking-[0.3em]"
+                aria-invalid={!!errores.code}
+              />
+            </Campo>
+            <Campo id="taxId" label="CUIT o DNI" error={errores.taxId} ayuda="Con o sin guiones.">
+              <input
+                id="taxId"
+                name="taxId"
+                inputMode="numeric"
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value)}
+                className="rv-field text-base"
+                aria-invalid={!!errores.taxId}
+              />
+            </Campo>
+            <Campo id="name" label="Nombre y apellido o razón social" error={errores.name}>
+              <input
+                id="name"
+                name="name"
+                autoComplete="organization"
+                maxLength={200}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="rv-field text-base"
+                aria-invalid={!!errores.name}
+              />
+            </Campo>
+            {nueva.campos}
+            <AvisoError>{paso2.error || paso1.error}</AvisoError>
+            <Enviar enviando={paso2.enviando} textoEnviando="Creando cuenta…">
+              Crear cuenta
+            </Enviar>
+          </form>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <button type="button" onClick={() => pedirCodigo()} disabled={paso1.enviando} className="rv-link cursor-pointer font-semibold disabled:opacity-60">
+              {paso1.enviando ? 'Enviando…' : reenviado ? 'Código reenviado. Reenviar otra vez' : 'Reenviar el código'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEnviado(false)
+                setCode('')
+                setReenviado(false)
+              }}
+              className="rv-link cursor-pointer"
+            >
+              Usar otro correo
+            </button>
+          </div>
+        </>
+      )}
+
+      <p className="mt-6 border-t rv-hairline pt-5 text-sm">
+        <Link to="/cuenta/ingresar" className="rv-link font-semibold">
+          ¿Ya tiene cuenta? Ingresar
         </Link>
       </p>
     </Marco>
@@ -582,13 +762,20 @@ export function MiCuenta() {
       <div className="mx-auto grid max-w-4xl gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="rv-solido p-6 sm:p-8">
           {state?.aviso && <Aviso>{state.aviso}</Aviso>}
+          {cuenta.link === 'PENDING' && <Aviso info>{AVISO_PENDIENTE}</Aviso>}
           <p className="rv-eyebrow mb-2">Mi cuenta</p>
           <h1 className="text-onglass font-display text-2xl font-bold sm:text-3xl">{cuenta.name}</h1>
           <dl className="mt-5 space-y-3 text-sm">
             <div>
               <dt className="rv-muted text-xs font-semibold uppercase tracking-wide">Usuario</dt>
-              <dd className="num font-semibold text-black dark:text-white">{cuenta.username}</dd>
+              <dd className="num font-semibold text-black dark:text-white">{cuenta.username || 'Ingresa con su correo'}</dd>
             </div>
+            {cuenta.priceTier && (
+              <div>
+                <dt className="rv-muted text-xs font-semibold uppercase tracking-wide">Lista de precios</dt>
+                <dd className="font-semibold text-black dark:text-white">{LISTAS[cuenta.priceTier] || cuenta.priceTier}</dd>
+              </div>
+            )}
             <div>
               <dt className="rv-muted text-xs font-semibold uppercase tracking-wide">Correo</dt>
               <dd className="break-all font-semibold text-black dark:text-white">{cuenta.email || 'Sin correo registrado'}</dd>

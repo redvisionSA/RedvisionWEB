@@ -14,12 +14,21 @@
  * y en Vercel. Las variables se leen en cada pedido: en Cloudflare llegan en
  * `req.env`, en Vercel en `process.env`.
  *
+ * Cliente con sesion en la tienda (Mayorista, Distribuidor): el navegador
+ * manda su accessToken en `Authorization` y aca se leen del ERP sus datos
+ * (GET me) y los precios de su lista (GET me/prices), con ese token. Asi el
+ * pedido lleva el mismo precio que vio la persona sin que el navegador mande
+ * precios. Si el ERP no confirma la sesion, se usan los publicos y el correo
+ * lo avisa.
+ *
  * Variables de entorno:
  *   RESEND_API_KEY           obligatoria (la misma del formulario de contacto)
  *   RESEND_FROM              opcional; con dominio verificado tambien se envia
  *                            copia al cliente
  *   PEDIDOS_EMAIL_DESTINO    opcional; si falta, CONTACTO_EMAIL_DESTINO o la casilla de ventas
  *   CATALOGO_URL             endpoint del ERP (si falta, VITE_CATALOGO_URL y despues el de produccion)
+ *   CUENTAS_URL              base de las cuentas de la tienda en el ERP (si falta, VITE_CUENTAS_URL y
+ *                            despues el de produccion)
  */
 
 function configuracion(req) {
@@ -31,6 +40,8 @@ function configuracion(req) {
     dominioVerificado: Boolean(env.RESEND_FROM),
     // El mismo endpoint publico que usa la tienda (src/tienda/catalogo.js): sin variable, el de produccion.
     catalogoUrl: env.CATALOGO_URL || env.VITE_CATALOGO_URL || 'https://api-erp.redvision.com.ar/storefront/catalog',
+    // La misma base que usa la tienda (src/cuenta/api.js)
+    cuentasUrl: (env.CUENTAS_URL || env.VITE_CUENTAS_URL || 'https://api-erp.redvision.com.ar/shop/redvision').replace(/\/+$/, ''),
   }
 }
 
@@ -88,6 +99,37 @@ async function leerCatalogo(url) {
   } catch (error) {
     console.error('[api/pedido] Catálogo no disponible, el pedido sigue con precio a confirmar:', error.message)
     return null
+  }
+}
+
+const LISTAS = { GREMIO: 'Gremio', MAYORISTA: 'Mayorista', DISTRIBUIDOR: 'Distribuidor' }
+
+async function leerJson(url, token) {
+  const control = new AbortController()
+  const corte = setTimeout(() => control.abort(), 6000)
+  try {
+    const r = await fetch(url, { headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }, signal: control.signal })
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    return await r.json()
+  } finally {
+    clearTimeout(corte)
+  }
+}
+
+/**
+ * Cuenta y lista de precios del cliente con sesion. null sin token;
+ * { error } si el ERP no la confirma (token vencido, ERP caido).
+ */
+async function leerCuenta(cuentasUrl, autorizacion) {
+  const token = String(autorizacion || '').match(/^Bearer\s+(\S{10,4096})$/)?.[1]
+  if (!token) return null
+  try {
+    const [cuenta, lista] = await Promise.all([leerJson(`${cuentasUrl}/me`, token), leerJson(`${cuentasUrl}/me/prices`, token)])
+    const precios = lista.priceTier && lista.priceTier !== 'GREMIO' ? new Map((lista.prices || []).map((x) => [String(x.id), x.price])) : null
+    return { cuenta, tier: lista.priceTier, link: lista.link, precios }
+  } catch (error) {
+    console.error('[api/pedido] No se pudo confirmar la cuenta del cliente; se usan los precios públicos:', error.message)
+    return { error: true }
   }
 }
 
@@ -155,7 +197,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'El carrito está vacío.' })
   }
 
-  const { apiKey, destinatario, remitente, dominioVerificado, catalogoUrl } = configuracion(req)
+  const { apiKey, destinatario, remitente, dominioVerificado, catalogoUrl, cuentasUrl } = configuracion(req)
   if (!apiKey) {
     console.error('[api/pedido] Falta la variable RESEND_API_KEY.')
     return res.status(500).json({
@@ -164,10 +206,12 @@ export default async function handler(req, res) {
     })
   }
 
-  const catalogo = await leerCatalogo(catalogoUrl)
+  const [catalogo, sesion] = await Promise.all([leerCatalogo(catalogoUrl), leerCuenta(cuentasUrl, req.headers?.authorization)])
+  /* Lista del cliente: su precio o, si no lo tiene en su lista, a confirmar (como lo vio) */
+  const precios = sesion?.precios || null
   const lineas = limpios.map((i) => {
     const p = catalogo?.get(i.id)
-    const unitario = p ? aCentavos(p.price) : null
+    const unitario = precios ? aCentavos(precios.get(i.id)) : p ? aCentavos(p.price) : null
     return {
       cantidad: i.cantidad,
       nombre: p?.name || `Producto ${i.id}`,
@@ -198,7 +242,22 @@ export default async function handler(req, res) {
     )
     .join('')
 
+  const cuentaTienda = sesion?.error
+    ? 'Tenía sesión, pero el ERP no la confirmó: precios de lista Gremio. Verificar la lista del cliente.'
+    : sesion
+      ? [
+          sesion.cuenta.name,
+          sesion.cuenta.username ? `usuario ${sesion.cuenta.username}` : 'sin cliente vinculado',
+          sesion.cuenta.email,
+          `lista ${LISTAS[sesion.tier] || sesion.tier}`,
+          sesion.link === 'PENDING' ? 'vinculación pendiente de aprobar' : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : null
+
   const datos = [
+    ...(cuentaTienda ? [['Cuenta de la tienda', cuentaTienda]] : []),
     ['Nombre', cliente.nombre],
     ['Teléfono / WhatsApp', cliente.telefono],
     ['Correo', cliente.email],
@@ -212,7 +271,7 @@ export default async function handler(req, res) {
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:640px;color:#111;">
     <h2 style="margin:0 0 4px;">${escaparHtml(asunto)}</h2>
-    <p style="margin:0 0 16px;color:#666;font-size:13px;">Pedido sin cobro: confirmar stock, precio y envío con el cliente.${catalogo ? '' : ' <b style="color:#D61922;">El catálogo no respondió: todos los precios quedan a confirmar.</b>'}</p>
+    <p style="margin:0 0 16px;color:#666;font-size:13px;">Pedido sin cobro: confirmar stock, precio y envío con el cliente.${precios ? ` <b>Precios de la lista ${escaparHtml(LISTAS[sesion.tier] || sesion.tier)} del cliente.</b>` : ''}${catalogo ? '' : ' <b style="color:#D61922;">El catálogo no respondió: todos los precios quedan a confirmar.</b>'}</p>
     <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
       <thead><tr style="text-align:left;color:#666;font-size:12px;text-transform:uppercase;">
         <th style="padding:8px;">Cant.</th><th style="padding:8px;">Producto</th><th style="padding:8px;text-align:right;">Unitario</th><th style="padding:8px;text-align:right;">Subtotal</th>
