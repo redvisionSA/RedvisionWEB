@@ -350,7 +350,7 @@ export default function Carrito() {
                 </div>
               )}
 
-              <button type="submit" disabled={enviando || validas.length === 0} className="rv-btn-primary mt-5 w-full disabled:cursor-not-allowed disabled:opacity-60">
+              <button type="submit" disabled={enviando || validas.length === 0} className="rv-btn-primary mt-5 w-full" aria-busy={enviando || undefined}>
                 {enviando ? 'Enviando pedido…' : 'Confirmar pedido'}
               </button>
               <p className="rv-muted mt-3 flex items-start gap-2 text-xs leading-relaxed">

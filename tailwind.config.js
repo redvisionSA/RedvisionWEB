@@ -25,6 +25,8 @@ export default {
       fontFamily: {
         display: ['Lexend', 'system-ui', 'sans-serif'],
         sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+        /* Lecturas tipo OSD de cámara (Aspecto 6): disponibilidad, rótulos de avisos */
+        osd: ['"IBM Plex Mono"', 'ui-monospace', 'Consolas', 'monospace'],
       },
       borderRadius: {
         glass: '28px',
@@ -43,6 +45,15 @@ export default {
         400: '400ms',
       },
       keyframes: {
+        /* Punto REC: parpadea tres veces y queda fijo (no late para siempre) */
+        'rv-rec': {
+          '50%': { opacity: '0' },
+        },
+        /* Línea de barrido del botón mientras manda algo */
+        'rv-barrido': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(300%)' },
+        },
         'rv-scan': {
           '0%': { transform: 'translateY(-120%)', opacity: '0' },
           '45%': { opacity: '1' },
@@ -73,6 +84,8 @@ export default {
         },
       },
       animation: {
+        'rv-rec': 'rv-rec 1s steps(1, end) 3',
+        'rv-barrido': 'rv-barrido 1.1s linear infinite',
         'rv-scan': 'rv-scan 4.5s linear infinite',
         'rv-pulse-ring': 'rv-pulse-ring 2.6s ease-out infinite',
         'rv-rise': 'rv-rise 0.6s cubic-bezier(0.22,1,0.36,1) both',

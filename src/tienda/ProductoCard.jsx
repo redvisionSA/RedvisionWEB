@@ -33,8 +33,7 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
     <button
       type="button"
       onClick={onAgregar}
-      className={`flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-3 font-display text-xs font-semibold uppercase tracking-wide transition-colors duration-200 active:scale-[0.98]
-                  ${recien || enCarrito ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-rv-red text-white hover:bg-rv-red-press'}`}
+      className={`rv-btn-primary w-full px-3 text-sm ${recien || enCarrito ? '!bg-black text-white dark:!bg-white dark:text-black' : ''}`}
     >
       {recien ? <IconoCheck className="h-4 w-4" /> : <IconoCarrito className="h-4 w-4" />}
       {recien ? 'Agregado' : enCarrito ? 'Sumar otro' : 'Agregar'}
@@ -44,7 +43,7 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
       href={enlaceWhatsapp(mensajeProducto(producto))}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-black/15 px-3 font-display text-xs font-semibold uppercase tracking-wide text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:text-white"
+      className="rv-btn-glass w-full px-3 text-sm"
     >
       <IconoWhatsapp className="h-4 w-4" />
       Consultar ingreso
