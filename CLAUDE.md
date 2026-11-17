@@ -72,7 +72,8 @@ dice este archivo manda:**
   producto, categorías) debe sostener esa impresión.
 - **No inventar cifras** (stock, precios, métricas); las reseñas de Google van textuales
   (`public/resenas.json`).
-- Orden del negocio: 1 comercialización (mayorista y minorista), 2 proyectos llave en mano, 3 formación.
+- Orden del negocio: 1 comercialización (mayorista y minorista), 2 asesoramiento técnico, 3 formación para
+  instaladores. **Los proyectos ya no son de REDVISION** (ver «IARED»).
 - Paleta y jerarquía del rojo (ver tabla de arriba).
 
 ## Tienda (rama `ecommerce`, 12/11/2026)
@@ -85,10 +86,10 @@ siguientes.
   archivo a `index.html`): `/` tienda + resumen institucional · `/productos` y `/productos/:linea`
   (filtros en la URL: `q`, `marca`, `stock`, `orden`) · `/producto/:slug` · `/carrito` (checkout) ·
   `/favoritos` · `/cuenta` (ingreso: hoy explica que el login llega con las listas mayorista y
-  distribuidor) · `/empresa` (con el mapa en `#ubicacion`) · `/proyectos` · `/tecnologia` ·
+  distribuidor) · `/empresa` (con el mapa en `#ubicacion`) · `/iared` (`/proyectos` redirige ahí) · `/tecnologia` ·
   `/capacitaciones` · 404. **`/contacto` y su formulario se eliminaron (13/11)**: la ruta redirige a
   `/empresa#ubicacion`; las consultas van por WhatsApp con mensaje armado (`CONSULTAS` en
-  `src/tienda/whatsapp.js`: asesor, mayorista, proyecto, capacitación). Cada página es `React.lazy`.
+  `src/tienda/whatsapp.js`: asesor, mayorista, capacitación; los proyectos van por `src/datos/iared.js`). Cada página es `React.lazy`.
 - Datos: `src/tienda/catalogo.js` lee `VITE_CATALOGO_URL` (contrato en `docs/CATALOGO_API.md`). Sin
   esa variable: en dev, `src/tienda/demo.js` con la franja "Datos de demostración"; en producción, el
   endpoint del ERP `https://api-erp.redvision.com.ar/storefront/catalog` (público, no es un secreto;
@@ -160,6 +161,22 @@ siguientes.
   solo si el ERP lo dice, vistos recientemente, favoritos, carrito persistente ("Su carrito lo
   espera"), venta cruzada técnica ("Complete la instalación", `COMPLEMENTOS`), barra fija de compra en
   teléfono, WhatsApp flotante con el producto en el mensaje.
+
+### IARED: los proyectos son de otra empresa (17/11)
+REDVISION **no ofrece proyectos** (relevamiento, ingeniería, integración, instalación, puesta en marcha,
+capacitación en obra, «llave en mano»). Los realiza **IARED**, empresa aparte y totalmente independiente
+(marca en construcción). La tienda solo le da visibilidad y deriva: bloque destacado en el inicio
+(`BloqueIared`, antes de lo institucional), página `/iared` (`/proyectos` redirige ahí) y «Proyectos · IARED»
+en «Empresa ▾» y en el pie. Se quitaron la tesela del departamento de proyectos (`TileProyectos`), la página
+`Proyectos`, el mensaje `proyecto` de WhatsApp y las menciones en meta, OG y JSON-LD. La **capacitación para
+instaladores** sigue siendo de REDVISION (`/capacitaciones`).
+- Archivos: `src/datos/iared.js` (único lugar con sus datos), `src/components/Iared.jsx` (marca, botón,
+  bloque), `src/paginas/Iared.jsx`.
+- **Datos pendientes**: `url`, `whatsapp`, `email` y `logo` en `null`. Mientras no haya canal propio, el botón
+  abre el WhatsApp de REDVISION con «Hola REDVISION, quiero que IARED me contacte por un proyecto.» y la
+  página lo informa (`AvisoRespaldo`); sin logo, «IARED» en tipografía. Al completar un campo, el botón cambia
+  solo (prioridad: sitio → WhatsApp → correo). **No inventar** dominio, logo, cifras, clientes ni plazos.
+- Límite entre empresas: en `iared.js` no va nada de REDVISION ni de Control Red.
 
 ### Cuentas de clientes (13/11)
 Solo clientes de los puntos de venta (Gremio, Mayorista, Distribuidor) dados de alta por el vendedor

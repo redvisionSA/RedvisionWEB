@@ -13,6 +13,7 @@ import { IconoCamion, IconoEscudo, IconoFlecha, IconoLocal, IconoTecnico, IconoW
 import EMPRESA from '../datos/empresa.js'
 import { enlaceConsulta } from '../tienda/whatsapp.js'
 import { usePagina } from './Pagina.jsx'
+import { BloqueIared } from '../components/Iared.jsx'
 
 /**
  * Inicio = tienda.
@@ -24,7 +25,8 @@ import { usePagina } from './Pagina.jsx'
  *   3. Marcas en cinta automatica.
  *   4. Respaldo: garantia, asesoramiento, envio, retiro (reduce el riesgo percibido).
  *   5. Canal mayorista (el cliente que mas factura).
- *   6. Lo institucional, resumido y enlazado a su pestaña.
+ *   6. IARED: los proyectos los realiza otra empresa; aca se la presenta y se deriva.
+ *   7. Lo institucional, resumido y enlazado a su pestaña.
  */
 
 const BENEFICIOS = [
@@ -36,17 +38,10 @@ const BENEFICIOS = [
 
 const INSTITUCIONAL = [
   {
-    to: '/proyectos',
-    eyebrow: 'Departamento de proyectos',
-    titulo: 'Llave en mano, del relevamiento al posventa',
-    texto: 'Escuchamos, planificamos, cotizamos, instalamos, capacitamos y acompañamos. Consorcios, industria, countries y operaciones multisitio.',
-    cta: 'Conocer el departamento',
-  },
-  {
     to: '/capacitaciones',
     eyebrow: 'Formación técnica',
     titulo: 'Capacitación para instaladores',
-    texto: 'Talleres prácticos sobre plataformas Dahua, redes para video y puesta en marcha de sistemas.',
+    texto: 'Talleres prácticos sobre plataformas Dahua, redes para video y configuración de equipos.',
     cta: 'Ver capacitaciones',
   },
   {
@@ -149,7 +144,7 @@ function Institucional() {
           Un equipo técnico detrás de cada compra
         </h2>
       </div>
-      <ul className="grid gap-4 md:grid-cols-3">
+      <ul className="grid gap-4 md:grid-cols-2">
         {INSTITUCIONAL.map((b) => (
           <li key={b.to}>
             <GlassPanel tilt={2} className="group h-full p-0">
@@ -242,6 +237,7 @@ export default function Inicio({ onRobotListo }) {
           </p>
         </section>
 
+        <BloqueIared />
         <Institucional />
         <TileResenas />
         <BandaTienda compacta />

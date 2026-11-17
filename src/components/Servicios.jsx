@@ -222,13 +222,13 @@ const CRITERIOS = [
   {
     titulo: 'Otras marcas del mercado',
     texto:
-      'Cotizamos e incorporamos equipamiento de cualquier fabricante cuando el proyecto, la normativa del cliente o una plataforma preexistente así lo requieren.',
+      'Cotizamos e incorporamos equipamiento de cualquier fabricante cuando el requerimiento, la normativa del cliente o una plataforma preexistente así lo exigen.',
     destacado: false,
   },
   {
     titulo: 'Instalaciones existentes',
     texto:
-      'Trabajamos sobre sistemas ya instalados: ampliaciones, reemplazos parciales y convivencia de plataformas mediante estándares abiertos.',
+      'Proveemos equipamiento para sistemas ya instalados: ampliaciones, reemplazos parciales y convivencia de plataformas mediante estándares abiertos.',
     destacado: false,
   },
 ]
@@ -328,8 +328,8 @@ export function TileComoComprar({ className = '' }) {
 const RESPALDO = [
   'Producto ingresado por canal oficial, con garantía de fábrica y trazabilidad de número de serie',
   'Asesoramiento técnico previo a la operación, sin cargo adicional',
-  'Dimensionamiento de ancho de banda y almacenamiento calculado sobre el proyecto',
-  'Soporte durante la instalación y servicio posventa sostenido',
+  'Dimensionamiento de ancho de banda y almacenamiento calculado sobre cada pedido',
+  'Soporte técnico al instalador y servicio posventa sostenido',
 ]
 
 export function TileRespaldo({ className = '' }) {

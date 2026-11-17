@@ -15,7 +15,7 @@ import EMPRESA from '../datos/empresa.js'
    el inicio. */
 const SECCIONES = [
   { to: '/empresa', label: 'Empresa' },
-  { to: '/proyectos', label: 'Proyectos' },
+  { to: '/iared', label: 'Proyectos · IARED' },
   { to: '/tecnologia', label: 'Tecnología' },
   { to: '/capacitaciones', label: 'Capacitación' },
 ]
