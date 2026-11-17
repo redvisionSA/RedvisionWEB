@@ -7,6 +7,7 @@ import Navbar from './components/Navbar.jsx'
 import { TiendaProvider } from './tienda/TiendaContext.jsx'
 import { CuentaProvider } from './cuenta/CuentaContext.jsx'
 import CarritoDrawer from './tienda/CarritoDrawer.jsx'
+import LecturaAgregado from './tienda/LecturaAgregado.jsx'
 import BotonWhatsapp from './tienda/BotonWhatsapp.jsx'
 import { AvisoDemo } from './tienda/piezas.jsx'
 
@@ -215,6 +216,7 @@ export default function App() {
           </Suspense>
 
           <CarritoDrawer />
+          <LecturaAgregado />
           <BotonWhatsapp />
           <AvisoDemo />
         </TiendaProvider>
