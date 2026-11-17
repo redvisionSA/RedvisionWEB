@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Precio, sePuedeComprar } from './piezas.jsx'
+import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Precio, sePuedeComprar, GlifoOsd } from './piezas.jsx'
 import { IconoCarrito, IconoCheck, IconoWhatsapp } from './Iconos.jsx'
 import { enlaceWhatsapp, mensajeProducto } from './whatsapp.js'
 import { etiquetasClave } from './specs.js'
@@ -71,8 +71,9 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
         <Link to={`/producto/${producto.slug}`} className={`flex min-w-0 flex-1 flex-col gap-1.5 ${lista ? '' : 'px-3.5 pt-3 sm:px-4'}`}>
           <div className="flex h-7 items-center">
             {producto.combo ? (
-              <span className="rv-sutil rounded-md px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wide text-black/80 dark:text-white/85">
-                Combo · {producto.combo.componentes.length} productos
+              <span className="rv-lectura">
+                <GlifoOsd forma="hueco" />
+                Combo · {String(producto.combo.componentes.length).padStart(2, '0')} productos
               </span>
             ) : (
               <LogoMarca marca={producto.marca} uniforme />

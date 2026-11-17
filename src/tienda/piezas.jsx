@@ -32,28 +32,31 @@ export function Precio({ valor, canal = null, className = '', grande = false }) 
 }
 
 /* ----------------------------------------------------- Disponibilidad */
-/* Pastilla con icono y texto: el estado nunca depende solo del color, y se
-   lee de un vistazo en la tarjeta (no un punto gris). Rojo solo para lo que
-   apura o frena: pocas unidades y sin stock. En oscuro el rojo del texto pasa
-   a `rv-red-glow` para sostener el contraste sobre negro. */
-const PASTILLA = {
-  ok: 'border-black/25 bg-white text-black dark:border-white/30 dark:bg-white/10 dark:text-white',
-  alerta: 'border-rv-red/50 bg-rv-red/[0.07] text-rv-red dark:border-rv-red-glow/60 dark:bg-rv-red/20 dark:text-rv-red-glow',
-  neutro: 'border-black/15 bg-black/[0.04] text-black/80 dark:border-white/20 dark:bg-white/[0.06] dark:text-white/85',
-  apagado: 'border-rv-red bg-rv-red text-white',
+/* Lectura OSD (Aspecto 6, «OSD / visor»): la disponibilidad se lee como el
+   texto que la cámara sobreimprime en la imagen. Rectángulo de 2 px sin
+   relleno, mono en mayúsculas y un glifo cuya FORMA dice el estado:
+   ■ disponible · ● REC últimas unidades (parpadea tres veces y queda fijo) ·
+   □ a pedido · ✕ sin stock (rojo lleno). El estado nunca depende solo del
+   color. Piezas propias de REDVISION: la tienda de Control Red habla otro
+   idioma («tablero de instalador»); al portar código, traducir la pieza. */
+export function GlifoOsd({ forma, className = 'h-2.5 w-2.5' }) {
+  if (forma === 'rec') return <span className="rv-rec" aria-hidden="true" />
+  return (
+    <svg viewBox="0 0 10 10" className={`shrink-0 ${className}`} aria-hidden="true">
+      {forma === 'lleno' && <rect width="10" height="10" fill="currentColor" />}
+      {forma === 'hueco' && <rect x="1" y="1" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="2" />}
+      {forma === 'cruz' && <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="2" />}
+      {forma === 'triangulo' && (
+        <>
+          <path d="M5 .8 9.6 9H.4z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M5 4v2.2" stroke="currentColor" strokeWidth="1.3" />
+        </>
+      )}
+    </svg>
+  )
 }
 
-const ICONO_DISPONIBILIDAD = {
-  ok: <path d="m4.5 12.5 4.5 4.5L19.5 7" />,
-  alerta: <circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none" />,
-  neutro: (
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 7.5V12l3 2" />
-    </>
-  ),
-  apagado: <path d="M7 7l10 10M17 7 7 17" />,
-}
+const GLIFO_DISPONIBILIDAD = { ok: 'lleno', alerta: 'rec', neutro: 'hueco', apagado: 'cruz' }
 
 /**
  * Texto de la cantidad que el ERP da a un cliente con sesion
@@ -76,22 +79,8 @@ export function Disponibilidad({ producto, className = '', grande = false }) {
   const info = DISPONIBILIDAD[valor] || DISPONIBILIDAD.a_pedido
   const texto = textoStock(producto?.stock) || info.etiqueta
   return (
-    <span
-      className={`inline-flex w-max max-w-full items-center gap-1.5 rounded-md border font-display font-semibold leading-tight
-                  ${grande ? 'px-2.5 py-1 text-sm' : 'px-2 py-0.5 text-xs'} ${PASTILLA[info.tono]} ${className}`}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className={`shrink-0 ${grande ? 'h-4 w-4' : 'h-3.5 w-3.5'} ${info.tono === 'alerta' ? 'animate-rv-breathe' : ''}`}
-      >
-        {ICONO_DISPONIBILIDAD[info.tono]}
-      </svg>
+    <span className={`rv-lectura rv-lectura--${info.tono} ${grande ? 'rv-lectura--grande' : ''} ${className}`}>
+      <GlifoOsd forma={GLIFO_DISPONIBILIDAD[info.tono]} className={grande ? 'h-3 w-3' : 'h-2.5 w-2.5'} />
       {/* En tarjetas angostas (320 px, dos columnas) el texto pasa a dos lineas: cortarlo escondia el estado */}
       <span>{texto}</span>
     </span>
@@ -129,21 +118,19 @@ export function sePuedeComprar(producto) {
    para que el estado mande en la jerarquia antes que el producto. En las
    miniaturas de 48 px (`tamano="xs"`: buscador, carrito) no entra el texto:
    queda solo la foto atenuada. */
+/* Sin stock: banda roja de lado a lado sobre la foto, en mono como el «sin
+   señal» de un monitor (antes, píldora con resplandor rojo). */
 const ETIQUETA_SIN_STOCK = {
-  lg: 'px-5 py-2.5 text-lg tracking-[0.14em]',
-  md: 'px-3 py-1.5 text-xs tracking-[0.12em] sm:text-sm',
-  sm: 'px-1.5 py-0.5 text-[10px] leading-tight tracking-[0.06em]',
+  lg: 'py-3 text-base tracking-[0.16em]',
+  md: 'py-2 text-xs tracking-[0.14em] sm:text-sm',
+  sm: 'py-0.5 text-[10px] leading-tight tracking-[0.06em]',
 }
 
 function CapaSinStock({ tamano }) {
   if (!ETIQUETA_SIN_STOCK[tamano]) return null
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/35 dark:bg-black/30">
-      <span
-        className={`max-w-[92%] rounded-md bg-rv-red text-center font-display font-bold uppercase text-white shadow-[0_6px_20px_rgba(214,25,34,0.35)] ${ETIQUETA_SIN_STOCK[tamano]}`}
-      >
-        Sin stock
-      </span>
+    <div className="pointer-events-none absolute inset-0 flex items-center bg-white/35 dark:bg-black/30">
+      <span className={`w-full bg-rv-red text-center font-osd font-medium uppercase text-white ${ETIQUETA_SIN_STOCK[tamano]}`}>Sin stock</span>
     </div>
   )
 }

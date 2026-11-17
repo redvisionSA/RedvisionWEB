@@ -671,9 +671,10 @@
     color: transparent;
   }
 
+  /* Aspecto 6: lectura OSD sobre el vidrio (2 px, mono), no una píldora */
   .rv-chip {
-    @apply inline-flex items-center gap-2 rounded-pill px-3 py-1.5 font-display text-[11px]
-           font-semibold uppercase tracking-[0.14em];
+    @apply inline-flex items-center gap-2 px-3 py-1.5 font-osd text-[11px] font-medium uppercase tracking-[0.1em];
+    border-radius: 2px;
     background-image:
       radial-gradient(120% 160% at 0% 0%, var(--glass-sheen), transparent 70%),
       linear-gradient(var(--glass-bg-thin), var(--glass-bg-thin));
@@ -718,6 +719,35 @@
   }
   .dark .rv-panel-solido {
     background: rgba(18, 18, 20, 0.94);
+  }
+
+  /* --- Lectura OSD (disponibilidad, combos) ----------------------------- */
+  .rv-lectura {
+    @apply inline-flex w-max max-w-full items-center gap-[7px] px-2 py-0.5 font-osd text-xs font-medium uppercase leading-tight tracking-[0.04em];
+    min-height: 24px;
+    border-radius: 2px;
+    border: 1px solid var(--osd-line);
+    color: var(--osd-ink);
+  }
+  .rv-lectura--grande {
+    @apply px-2.5 text-sm;
+    min-height: 30px;
+  }
+  .rv-lectura--alerta {
+    border-color: color-mix(in srgb, var(--rv-rec) 60%, transparent);
+  }
+  .rv-lectura--apagado {
+    @apply border-rv-red bg-rv-red text-white;
+  }
+  /* Punto REC: parpadea tres veces y queda fijo */
+  .rv-rec {
+    @apply inline-block h-2 w-2 shrink-0 animate-rv-rec rounded-full;
+    background: var(--rv-rec);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rv-rec {
+      animation: none;
+    }
   }
 
   /* --- Superficies solidas de la tienda ---------------------------------
