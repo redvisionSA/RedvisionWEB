@@ -76,6 +76,23 @@ dice este archivo manda:**
   instaladores. **Los proyectos ya no son de REDVISION** (ver «IARED»).
 - Paleta y jerarquía del rojo (ver tabla de arriba).
 
+## Lenguaje visual de avisos: «OSD / visor» (Aspecto 6, 17/11)
+Lo que la tienda dice se lee como el texto que una cámara sobreimprime en su imagen. **Es propio de
+REDVISION: la tienda de Control Red habla otro idioma («tablero de instalador») y el ERP otro («planilla de
+trabajo»). Los dos lenguajes de las tiendas ya no se comparten: al portar código de CR, además de pasar los
+textos a usted, traducir la pieza** (`Señal` → `Disponibilidad`/`rv-lectura`, `Placa` → `Aviso`, tecla → botón).
+- **Lectura** (`rv-lectura`, `GlifoOsd` en `piezas.jsx`): rectángulo de 2 px sin relleno, IBM Plex Mono 500 en
+  mayúsculas; el glifo dice el estado por la forma. Punto REC (`rv-rec`) solo para lo que apura.
+- **Botones** (`.rv-btn-primary`, `.rv-btn-glass`): rectángulo de 4 px en minúscula; principal = el único rojo;
+  secundario = contorno en tinta que se invierte. Foco = esquinas de visor; mandando = línea de barrido. Nunca
+  píldora, resplandor ni `scale`.
+- **Aviso** (`Aviso tono=dato|ok|atencion|error`, `AvisoError`): placa gris con cuatro esquinas de visor y una
+  lectura arriba («PEDIDO · NO ENVIADO»); error = esquinas y REC en rojo, `role="alert"`.
+- **Lectura sobreimpresa** (`tienda/LecturaAgregado.jsx`): confirmación de agregado, vidrio ahumado arriba a la
+  derecha, 3,5 s. **Superficies planas** (`.rv-solido`: radio 6 px, borde 1 px, sin sombra difusa ni subida).
+- Tokens `--osd-*` y `--rv-rec` en `index.css` (`:root` y `html.dark`). La barra (dock de vidrio), el hero y la
+  zona IARED no usan estas piezas.
+
 ## Tienda (rama `ecommerce`, 12/11/2026)
 Decisiones del usuario: **catálogo desde el ERP en solo lectura**; **carrito a pedido** (sin cobro en
 línea en la fase 1: el pedido llega por correo y se confirma por WhatsApp); **precio público visible**
@@ -140,10 +157,11 @@ siguientes.
 - **Buscador:** sugerencias mientras se escribe (espera 180 ms), por palabras parciales, sinónimos y
   errores de tipeo, y **por código parcial escrito como sea** («DH-IPC-HFW», «dh ipc hfw», «ipchfw»):
   se compara la consulta compactada contra el código compactado.
-- **Disponibilidad visible (14/11, pedido del usuario):** pastilla con icono y texto (`Disponibilidad` en
-  `piezas.jsx`), nunca solo color: Disponible (negro), Últimas unidades (rojo, punto que late), A pedido
-  (gris con reloj; la ficha explica que se encarga y un asesor confirma el plazo), Sin stock (rojo pleno).
-  **Sin stock**: etiqueta roja sobre la foto, con la foto desenfocada, atenuada y en gris debajo
+- **Disponibilidad visible (14/11, pedido del usuario; forma nueva el 17/11, Aspecto 6):** lectura OSD con
+  glifo y texto (`Disponibilidad` en `piezas.jsx`), nunca solo color: ■ Disponible, ● REC Últimas unidades
+  (parpadea tres veces y queda fijo), □ A pedido (la ficha explica que se encarga y un asesor confirma el
+  plazo), ✕ Sin stock (rojo pleno). **Sin stock**: banda roja de lado a lado sobre la foto, con la foto
+  desenfocada, atenuada y en gris debajo
   (`ImagenProducto`; en miniaturas de 48 px, `tamano="xs"`, solo la foto atenuada); se puede consultar el
   ingreso por WhatsApp, no agregar al carrito. A pedido sí se agrega (el pedido se confirma con el asesor).
   En oscuro el rojo de texto pasa a `rv-red-glow` por contraste.
