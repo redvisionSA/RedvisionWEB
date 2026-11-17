@@ -92,6 +92,36 @@ function TablaSpecs({ specs }) {
   )
 }
 
+/* Combo traido de MercadoLibre (17/11): cada producto con su cantidad y su ficha. */
+function ComponentesCombo({ combo, porId }) {
+  return (
+    <div className="rv-solido p-5 sm:p-7">
+      <h2 className="rv-eyebrow mb-1">Qué incluye este combo</h2>
+      <p className="mb-3 text-xs text-black/60 dark:text-white/60">El precio corresponde a todos estos productos juntos, con IVA. Cada uno tiene su ficha.</p>
+      <ul className="divide-y divide-black/[0.07] text-sm dark:divide-white/10">
+        {combo.componentes.map((c) => {
+          const producto = porId.get(c.id)
+          return (
+            <li key={c.id} className="flex items-center gap-3 py-2.5">
+              <span className="font-display w-10 shrink-0 text-right font-bold text-black dark:text-white">{c.cantidad} ×</span>
+              <span className="min-w-0 flex-1">
+                {producto ? (
+                  <Link to={`/producto/${producto.slug}`} className="rv-link font-semibold">
+                    {c.nombre}
+                  </Link>
+                ) : (
+                  <span className="font-semibold text-black dark:text-white">{c.nombre}</span>
+                )}
+                {c.sku && <span className="block text-xs text-black/50 dark:text-white/50">Código {c.sku}</span>}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 export default function Producto() {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -282,7 +312,7 @@ export default function Producto() {
             </ul>
           </div>
 
-          <TablaSpecs specs={producto.specs} />
+          {producto.combo ? <ComponentesCombo combo={producto.combo} porId={catalogo.datos.porId} /> : <TablaSpecs specs={producto.specs} />}
 
           {producto.descripcion && (
             <div className="rv-solido p-5 sm:p-7">

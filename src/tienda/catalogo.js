@@ -92,7 +92,53 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         ),
       }
     })
-    .sort(
+
+  /* Combos y kits traidos de MercadoLibre y aprobados en el ERP (`combos`, 17/11):
+     se tratan como un producto mas (carrito, favoritos, busqueda, categoria) con
+     la lista de lo que traen. Precio y disponibilidad los calcula el ERP con sus
+     componentes; el navegador no suma nada. Sin componentes publicados, no entra. */
+  const porIdProducto = new Map(productos.map((p) => [p.id, p]))
+  const combos = (crudo.combos || [])
+    .filter((c) => c && c.id && c.name && Array.isArray(c.components) && c.components.length)
+    .map((c) => {
+      const categoria = categorias.get(c.category) || null
+      const textoCategoria = rutaCategoria(c.category)
+      const componentes = c.components.map((x) => ({
+        id: String(x.id),
+        slug: x.slug,
+        sku: x.sku || '',
+        nombre: x.name,
+        cantidad: Number(x.qty) || 1,
+      }))
+      const primero = porIdProducto.get(componentes[0]?.id)
+      const disponibilidad = DISPONIBILIDAD[c.availability] ? c.availability : 'a_pedido'
+      return {
+        id: String(c.id),
+        slug: c.slug || slugify(`${c.name}-${c.id}`),
+        sku: '',
+        nombre: c.name,
+        descripcion: c.description || '',
+        marca: null,
+        categoria: categoria ? { slug: categoria.slug, nombre: indice.get(categoria.slug)?.nombre || categoria.name } : null,
+        rutaCategoria: rutaDeCategoria(indice, c.category),
+        linea: lineaDe(textoCategoria, c.name),
+        imagen: c.imageUrl || primero?.imagen || null,
+        imagenes: Array.isArray(c.images) ? c.images : [],
+        precio: aNumero(c.price),
+        disponibilidad,
+        destacado: false,
+        specs: extraerSpecs({ name: c.name, description: c.description || '' }),
+        combo: { componentes },
+        busqueda: normalizarTexto(
+          ['combo kit', c.name, categoria?.name, textoCategoria, c.description, ...componentes.flatMap((x) => [x.nombre, x.sku])]
+            .filter(Boolean)
+            .join(' ')
+        ),
+      }
+    })
+    .filter((c) => !porIdProducto.has(c.id))
+
+  const todos = [...productos, ...combos].sort(
       (a, b) =>
         PESO_DISPONIBILIDAD[a.disponibilidad] - PESO_DISPONIBILIDAD[b.disponibilidad] ||
         Number(b.destacado) - Number(a.destacado) ||
@@ -100,14 +146,14 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     )
 
   return {
-    productos,
-    porId: new Map(productos.map((p) => [p.id, p])),
-    porSlug: new Map(productos.map((p) => [p.slug, p])),
+    productos: todos,
+    porId: new Map(todos.map((p) => [p.id, p])),
+    porSlug: new Map(todos.map((p) => [p.slug, p])),
     marcas: [...marcas.values()].filter((m) => !esGenerica(m)).map((m) => ({ slug: m.slug, nombre: m.name, identidad: identidadDe(m) })),
     nombresMarca: new Map([...marcas.values()].filter((m) => !esGenerica(m)).map((m) => [m.slug, m.name])),
     nombresCategoria: new Map([...indice.values()].map((c) => [c.slug, c.nombre])),
-    categorias: arbolCategorias(indice, productos),
-    motor: indexar(productos),
+    categorias: arbolCategorias(indice, todos),
+    motor: indexar(todos),
     actualizado: crudo.updatedAt || null,
     demo,
   }

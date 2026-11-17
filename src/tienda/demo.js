@@ -87,4 +87,22 @@ export default {
     P(22, 'Cámara IP domo 4 MP AcuSense con IR 30 m', 'hikvision', 'camaras-ip', 96400, 'ultimas'),
     P(23, 'Grabador NVR 16 canales PoE 4K', 'hikvision', 'grabadores', 412000, 'a_pedido'),
   ],
+  /* Combo de MercadoLibre aprobado en el ERP (contrato v2, 17/11): precio y disponibilidad ficticios */
+  combos: [
+    {
+      id: 'demo-combo-1',
+      slug: 'demo-combo-1',
+      name: 'Kit de videovigilancia: 4 cámaras + grabador',
+      description: 'Combo armado como en MercadoLibre: cuatro cámaras y el grabador para instalarlas.',
+      category: 'grabadores',
+      imageUrl: null,
+      images: [],
+      price: '420000.00',
+      availability: 'disponible',
+      components: [
+        { id: 'demo-3', slug: 'demo-3', sku: 'DEMO-0003', name: 'Cámara HDCVI bullet 2 MP con infrarrojo 30 m', qty: 4 },
+        { id: 'demo-7', slug: 'demo-7', sku: 'DEMO-0007', name: 'Grabador XVR 4 canales 1080p Lite', qty: 1 },
+      ],
+    },
+  ],
 }
