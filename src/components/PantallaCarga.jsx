@@ -82,17 +82,17 @@ export default function PantallaCarga({ listo }) {
       />
 
       <img
-        src="/redvision-logo.png"
+        src="/redvision-logo.svg"
         alt="REDVISION"
-        width="300"
+        width="291"
         height="62"
         className="h-11 w-auto object-contain dark:hidden sm:h-14"
         decoding="async"
       />
       <img
-        src="/redvision-logo-dark.png"
+        src="/redvision-logo-oscuro.svg"
         alt="REDVISION"
-        width="300"
+        width="291"
         height="62"
         className="hidden h-11 w-auto object-contain dark:block sm:h-14"
         decoding="async"

@@ -71,7 +71,8 @@ const CloseIcon = (p) => (
 /**
  * Sello "Distribuidor oficial Dahua".
  *
- * Logotipo oficial de Dahua Technology (public/dahua-logo.png) sin alterar
+ * Logotipo oficial de Dahua Technology (public/marcas/dahua.svg, el mismo de
+ * la tienda: vectorial, nitido en cualquier pantalla) sin alterar
  * colores ni proporciones. Como el wordmark es negro y rojo, viaja siempre
  * dentro de un chip blanco (.rv-chip-marca): se lee igual en clear y en dark.
  *
@@ -98,10 +99,10 @@ export function PreHeader({ className = '', variante = 'chrome', compacto = fals
       </span>
       <span className={`rv-chip-marca ${compacto ? 'px-2 py-1' : 'px-2.5 py-1.5'}`}>
         <img
-          src="/dahua-logo.png"
+          src="/marcas/dahua.svg"
           alt="Dahua Technology"
-          width="294"
-          height="88"
+          width="80"
+          height="24"
           className={`${compacto ? 'h-[20px]' : 'h-[24px]'} w-auto object-contain`}
           loading="eager"
           decoding="async"
@@ -457,9 +458,9 @@ export default function Navbar() {
         >
           <Link to="/" aria-label="REDVISION - Inicio" className="group flex shrink-0 items-center pl-1 pr-1">
             <img
-              src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
+              src={isDark ? '/redvision-logo-oscuro.svg' : '/redvision-logo.svg'}
               alt="REDVISION - Tecnología sin límites"
-              width="300"
+              width="291"
               height="62"
               className={`w-auto max-w-[118px] object-contain transition-all duration-400 ease-apple group-hover:scale-[1.04] xs:max-w-[150px] lg:max-w-[180px]
                           ${scrolled ? 'h-7 sm:h-8' : 'h-8 sm:h-10'}`}

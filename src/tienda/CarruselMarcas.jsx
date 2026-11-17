@@ -12,12 +12,13 @@ import { IconoFlecha } from './Iconos.jsx'
  */
 function Tarjeta({ item, oculta }) {
   const { id, slug, n, marca } = item
-  const comun = 'rv-solido rv-solido-hover group relative flex h-full w-[240px] shrink-0 flex-col overflow-hidden p-5 sm:w-[270px]'
+  const comun = 'rv-solido rv-solido-hover group relative flex h-full w-[240px] shrink-0 flex-col overflow-hidden px-5 pb-5 pt-9 sm:w-[270px]'
   const contenido = id ? (
     <>
       <span className="absolute inset-x-0 top-0 h-1" style={{ background: id.color || '#0b0b0d' }} aria-hidden="true" />
+      {/* Pastilla de medida fija: todas las marcas ocupan el mismo lugar y pesan lo mismo a la vista */}
       <span className="flex h-12 items-center">
-        <LogoMarca marca={marca} alto={28} conChip />
+        <LogoMarca marca={marca} alto={26} anchoMax={144} conChip caja="h-12 w-[172px]" />
       </span>
       <span className="mt-3 line-clamp-2 text-sm leading-relaxed text-black/70 dark:text-white/70">{id.texto}</span>
       <span className="mt-auto flex items-center justify-between pt-4 font-display text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
@@ -25,7 +26,7 @@ function Tarjeta({ item, oculta }) {
         <IconoFlecha className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
       </span>
       {id.oficial && (
-        <span className="absolute right-3 top-3 rounded-md bg-black px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white dark:bg-white dark:text-black">
+        <span className="absolute right-3 top-2.5 rounded-md bg-black px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white dark:bg-white dark:text-black">
           Distribuidor oficial
         </span>
       )}
