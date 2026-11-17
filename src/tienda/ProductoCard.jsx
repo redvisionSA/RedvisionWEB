@@ -71,7 +71,13 @@ function ProductoCard({ producto, className = '', vista = 'grilla' }) {
       <div className={`flex min-w-0 flex-1 ${lista ? 'flex-col gap-3 p-4 sm:flex-row sm:items-center' : 'flex-col'}`}>
         <Link to={`/producto/${producto.slug}`} className={`flex min-w-0 flex-1 flex-col gap-1.5 ${lista ? '' : 'px-3.5 pt-3 sm:px-4'}`}>
           <div className="flex h-7 items-center">
-            <LogoMarca marca={producto.marca} uniforme />
+            {producto.combo ? (
+              <span className="rv-sutil rounded-md px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wide text-black/80 dark:text-white/85">
+                Combo · {producto.combo.componentes.length} productos
+              </span>
+            ) : (
+              <LogoMarca marca={producto.marca} uniforme />
+            )}
           </div>
           <h3 className="line-clamp-2 min-h-[2.5em] font-display text-sm font-semibold leading-tight text-black group-hover:text-rv-red dark:text-white">
             {producto.nombre}

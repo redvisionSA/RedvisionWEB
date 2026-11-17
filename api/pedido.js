@@ -95,7 +95,9 @@ async function leerCatalogo(url) {
     clearTimeout(corte)
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     const json = await r.json()
-    return new Map((json.products || []).map((p) => [String(p.id), p]))
+    /* Combos de ML aprobados en el ERP (`combos`, 17/11): mismo id en el carrito,
+       precio calculado por el ERP con sus componentes. */
+    return new Map([...(json.products || []), ...(json.combos || []).map((c) => ({ ...c, esCombo: true }))].map((p) => [String(p.id), p]))
   } catch (error) {
     console.error('[api/pedido] Catálogo no disponible, el pedido sigue con precio a confirmar:', error.message)
     return null
@@ -216,6 +218,10 @@ export default async function handler(req, res) {
       cantidad: i.cantidad,
       nombre: p?.name || `Producto ${i.id}`,
       sku: p?.sku || '',
+      /* Lo que trae el combo, para que ventas arme el pedido sin abrir la tienda */
+      componentes: p?.esCombo && Array.isArray(p.components)
+        ? p.components.map((x) => `${Number(x.qty) || 1} × ${texto(x.sku || x.name, 80)}`).join(' + ')
+        : '',
       publicado: catalogo ? Boolean(p) : null,
       unitario,
       subtotal: unitario !== null ? unitario * i.cantidad : null,
@@ -235,7 +241,7 @@ export default async function handler(req, res) {
     .map(
       (l) => `<tr>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:14px;">${l.cantidad}</td>
-        <td style="padding:8px;border-bottom:1px solid #eee;font-size:14px;">${escaparHtml(l.nombre)}${l.sku ? `<br><span style="color:#888;font-size:12px;">${escaparHtml(l.sku)}</span>` : ''}${l.publicado === false ? '<br><b style="color:#D61922;font-size:12px;">No figura en el catálogo actual</b>' : ''}</td>
+        <td style="padding:8px;border-bottom:1px solid #eee;font-size:14px;">${escaparHtml(l.nombre)}${l.sku ? `<br><span style="color:#888;font-size:12px;">${escaparHtml(l.sku)}</span>` : ''}${l.componentes ? `<br><span style="color:#888;font-size:12px;">Combo: ${escaparHtml(l.componentes)}</span>` : ''}${l.publicado === false ? '<br><b style="color:#D61922;font-size:12px;">No figura en el catálogo actual</b>' : ''}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:14px;text-align:right;white-space:nowrap;">${l.unitario !== null ? formatoCentavos(l.unitario) : 'A confirmar'}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;font-size:14px;text-align:right;white-space:nowrap;">${l.subtotal !== null ? formatoCentavos(l.subtotal) : 'A confirmar'}</td>
       </tr>`
@@ -293,7 +299,7 @@ export default async function handler(req, res) {
     asunto,
     '',
     ...lineas.map(
-      (l) => `${l.cantidad} x ${l.nombre}${l.sku ? ` [${l.sku}]` : ''} — ${l.subtotal !== null ? formatoCentavos(l.subtotal) : 'a confirmar'}`
+      (l) => `${l.cantidad} x ${l.nombre}${l.sku ? ` [${l.sku}]` : ''}${l.componentes ? ` (combo: ${l.componentes})` : ''} — ${l.subtotal !== null ? formatoCentavos(l.subtotal) : 'a confirmar'}`
     ),
     `Total ${todosConPrecio ? '' : 'parcial '}con IVA: ${formatoCentavos(totalCentavos)}`,
     '',

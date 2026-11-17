@@ -113,6 +113,32 @@ la lista GREMIO de RV.
 sus seis líneas (videovigilancia, accesos, intrusión, redes, energía, accesorios) por palabras
 clave (`src/tienda/lineas.js`). Lo que no encaja cae en accesorios.
 
+### `combos` (versión 2, 17/11/2026)
+
+Campo nuevo y **aditivo** de la respuesta: combos y kits armados que REDVISION publica en
+MercadoLibre y que una persona **aprobó** en el ERP para ofrecer en la tienda (pantalla «Ofertas en
+la web» del módulo MercadoLibre). Nada se publica solo: si la tienda de RV no tiene las ofertas
+prendidas en el ERP, llega `[]`. Un consumidor viejo que no lo conoce lo ignora.
+
+| Campo | Tipo | Regla |
+|---|---|---|
+| `id` | uuid | Estable. Va al carrito igual que el de un producto; `api/pedido.js` lo busca en `combos`. |
+| `slug` | string | Estable y distinto de los de `products`; URL `/producto/{slug}`. |
+| `name`, `description` | string | Los aprobó una persona en el ERP. Sin HTML. |
+| `category` | slug | Categoría del ERP elegida al aprobar; está en `categories`. |
+| `imageUrl`, `images` | string \| null, string[] | Fotos de la publicación de MercadoLibre (https). Sin foto, la tienda usa la del primer producto. |
+| `price` | string decimal \| null | **Suma de sus productos** a la lista GREMIO de RV con IVA, redondeada **una sola vez** a centavos. **Nunca el precio de MercadoLibre** (trae la comisión). `null` = «Consultar precio». |
+| `availability` | enum | La del producto más escaso (cuántos combos enteros se pueden armar), con los mismos tramos. |
+| `components` | `[{ id, slug, sku, name, qty }]` | Qué trae: cada producto está en `products` (con su ficha) y cuántas unidades. |
+
+Si a un producto del combo le falta el precio Gremio o está deshabilitado, **el combo no viene**.
+Con sesión, `me/prices` y `me/stock` traen también los combos (mismo `id`), con la lista del
+canal y las unidades topeadas. La tienda los trata como un producto más (`src/tienda/catalogo.js`):
+carrito, favoritos, búsqueda y categoría; la ficha lista lo que trae.
+
+No hay enlace «también en MercadoLibre»: el objetivo es traer clientes de ML a la tienda, no
+mandarlos de vuelta a donde se paga comisión.
+
 ## Pedidos
 
 El navegador manda a `api/pedido.js` solo `{ id, cantidad }`. El servidor vuelve a leer este

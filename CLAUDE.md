@@ -89,6 +89,7 @@ siguientes.
   `/capacitaciones` · 404. **`/contacto` y su formulario se eliminaron (13/11)**: la ruta redirige a
   `/empresa#ubicacion`; las consultas van por WhatsApp con mensaje armado (`CONSULTAS` en
   `src/tienda/whatsapp.js`: asesor, mayorista, proyecto, capacitación). Cada página es `React.lazy`.
+- **Combos de MercadoLibre** (17/11, contrato v2, aditivo): el catálogo trae `combos[]` (los aprobó una persona en el ERP, «Ofertas en la web»; precio = suma de sus productos a Gremio con IVA, calculado por el ERP). `catalogo.js` los suma como productos con `combo.componentes` (carrito, favoritos, búsqueda, categoría); la ficha lista lo que incluye; `api/pedido.js` los busca en `combos` y el correo detalla el combo. Sin enlace a ML.
 - Datos: `src/tienda/catalogo.js` lee `VITE_CATALOGO_URL` (contrato en `docs/CATALOGO_API.md`). Sin
   esa variable: en dev, `src/tienda/demo.js` con la franja "Datos de demostración"; en producción, el
   endpoint del ERP `https://api-erp.redvision.com.ar/storefront/catalog` (público, no es un secreto;
