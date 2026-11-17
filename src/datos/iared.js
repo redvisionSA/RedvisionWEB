@@ -1,17 +1,21 @@
 /**
  * iared.js
  * -----------------------------------------------------------------------
- * Unico lugar con los datos de IARED: la empresa aparte e independiente que
+ * Unico lugar con los datos de IARED: la marca (con manual propio) que
  * se ocupa de los proyectos (relevamiento, ingenieria, integracion, puesta en
  * marcha, capacitacion de obra). REDVISION ya no los ofrece: la tienda solo
  * le da visibilidad y deriva a los interesados.
  *
- * Todavia no hay datos reales de IARED (marca en construccion). Mientras un
- * campo sea `null`:
+ * Marca: manual de marca de IARED v1.0 (17/11/2026). Logo oficial con
+ * eslogan en public/iared/ (copiado tal cual del manual, revisado: sin
+ * scripts ni referencias externas). Colores y tipografia en el CSS de
+ * `.iared-zona`. Contacto: el manual no trae ningun dato real (la tarjeta de
+ * ejemplo usa «nombre@iared.com» y «+00 000…», que son marcadores). Mientras un
+ * campo de contacto sea `null`:
  *   - sin `url`, `whatsapp` ni `email`, el boton abre el WhatsApp de REDVISION
  *     con el texto armado de `RESPALDO_TEXTO` y la pagina lo informa;
  *   - sin `logo`, se muestra el nombre «IARED» en tipografia.
- * No inventar dominio, logo ni contacto: completarlos aca cuando lleguen.
+ * No inventar dominio ni contacto: completarlos aca cuando lleguen.
  * Limite entre empresas: nada de REDVISION ni de Control Red va en este objeto.
  */
 
@@ -24,8 +28,17 @@ export const IARED = {
   /** Numero en formato internacional sin signos, p. ej. '54911…'. */
   whatsapp: null,
   email: null,
-  /** Ruta en public/ o URL absoluta de un SVG/WebP con fondo transparente. */
-  logo: null,
+  /** Logo con eslogan del manual: a color sobre fondos claros, negativo sobre
+      Noche/Tinta. Minimo 160 px de ancho; resguardo de 2X (X = trazo = 28 de
+      606 unidades del viewBox) alrededor. No redibujar ni recolorear. */
+  logo: {
+    claro: '/iared/iared-logo-eslogan-color.svg',
+    oscuro: '/iared/iared-logo-eslogan-negativo.svg',
+    ancho: 606,
+    alto: 248,
+  },
+  /** Eslogan aprobado (manual, «Tono de voz»): con I, A y Red en mayuscula. */
+  eslogan: 'Inteligencia Aplicada a la Red',
 }
 
 export const RESPALDO_TEXTO = 'Hola REDVISION, quiero que IARED me contacte por un proyecto.'

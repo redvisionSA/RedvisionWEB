@@ -162,20 +162,34 @@ siguientes.
   espera"), venta cruzada técnica ("Complete la instalación", `COMPLEMENTOS`), barra fija de compra en
   teléfono, WhatsApp flotante con el producto en el mensaje.
 
-### IARED: los proyectos son de otra empresa (17/11)
+### IARED: los proyectos son de IARED (17/11)
 REDVISION **no ofrece proyectos** (relevamiento, ingeniería, integración, instalación, puesta en marcha,
-capacitación en obra, «llave en mano»). Los realiza **IARED**, empresa aparte y totalmente independiente
-(marca en construcción). La tienda solo le da visibilidad y deriva: bloque destacado en el inicio
+capacitación en obra, «llave en mano»). Los realiza **IARED** (marca propia, con su manual). La tienda solo le da visibilidad y deriva: bloque destacado en el inicio
 (`BloqueIared`, antes de lo institucional), página `/iared` (`/proyectos` redirige ahí) y «Proyectos · IARED»
 en «Empresa ▾» y en el pie. Se quitaron la tesela del departamento de proyectos (`TileProyectos`), la página
 `Proyectos`, el mensaje `proyecto` de WhatsApp y las menciones en meta, OG y JSON-LD. La **capacitación para
 instaladores** sigue siendo de REDVISION (`/capacitaciones`).
 - Archivos: `src/datos/iared.js` (único lugar con sus datos), `src/components/Iared.jsx` (marca, botón,
   bloque), `src/paginas/Iared.jsx`.
-- **Datos pendientes**: `url`, `whatsapp`, `email` y `logo` en `null`. Mientras no haya canal propio, el botón
-  abre el WhatsApp de REDVISION con «Hola REDVISION, quiero que IARED me contacte por un proyecto.» y la
-  página lo informa (`AvisoRespaldo`); sin logo, «IARED» en tipografía. Al completar un campo, el botón cambia
-  solo (prioridad: sitio → WhatsApp → correo). **No inventar** dominio, logo, cifras, clientes ni plazos.
+- **Marca (manual de IARED v1.0, 17/11)**: logo oficial **con eslogan** en `public/iared/` (copiado byte a
+  byte del manual tras revisar que no tiene scripts, `on*` ni referencias externas): a color sobre claro,
+  negativo sobre Noche; 210–260 px de ancho (mínimo 160), 180 px en teléfonos, con resguardo de 2X debajo y a
+  la derecha. Eslogan aprobado: «Inteligencia Aplicada a la Red» (`IARED.eslogan`). Colores del manual en el
+  CSS de `.iared-zona` (Esmeralda, Verde IA, Verde Red, Lima, Tinta, Noche, Niebla, Menta; degradado
+  esmeralda→lima a 120°, el claro sobre oscuro). Títulos y botones en **Sora** 600/700, que se pide a Google
+  Fonts solo cuando aparece IARED (`useFuenteIared`); el cuerpo sigue con la fuente de la tienda.
+  **Dentro de `.iared-zona` no va el rojo de REDVISION ni vidrio detrás del logo** (el manual lo prohíbe como color de apoyo de IARED); texto blanco
+  solo sobre Esmeralda, Tinta o Noche.
+- **A conversar (arquitectura de marca)**: el manual presenta a IARED como «división de inteligencia artificial
+  de Control Red y Red Vision» y propone la firma «Una división de Control Red y Red Vision». La tienda no la
+  muestra (nombraría a la otra empresa) y ya no dice «empresa independiente»: no afirma ninguna de las dos.
+  Decidirlo con el CEO.
+- **Contacto**: el manual no trae datos reales (la tarjeta de ejemplo usa «nombre@iared.com» y «+00 000…»).
+  `url`, `whatsapp` y `email` siguen en `null`; mientras tanto, el botón abre el WhatsApp de REDVISION con
+  «Hola REDVISION, quiero que IARED me contacte por un proyecto.» y la página lo avisa (`AvisoRespaldo`). Al
+  completar un campo, el botón cambia solo (prioridad: sitio → WhatsApp → correo). **No inventar** dominio,
+  cifras, clientes ni plazos de IARED.
+  Superficie sólida propia (`.iared-panel`): blanco en modo claro, Noche en oscuro, con el radio de la tienda.
 - Límite entre empresas: en `iared.js` no va nada de REDVISION ni de Control Red.
 
 ### Cuentas de clientes (13/11)

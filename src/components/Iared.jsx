@@ -1,5 +1,5 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import GlassPanel from './GlassPanel.jsx'
 import IARED, { contactoIared } from '../datos/iared.js'
 
 /**
@@ -7,13 +7,18 @@ import IARED, { contactoIared } from '../datos/iared.js'
  * -----------------------------------------------------------------------
  * Piezas de IARED en la tienda de REDVISION: la marca, el boton que deriva y
  * el bloque destacado del inicio. Los proyectos (relevamiento, ingenieria,
- * integracion, puesta en marcha) los realiza IARED, una empresa aparte e
- * independiente; la tienda solo le da visibilidad. Datos en src/datos/iared.js.
+ * integracion, puesta en marcha) los realiza IARED; la tienda solo le da
+ * visibilidad. Datos en src/datos/iared.js.
  *
- * Paleta del sitio: vidrio y grafito; el rojo, solo en la accion principal.
+ * Marca invitada con su propio manual (v1.0): verdes, Tinta/Noche, Sora en
+ * los titulos y el logo oficial, sobre una superficie solida propia
+ * (`.iared-zona`, nunca vidrio detras del logo: el manual pide fondos sin
+ * valores medios). Nada del rojo de REDVISION adentro: el manual lo prohibe
+ * como color de apoyo de IARED.
  */
 
-/* Alcance de IARED: sin cifras, plazos ni clientes */
+/* Alcance de IARED: sin cifras, plazos ni clientes.
+   Iconos de linea, trazo 2, extremos redondeados (manual: estilo Lucide). */
 export const ALCANCE_IARED = [
   {
     titulo: 'Relevamiento y diseño',
@@ -21,8 +26,8 @@ export const ALCANCE_IARED = [
     icono: 'M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7Z M9 4v13 M15 7v13',
   },
   {
-    titulo: 'Integración de sistemas',
-    texto: 'Videovigilancia, control de accesos, intrusión y redes funcionando como una sola solución.',
+    titulo: 'Integración con IA aplicada',
+    texto: 'Videovigilancia, control de accesos, intrusión y redes como una sola solución, con analítica que detecta y avisa.',
     icono: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z M10 7h4 M7 10v4 M17 10v4 M10 17h4',
   },
   {
@@ -37,27 +42,45 @@ export const ALCANCE_IARED = [
   },
 ]
 
+/* Sora (tipografia del manual) solo cuando aparece IARED: el resto de la
+   tienda no la descarga. Mismo proveedor que las fuentes de index.html. */
+const SORA = 'https://fonts.googleapis.com/css2?family=Sora:wght@600;700&display=swap'
+export function useFuenteIared() {
+  useEffect(() => {
+    if (document.getElementById('fuente-iared')) return
+    const link = document.createElement('link')
+    link.id = 'fuente-iared'
+    link.rel = 'stylesheet'
+    link.href = SORA
+    document.head.appendChild(link)
+  }, [])
+}
+
 export function IconoLinea({ d, className = 'h-5 w-5' }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d={d} />
     </svg>
   )
 }
 
-/** Logo de IARED si existe; si no, el nombre en tipografia (sin inventar un logo). */
+/** Logo oficial: a color en modo claro, negativo en oscuro (manual, «Fondos compatibles»). */
 export function MarcaIared({ grande = false, className = '' }) {
-  if (IARED.logo) {
-    return <img src={IARED.logo} alt={IARED.nombre} className={`w-auto ${grande ? 'h-12' : 'h-9'} ${className}`} loading="lazy" />
+  const { logo, nombre, eslogan } = IARED
+  if (!logo) {
+    return (
+      <span role="img" aria-label={nombre} className={`iared-marca-texto ${className}`}>
+        {nombre}
+      </span>
+    )
   }
+  const ancho = grande ? 260 : 210
+  const alto = Math.round((ancho * logo.alto) / logo.ancho)
+  const alt = `${nombre} — ${eslogan}`
   return (
-    <span
-      role="img"
-      aria-label={IARED.nombre}
-      className={`text-onglass inline-block border-l-4 border-current pl-3 font-display font-extrabold leading-none tracking-[0.18em] text-black dark:text-white
-                  ${grande ? 'text-4xl sm:text-5xl' : 'text-3xl'} ${className}`}
-    >
-      {IARED.nombre}
+    <span className={`iared-logo ${grande ? 'iared-logo--grande' : ''} ${className}`}>
+      <img className="dark:hidden" src={logo.claro} alt={alt} width={ancho} height={alto} decoding="async" />
+      <img className="hidden dark:block" src={logo.oscuro} alt={alt} width={ancho} height={alto} decoding="async" />
     </span>
   )
 }
@@ -66,7 +89,7 @@ export function MarcaIared({ grande = false, className = '' }) {
 export function BotonIared({ className = '', children = 'Solicitar contacto de IARED' }) {
   const c = contactoIared()
   return (
-    <a href={c.href} {...(c.externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className={`rv-btn-primary ${className}`}>
+    <a href={c.href} {...(c.externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className={`iared-cta ${className}`}>
       {children}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
         <path d="M5 12h14M13 6l6 6-6 6" />
@@ -79,7 +102,7 @@ export function BotonIared({ className = '', children = 'Solicitar contacto de I
 export function AvisoRespaldo({ className = '' }) {
   if (!contactoIared().respaldo) return null
   return (
-    <p className={`rv-muted text-xs leading-relaxed ${className}`}>
+    <p className={`iared-nota ${className}`}>
       Mientras IARED habilita sus propios canales, la consulta ingresa por el WhatsApp de REDVISION y se la derivamos.
     </p>
   )
@@ -87,55 +110,44 @@ export function AvisoRespaldo({ className = '' }) {
 
 /** Bloque destacado del inicio: reemplaza al antiguo departamento de proyectos. */
 export function BloqueIared() {
+  useFuenteIared()
   return (
-    <section id="iared" aria-labelledby="titulo-iared" className="scroll-mt-40">
-      <GlassPanel variant="strong" className="overflow-hidden p-6 sm:p-8 lg:p-10">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
-          <div className="lg:col-span-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <MarcaIared />
-              <span className="rv-chip text-black/80 dark:text-white/80">Empresa independiente</span>
-            </div>
-            <p className="rv-eyebrow mt-6">Proyectos e integración</p>
-            <h2 id="titulo-iared" className="text-onglass mt-2 font-display text-2xl font-bold leading-tight sm:text-3xl">
-              ¿Necesita un proyecto completo? <span className="font-light">Lo resuelve IARED.</span>
-            </h2>
-            <p className="rv-muted mt-4 max-w-xl text-sm leading-relaxed">
-              REDVISION se dedica a la comercialización de equipamiento. Los proyectos de seguridad electrónica, desde el relevamiento hasta la
-              puesta en marcha, los realiza <strong className="font-semibold text-black dark:text-white">IARED</strong>, una empresa aparte
-              especializada en proyectos e integración.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <BotonIared />
-              <Link to="/iared" className="rv-btn-glass">
-                Conocer IARED
-              </Link>
-            </div>
-            <AvisoRespaldo className="mt-4 max-w-xl" />
+    <section id="iared" aria-labelledby="titulo-iared" className="iared-zona iared-panel iared-panel--banda scroll-mt-40 p-6 sm:p-8 lg:p-10">
+      <div className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
+        <div className="lg:col-span-6">
+          <MarcaIared />
+          <p className="iared-etiqueta">Proyectos e integración</p>
+          <h2 id="titulo-iared" className="iared-h2 mt-2">
+            ¿Necesita un proyecto completo? Lo resuelve IARED.
+          </h2>
+          <p className="iared-suave mt-4 max-w-xl text-sm leading-relaxed">
+            REDVISION se dedica a la comercialización de equipamiento. Los proyectos de seguridad electrónica, desde el relevamiento hasta la
+            puesta en marcha, los realiza <strong className="iared-fuerte">IARED</strong>: proyectos e integración con inteligencia aplicada a la
+            red.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <BotonIared />
+            <Link to="/iared" className="iared-cta-sec">
+              Conocer IARED
+            </Link>
           </div>
-
-          <ul className="grid gap-3 sm:grid-cols-2 lg:col-span-6" aria-label="Qué resuelve IARED">
-            {ALCANCE_IARED.map((a) => (
-              <li
-                key={a.titulo}
-                className="flex flex-col gap-3 rounded-2xl p-4"
-                style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-              >
-                <span
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-black/75 dark:text-white/80"
-                  style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-                >
-                  <IconoLinea d={a.icono} />
-                </span>
-                <span>
-                  <span className="text-onglass block font-display text-sm font-semibold">{a.titulo}</span>
-                  <span className="rv-muted mt-1 block text-xs leading-relaxed">{a.texto}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <AvisoRespaldo className="mt-4 max-w-xl" />
         </div>
-      </GlassPanel>
+
+        <ul className="grid gap-3 sm:grid-cols-2 lg:col-span-6" aria-label="Qué resuelve IARED">
+          {ALCANCE_IARED.map((a) => (
+            <li key={a.titulo} className="iared-tarjeta flex flex-col gap-3 p-4">
+              <span className="iared-icono">
+                <IconoLinea d={a.icono} />
+              </span>
+              <span>
+                <span className="iared-h3 block">{a.titulo}</span>
+                <span className="iared-suave mt-1 block text-xs leading-relaxed">{a.texto}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   )
 }

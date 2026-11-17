@@ -814,3 +814,215 @@
     touch-action: pan-y pinch-zoom !important;
   }
 }
+
+/* =========================================================================
+ * IARED: marca invitada con su propio manual (v1.0, 17/11). Los proyectos
+ * los realiza IARED; la tienda solo le da visibilidad.
+ * - Paleta del manual: Esmeralda #047857, Verde IA #10B981, Verde Red
+ *   #22C55E, Lima #84CC16, Tinta #1F2333, Noche #0E1120, Gris #6B7280,
+ *   Niebla #F4F5F7, Menta #D1FAE5. Proporcion 60 claro / 25 Tinta-Noche / 15 verde.
+ * - Dentro de .iared-zona no va el rojo de REDVISION (el manual lo prohibe
+ *   como color de apoyo) ni vidrio detras del logo (pide fondos sin valores
+ *   medios): superficie solida propia, con el radio y el borde de la tienda.
+ * - Texto blanco solo sobre Esmeralda, Tinta o Noche; sobre verdes claros,
+ *   Tinta o Noche. Claro: Blanco/Niebla y logo a color. Oscuro: Noche, logo
+ *   negativo y degradado claro.
+ * ====================================================================== */
+.iared-zona {
+  --ia-fondo: #ffffff;
+  --ia-superficie: #f4f5f7;
+  --ia-borde: #e3e6eb;
+  --ia-texto: #1f2333;
+  --ia-suave: rgba(31, 35, 51, 0.78);
+  --ia-acento: #047857;
+  --ia-icono: #047857;
+  --ia-icono-fondo: #d1fae5;
+  --ia-banda: linear-gradient(120deg, #047857, #10b981 33%, #22c55e 67%, #84cc16);
+  --ia-cta-fondo: #047857;
+  --ia-cta-texto: #ffffff;
+  --ia-cta-sombra: rgba(4, 120, 87, 0.45);
+  --ia-titulo: 'Sora', 'Lexend', system-ui, sans-serif;
+  color: var(--ia-texto);
+}
+.dark .iared-zona {
+  --ia-fondo: #0e1120;
+  --ia-superficie: rgba(255, 255, 255, 0.04);
+  --ia-borde: rgba(255, 255, 255, 0.12);
+  --ia-texto: #ffffff;
+  --ia-suave: rgba(255, 255, 255, 0.76);
+  --ia-acento: #10b981;
+  --ia-icono: #a3e635;
+  --ia-icono-fondo: rgba(16, 185, 129, 0.14);
+  --ia-banda: linear-gradient(120deg, #059669, #10b981 33%, #4ade80 67%, #a3e635);
+  --ia-cta-fondo: linear-gradient(120deg, #059669, #10b981 33%, #4ade80 67%, #a3e635);
+  --ia-cta-texto: #0e1120;
+  --ia-cta-sombra: rgba(16, 185, 129, 0.45);
+}
+.iared-panel {
+  position: relative;
+  overflow: hidden;
+  color: var(--ia-texto);
+  background: var(--ia-fondo);
+  border: 1px solid var(--ia-borde);
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 18px 40px -26px rgba(0, 0, 0, 0.45);
+}
+/* Banda de degradado del manual como borde inferior (extremos redondeados),
+   solo en el panel principal: una por pantalla. */
+.iared-panel--banda::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ia-banda);
+}
+/* Logo: resguardo de 2X (X = trazo, 28/606 del ancho) hacia abajo y a la
+   derecha; arriba y a la izquierda queda el padding del panel. */
+.iared-logo {
+  display: block;
+  width: 210px;
+  margin-bottom: 22px;
+}
+.iared-logo--grande {
+  width: 260px;
+  margin-bottom: 28px;
+}
+.iared-logo img {
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 380px) {
+  .iared-logo,
+  .iared-logo--grande {
+    width: 180px;
+    margin-bottom: 20px;
+  }
+}
+.iared-marca-texto {
+  display: inline-block;
+  margin-bottom: 22px;
+  font-family: var(--ia-titulo);
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+}
+/* Etiqueta del manual: Sora SemiBold 12, mayusculas, espaciado 18 % */
+.iared-etiqueta {
+  font-family: var(--ia-titulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ia-acento);
+}
+.iared-h1,
+.iared-h2,
+.iared-h3 {
+  font-family: var(--ia-titulo);
+  color: var(--ia-texto);
+  text-wrap: balance;
+}
+.iared-h1 {
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.iared-h2 {
+  font-weight: 600;
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  line-height: 1.25;
+}
+.iared-h3 {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+.iared-suave {
+  color: var(--ia-suave);
+}
+.iared-fuerte {
+  font-weight: 600;
+  color: var(--ia-texto);
+}
+.iared-tarjeta {
+  border-radius: 18px;
+  background: var(--ia-superficie);
+  border: 1px solid var(--ia-borde);
+}
+.iared-icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: var(--ia-icono);
+  background: var(--ia-icono-fondo);
+}
+.iared-tilde {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  border-radius: 999px;
+  color: #fff;
+  background: #047857;
+}
+.iared-numero {
+  font-family: var(--ia-titulo);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--ia-acento);
+}
+.iared-cta,
+.iared-cta-sec {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-family: var(--ia-titulo);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.iared-cta {
+  color: var(--ia-cta-texto);
+  background: var(--ia-cta-fondo);
+}
+.iared-cta:hover {
+  box-shadow: 0 10px 26px -10px var(--ia-cta-sombra);
+}
+.iared-cta-sec {
+  color: var(--ia-texto);
+  background: transparent;
+  border: 1.5px solid var(--ia-borde);
+}
+.iared-cta-sec:hover {
+  border-color: var(--ia-acento);
+}
+.iared-cta:active,
+.iared-cta-sec:active {
+  transform: scale(0.97);
+}
+.iared-cta:focus-visible,
+.iared-cta-sec:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 3px;
+}
+.iared-nota {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ia-suave);
+}
