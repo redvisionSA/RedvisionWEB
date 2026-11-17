@@ -158,10 +158,10 @@ export default function Footer() {
                 igual en clear mode y en dark mode, sin retocar la marca. */}
             <span className="rv-chip-marca mt-5 px-4 py-3">
               <img
-                src="/dahua-logo.png"
+                src="/marcas/dahua.svg"
                 alt="Dahua Technology"
-                width="294"
-                height="88"
+                width="147"
+                height="44"
                 className="h-11 w-auto object-contain"
                 loading="lazy"
                 decoding="async"

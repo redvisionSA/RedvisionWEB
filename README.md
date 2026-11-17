@@ -82,7 +82,7 @@ RedvisionWeb/
 ├─ public/
 │  ├─ redvision-logo.png      logotipo institucional (3000×624, transparente)
 │  ├─ redvision-logo-dark.png misma marca con los negros invertidos, para dark mode
-│  ├─ dahua-logo.png          logo Dahua oficial, recortado y con fondo transparente
+│  ├─ dahua-logo.png          logo Dahua (PNG 294x88; ya no se usa: ver marcas/dahua.svg)
 │  ├─ resenas.json            resenas de Google (ver seccion 10)
 │  ├─ hero-bg.mp4             video de fondo (1280×720, 30 fps, sin audio, 3.9 MB)
 │  ├─ hero-poster.jpg         primer fotograma; poster del video y base del comparador
@@ -527,9 +527,9 @@ luminancia donde la saturacion sea menor a 0,22, nunca tocar los pixeles rojos.
 
 ### El logotipo de Dahua
 
-Se usa **una sola** version: la oficial, con el wordmark negro. El archivo
-`public/dahua-logo.png` es esa imagen recortada al contenido y con el fondo blanco convertido en
-transparencia, asi que ya no aparece el cuadrado blanco.
+Se usa **una sola** version: la oficial, con el wordmark negro. El archivo es
+`public/marcas/dahua.svg` (el mismo de la tienda, vectorial y con fondo transparente desde el
+17/11/2026); `public/dahua-logo.png` (294x88) quedo sin uso: se veia borroso en pantallas 2x/3x.
 
 Como ese negro desaparece sobre fondo oscuro, el logotipo viaja dentro de un chip blanco
 (`.rv-chip-marca`) en la barra y en el pie. Se ve identico en clear mode y en dark mode, y la marca

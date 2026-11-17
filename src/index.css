@@ -513,6 +513,15 @@
     box-shadow: 0 2px 10px -4px rgba(0, 0, 0, 0.35);
   }
 
+  /* Logo de marca sin pastilla (filtro, portada de marca): en dark mode va
+     sobre una placa blanca; los logotipos negros o grises no se leen sobre
+     el fondo oscuro y no se recolorean. */
+  .dark .rv-logo-marca {
+    background: #fff;
+    border-radius: 6px;
+    padding: var(--logo-aire, 3px) calc(var(--logo-aire, 3px) * 2);
+  }
+
   /* --- Tipografia de seccion -----------------------------------------
      Antes cada eyebrow de cada tesela era rojo institucional: quince
      etiquetas rojas por pantalla es justo el "demasiado rojo" reportado.

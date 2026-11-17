@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { DISPONIBILIDAD } from './catalogo.js'
+import { medidaLogo } from './marcas.js'
 import { formatoPrecio } from './formato.js'
 import { lineaPorId } from './lineas.js'
 import { useTienda } from './TiendaContext.jsx'
@@ -281,8 +282,29 @@ export function Migas({ items }) {
 
 /* ------------------------------------------------------- Logo de marca
    Logo oficial si esta cargado en public/marcas/; si no, el nombre en texto
-   (con el color de la marca cuando se conoce). Nunca un dibujo propio. */
-export function LogoMarca({ marca, alto = 16, className = '', conChip = false, uniforme = false }) {
+   (con el color de la marca cuando se conoce). Nunca un dibujo propio.
+   Medida optica (`medidaLogo`): todas las marcas pesan lo mismo a la vista,
+   sea cual sea la proporcion de su archivo. El alt es siempre el nombre
+   oficial de la marca (no la grafia que traiga el ERP). Sin pastilla, en el
+   tema oscuro el logo va sobre una placa blanca (`.rv-logo-marca`): los
+   logotipos negros o grises no se leerian sobre el fondo oscuro. */
+function ImagenLogo({ id, alto, anchoMax }) {
+  const m = medidaLogo(id, alto, anchoMax)
+  return (
+    <img
+      src={id.logo}
+      alt={id.nombre}
+      width={m.ancho}
+      height={m.alto}
+      loading="lazy"
+      decoding="async"
+      className="block max-w-full object-contain"
+      style={{ width: m.ancho, height: m.alto }}
+    />
+  )
+}
+
+export function LogoMarca({ marca, alto = 16, className = '', conChip = false, uniforme = false, anchoMax, caja = '' }) {
   if (!marca) return null
   const id = marca.identidad
   /* Pastilla de tamaño fijo (tarjetas de producto): todas las marcas ocupan lo
@@ -291,7 +313,7 @@ export function LogoMarca({ marca, alto = 16, className = '', conChip = false, u
     return (
       <span className={`rv-chip-marca inline-flex h-7 w-[96px] items-center justify-center overflow-hidden px-2 ${className}`}>
         {id?.logo ? (
-          <img src={id.logo} alt={marca.nombre} loading="lazy" decoding="async" className="block max-h-[16px] max-w-full object-contain" />
+          <ImagenLogo id={id} alto={15} anchoMax={80} />
         ) : (
           <span className="truncate font-display text-[10px] font-bold uppercase tracking-[0.08em] text-black/75" style={id?.color ? { color: id.color } : undefined}>
             {id?.nombre || marca.nombre}
@@ -301,19 +323,14 @@ export function LogoMarca({ marca, alto = 16, className = '', conChip = false, u
     )
   }
   if (id?.logo) {
-    const img = (
-      <img
-        src={id.logo}
-        alt={marca.nombre}
-        height={alto}
-        width={Math.round(alto * id.proporcion)}
-        loading="lazy"
-        decoding="async"
-        className="block object-contain"
-        style={{ height: alto, width: 'auto' }}
-      />
+    const img = <ImagenLogo id={id} alto={alto} anchoMax={anchoMax} />
+    return conChip ? (
+      <span className={`rv-chip-marca px-2.5 py-1.5 ${caja} ${className}`}>{img}</span>
+    ) : (
+      <span className={`rv-logo-marca inline-flex items-center ${className}`} style={{ '--logo-aire': `${Math.max(3, Math.round(alto * 0.22))}px` }}>
+        {img}
+      </span>
     )
-    return conChip ? <span className={`rv-chip-marca px-2 py-1 ${className}`}>{img}</span> : <span className={`inline-flex ${className}`}>{img}</span>
   }
   return (
     <span

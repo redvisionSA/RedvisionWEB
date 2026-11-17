@@ -70,7 +70,8 @@ const CloseIcon = (p) => (
 /**
  * Sello "Distribuidor oficial Dahua".
  *
- * Logotipo oficial de Dahua Technology (public/dahua-logo.png) sin alterar
+ * Logotipo oficial de Dahua Technology (public/marcas/dahua.svg, el mismo de
+ * la tienda: vectorial, nitido en cualquier pantalla) sin alterar
  * colores ni proporciones. Como el wordmark es negro y rojo, viaja siempre
  * dentro de un chip blanco (.rv-chip-marca): se lee igual en clear y en dark.
  *
@@ -97,10 +98,10 @@ export function PreHeader({ className = '', variante = 'chrome', compacto = fals
       </span>
       <span className={`rv-chip-marca ${compacto ? 'px-2 py-1' : 'px-2.5 py-1.5'}`}>
         <img
-          src="/dahua-logo.png"
+          src="/marcas/dahua.svg"
           alt="Dahua Technology"
-          width="294"
-          height="88"
+          width="80"
+          height="24"
           className={`${compacto ? 'h-[20px]' : 'h-[24px]'} w-auto object-contain`}
           loading="eager"
           decoding="async"

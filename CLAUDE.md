@@ -111,7 +111,12 @@ siguientes.
   (blanco pleno, borde 1 px, sin `backdrop-filter`). Tarjetas de producto, departamentos y beneficios
   del inicio también son sólidos. El vidrio queda para lo institucional (hero, barra, pestañas).
 - Sello **"Distribuidor oficial Dahua"** (`PreHeader` en `Navbar.jsx`, logo oficial
-  `public/dahua-logo.png` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
+  `public/marcas/dahua.svg` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
+- **Logos (17/11):** un solo archivo por marca en `public/marcas/` (Dahua: el SVG, transparente; nunca
+  `dahua-logo.png`, que se ve borroso en 2x). `LogoMarca` mide cada logo con `medidaLogo` (`marcas.js`:
+  peso visual parejo por `proporcion` y `tinta`), alt = nombre oficial de la marca; sin pastilla, en dark
+  va sobre placa blanca (`.rv-logo-marca`). Favicon = isotipo recortado del logo (`favicon.png`,
+  `apple-touch-icon.png`); `og-image.jpg` 1200x630 con URL absoluta.
 - **Barra en una sola fila (13/11):** logo · «Productos» (clic al catálogo, flecha o cursor: líneas y
   marcas) · «Empresa ▾» (Empresa, Proyectos, Tecnología, Capacitación) · buscador · sello Dahua (2xl) ·
   ingresar · favoritos · tema · carrito. En teléfono: logo · lupa (despliega el buscador) · carrito ·
