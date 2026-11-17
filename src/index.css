@@ -721,6 +721,46 @@
     background: rgba(18, 18, 20, 0.94);
   }
 
+  /* --- Esquinas de visor y aviso ---------------------------------------- */
+  .rv-visor {
+    position: relative;
+  }
+  .rv-visor::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    --c: var(--visor-color, var(--osd-ink));
+    --l: 14px;
+    background:
+      linear-gradient(var(--c), var(--c)) top left / var(--l) 2px,
+      linear-gradient(var(--c), var(--c)) top left / 2px var(--l),
+      linear-gradient(var(--c), var(--c)) top right / var(--l) 2px,
+      linear-gradient(var(--c), var(--c)) top right / 2px var(--l),
+      linear-gradient(var(--c), var(--c)) bottom left / var(--l) 2px,
+      linear-gradient(var(--c), var(--c)) bottom left / 2px var(--l),
+      linear-gradient(var(--c), var(--c)) bottom right / var(--l) 2px,
+      linear-gradient(var(--c), var(--c)) bottom right / 2px var(--l);
+    background-repeat: no-repeat;
+  }
+  .rv-aviso {
+    @apply p-4 text-black dark:text-white;
+    background: var(--osd-plate);
+  }
+  .rv-aviso--error {
+    --visor-color: var(--rv-rec);
+  }
+  .rv-aviso__lectura {
+    @apply mb-1.5 flex items-center gap-2 font-osd text-xs font-medium uppercase tracking-[0.06em];
+    color: var(--osd-dim);
+  }
+  .rv-aviso__lectura svg {
+    color: var(--osd-ink);
+  }
+  .rv-aviso__titulo {
+    @apply mb-1 font-display text-base font-semibold leading-snug;
+  }
+
   /* --- Lectura OSD (disponibilidad, combos) ----------------------------- */
   .rv-lectura {
     @apply inline-flex w-max max-w-full items-center gap-[7px] px-2 py-0.5 font-osd text-xs font-medium uppercase leading-tight tracking-[0.04em];

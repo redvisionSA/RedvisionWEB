@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import { COMPLEMENTOS } from '../tienda/lineas.js'
 import { cadenaDeCategoria, enlaceCategoria } from '../tienda/categorias.js'
-import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
+import { Aviso, BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
 import { Cantidad } from '../tienda/LineaCarrito.jsx'
 import Riel from '../tienda/Riel.jsx'
 import { alternativasConStock, compatibles, similares } from '../tienda/similares.js'
@@ -265,9 +265,9 @@ export default function Producto() {
               </p>
               {/* Con sesion la cantidad ya esta a la vista: «Última en stock», «2 en stock» */}
               {producto.disponibilidad === 'ultimas' && !producto.stock && (
-                <p className="mt-3 inline-flex items-center gap-2 rounded-pill bg-rv-red/10 px-3 py-1.5 text-xs font-semibold text-rv-red dark:bg-rv-red/20 dark:text-rv-red-glow">
-                  Quedan pocas unidades en stock
-                </p>
+                <Aviso tono="atencion" lectura="Stock · últimas unidades" className="mt-3" titulo="Quedan pocas unidades">
+                  <p>Si lo necesita, envíe el pedido hoy: el stock se aparta cuando el asesor lo confirma.</p>
+                </Aviso>
               )}
               {producto.disponibilidad === 'a_pedido' && (
                 <p className="mt-3 text-sm text-black/80 dark:text-white/85">

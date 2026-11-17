@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { LISTAS, useCuenta } from '../cuenta/CuentaContext.jsx'
 import { pedir } from '../cuenta/api.js'
-import { AvisoError, Campo, Migas } from '../tienda/piezas.jsx'
-import { IconoCheck, IconoOjo, IconoUsuario, IconoWhatsapp } from '../tienda/Iconos.jsx'
+import { Aviso as AvisoVisor, AvisoError, Campo, Migas } from '../tienda/piezas.jsx'
+import { IconoOjo, IconoUsuario, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import { enlaceConsulta } from '../tienda/whatsapp.js'
 import Pagina, { usePagina } from './Pagina.jsx'
 
@@ -46,8 +46,9 @@ function Marco({ migas, titulo, bajada, children, ancho = 'max-w-md' }) {
     <Pagina>
       <Migas items={[{ label: 'Inicio', to: '/' }, ...migas]} />
       <div className={`rv-solido mx-auto ${ancho} p-6 sm:p-8`}>
-        <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-pill bg-black text-white dark:bg-white dark:text-black">
-          <IconoUsuario className="h-6 w-6" />
+        <span className="rv-lectura mb-4">
+          <IconoUsuario className="h-3 w-3" />
+          Cuenta de cliente
         </span>
         <h1 className="text-onglass font-display text-2xl font-bold sm:text-3xl">{titulo}</h1>
         {bajada && <p className="rv-muted mt-2 text-sm leading-relaxed">{bajada}</p>}
@@ -98,12 +99,9 @@ function Enviar({ enviando, children, textoEnviando }) {
 
 function Aviso({ children, info = false }) {
   return (
-    <div className="rv-sutil mb-5 flex items-start gap-3 rounded-2xl p-4 text-sm" role="status">
-      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-black font-display text-xs font-bold text-white dark:bg-white dark:text-black">
-        {info ? 'i' : <IconoCheck className="h-3.5 w-3.5" />}
-      </span>
-      <p className="text-black dark:text-white">{children}</p>
-    </div>
+    <AvisoVisor tono={info ? 'dato' : 'ok'} lectura={info ? 'Cuenta · dato' : 'Cuenta · listo'} className="mb-5">
+      <p>{children}</p>
+    </AvisoVisor>
   )
 }
 

@@ -233,12 +233,31 @@ export function Campo({ id, label, error, ayuda, children, className = '' }) {
 export function AvisoError({ children, className = '' }) {
   if (!children) return null
   return (
-    <div
-      className={`rounded-2xl p-4 text-sm ${className}`}
-      style={{ border: '1px solid #D61922', background: 'rgba(214,25,34,0.06)' }}
-      role="alert"
-    >
-      <div className="font-semibold text-rv-red">{children}</div>
+    <Aviso tono="error" lectura="No se pudo" className={className}>
+      <p className="font-semibold">{children}</p>
+    </Aviso>
+  )
+}
+
+/* ------------------------------------------------------------ Aviso */
+/* Cuadro de visor (Aspecto 6, «OSD / visor»): placa gris sin borde; la caja
+   la insinúan cuatro esquinas de visor. Arriba una lectura en mono
+   («PEDIDO · NO ENVIADO»), después el título y el texto; error = esquinas y
+   punto REC en rojo y role="alert". */
+const GLIFO_AVISO = { dato: 'hueco', ok: 'lleno', atencion: 'triangulo' }
+
+export function Aviso({ tono = 'dato', lectura, titulo, children, acciones, className = '', role }) {
+  return (
+    <div className={`rv-aviso rv-visor ${tono === 'error' ? 'rv-aviso--error' : ''} ${className}`} role={role || (tono === 'error' ? 'alert' : 'status')}>
+      {lectura && (
+        <p className="rv-aviso__lectura">
+          {tono === 'error' ? <span className="rv-rec" aria-hidden="true" /> : <GlifoOsd forma={GLIFO_AVISO[tono]} />}
+          {lectura}
+        </p>
+      )}
+      {titulo && <p className="rv-aviso__titulo">{titulo}</p>}
+      {children && <div className="text-sm">{children}</div>}
+      {acciones && <div className="mt-3 flex flex-wrap items-center gap-4">{acciones}</div>}
     </div>
   )
 }
