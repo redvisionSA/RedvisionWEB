@@ -282,7 +282,7 @@ export function Migas({ items }) {
 
 /* ------------------------------------------------------- Logo de marca
    Logo oficial si esta cargado en public/marcas/; si no, el nombre en texto
-   (con el color de la marca cuando se conoce). Nunca un dibujo propio.
+   neutro (nunca un dibujo propio ni un logo viejo de la marca).
    Medida optica (`medidaLogo`): todas las marcas pesan lo mismo a la vista,
    sea cual sea la proporcion de su archivo. El alt es siempre el nombre
    oficial de la marca (no la grafia que traiga el ERP). Sin pastilla, en el
@@ -304,40 +304,43 @@ function ImagenLogo({ id, alto, anchoMax }) {
   )
 }
 
+function NombreMarca({ nombre, alto, className = '' }) {
+  return (
+    <span
+      className={`truncate font-display font-bold uppercase tracking-[0.08em] ${className}`}
+      style={{ fontSize: Math.max(10, Math.round(alto * 0.72)), lineHeight: 1 }}
+    >
+      {nombre}
+    </span>
+  )
+}
+
 export function LogoMarca({ marca, alto = 16, className = '', conChip = false, uniforme = false, anchoMax, caja = '' }) {
   if (!marca) return null
   const id = marca.identidad
+  const nombre = id?.nombre || marca.nombre
   /* Pastilla de tamaño fijo (tarjetas de producto): todas las marcas ocupan lo
      mismo, sea cual sea la proporcion de su logo. */
   if (uniforme) {
     return (
       <span className={`rv-chip-marca inline-flex h-7 w-[96px] items-center justify-center overflow-hidden px-2 ${className}`}>
-        {id?.logo ? (
-          <ImagenLogo id={id} alto={15} anchoMax={80} />
-        ) : (
-          <span className="truncate font-display text-[10px] font-bold uppercase tracking-[0.08em] text-black/75" style={id?.color ? { color: id.color } : undefined}>
-            {id?.nombre || marca.nombre}
-          </span>
-        )}
+        {id?.logo ? <ImagenLogo id={id} alto={15} anchoMax={80} /> : <NombreMarca nombre={nombre} alto={14} className="text-black/75" />}
+      </span>
+    )
+  }
+  if (conChip) {
+    return (
+      <span className={`rv-chip-marca px-2.5 py-1.5 ${caja} ${className}`}>
+        {id?.logo ? <ImagenLogo id={id} alto={alto} anchoMax={anchoMax} /> : <NombreMarca nombre={nombre} alto={alto} className="text-black/75" />}
       </span>
     )
   }
   if (id?.logo) {
-    const img = <ImagenLogo id={id} alto={alto} anchoMax={anchoMax} />
-    return conChip ? (
-      <span className={`rv-chip-marca px-2.5 py-1.5 ${caja} ${className}`}>{img}</span>
-    ) : (
+    return (
       <span className={`rv-logo-marca inline-flex items-center ${className}`} style={{ '--logo-aire': `${Math.max(3, Math.round(alto * 0.22))}px` }}>
-        {img}
+        <ImagenLogo id={id} alto={alto} anchoMax={anchoMax} />
       </span>
     )
   }
-  return (
-    <span
-      className={`font-display font-bold uppercase tracking-[0.08em] ${id?.color ? '' : 'text-black/70 dark:text-white/75'} ${className}`}
-      style={{ fontSize: Math.max(10, Math.round(alto * 0.72)), lineHeight: 1, ...(id?.color ? { color: id.color } : {}) }}
-    >
-      {id?.nombre || marca.nombre}
-    </span>
-  )
+  return <NombreMarca nombre={nombre} alto={alto} className={`text-black/75 dark:text-white/80 ${className}`} />
 }

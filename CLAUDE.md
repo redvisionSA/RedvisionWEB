@@ -112,11 +112,15 @@ siguientes.
   del inicio también son sólidos. El vidrio queda para lo institucional (hero, barra, pestañas).
 - Sello **"Distribuidor oficial Dahua"** (`PreHeader` en `Navbar.jsx`, logo oficial
   `public/marcas/dahua.svg` en chip blanco): segunda fila de la barra, hero, menú móvil y fichas Dahua.
-- **Logos (17/11):** un solo archivo por marca en `public/marcas/` (Dahua: el SVG, transparente; nunca
-  `dahua-logo.png`, que se ve borroso en 2x). `LogoMarca` mide cada logo con `medidaLogo` (`marcas.js`:
-  peso visual parejo por `proporcion` y `tinta`), alt = nombre oficial de la marca; sin pastilla, en dark
-  va sobre placa blanca (`.rv-logo-marca`). Favicon = isotipo recortado del logo (`favicon.png`,
-  `apple-touch-icon.png`); `og-image.jpg` 1200x630 con URL absoluta.
+- **Logos (17/11):** marcas en `public/marcas/` como SVG oficiales sanitizados (sin scripts, metadatos,
+  ids ni fondo; viewBox al dibujo con 3 % de aire parejo): Dahua (nunca `dahua-logo.png`, borroso en 2x),
+  Hikvision, Imou (vector negro con el naranja #F08C00 del logo oficial), TP-Link y Tenda. **EZVIZ sin
+  logo** (`logo: null`, va el nombre): el vigente es otro y solo tenemos el viejo. `LogoMarca` mide con
+  `medidaLogo` (`marcas.js`, peso visual parejo por `proporcion`), alt = nombre oficial; sin pastilla, en
+  dark va sobre placa blanca (`.rv-logo-marca`). Logo propio vectorial: `redvision-logo.svg` (claro) y
+  `redvision-logo-oscuro.svg` (el mismo con negros a blanco, rojo y gris intactos). `favicon.svg` = rombo
+  (en dark el aro pasa a blanco), `favicon.png` y `apple-touch-icon.png` renderizados de él;
+  `og-image.jpg` 1200x630 con URL absoluta. `redvision-logo.png` queda para el JSON-LD.
 - **Barra en una sola fila (13/11):** logo · «Productos» (clic al catálogo, flecha o cursor: líneas y
   marcas) · «Empresa ▾» (Empresa, Proyectos, Tecnología, Capacitación) · buscador · sello Dahua (2xl) ·
   ingresar · favoritos · tema · carrito. En teléfono: logo · lupa (despliega el buscador) · carrito ·

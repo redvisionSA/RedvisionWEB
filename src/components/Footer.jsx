@@ -80,9 +80,9 @@ export default function Footer() {
           {/* Marca */}
           <div className="sm:col-span-2 lg:col-span-4">
             <img
-              src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
+              src={isDark ? '/redvision-logo-oscuro.svg' : '/redvision-logo.svg'}
               alt="REDVISION - Tecnología sin límites"
-              width="320"
+              width="310"
               height="66"
               className="h-12 w-auto object-contain sm:h-14 lg:h-16"
               loading="lazy"

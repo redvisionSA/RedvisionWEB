@@ -438,9 +438,9 @@ export default function Navbar() {
         >
           <Link to="/" aria-label="REDVISION - Inicio" className="group flex shrink-0 items-center pl-1 pr-1">
             <img
-              src={isDark ? '/redvision-logo-dark.png' : '/redvision-logo.png'}
+              src={isDark ? '/redvision-logo-oscuro.svg' : '/redvision-logo.svg'}
               alt="REDVISION - Tecnología sin límites"
-              width="300"
+              width="291"
               height="62"
               className={`w-auto max-w-[118px] object-contain transition-all duration-400 ease-apple group-hover:scale-[1.04] xs:max-w-[150px] lg:max-w-[180px]
                           ${scrolled ? 'h-7 sm:h-8' : 'h-8 sm:h-10'}`}

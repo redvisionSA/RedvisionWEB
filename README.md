@@ -80,8 +80,9 @@ RedvisionWeb/
 ├─ docs/
 │  └─ INTEGRACION_WEB_robot_dahua.md   contrato de nodos, pivotes y limites del modelo
 ├─ public/
-│  ├─ redvision-logo.png      logotipo institucional (3000×624, transparente)
-│  ├─ redvision-logo-dark.png misma marca con los negros invertidos, para dark mode
+│  ├─ redvision-logo.svg      logotipo institucional vectorial (claro)
+│  ├─ redvision-logo-oscuro.svg el mismo con los negros en blanco, para dark mode
+│  ├─ redvision-logo.png      logotipo raster (3000×624), solo para el JSON-LD
 │  ├─ dahua-logo.png          logo Dahua (PNG 294x88; ya no se usa: ver marcas/dahua.svg)
 │  ├─ resenas.json            resenas de Google (ver seccion 10)
 │  ├─ hero-bg.mp4             video de fondo (1280×720, 30 fps, sin audio, 3.9 MB)
@@ -517,13 +518,10 @@ el dark mode. Todos los tokens estan en `:root` / `html.dark` como `--chrome-*`.
 ### Los dos logotipos de REDVISION
 
 El chrome mas claro ayuda, pero la palabra "VISION" es negro puro: sobre cualquier superficie oscura
-el contraste no llega a 4.5:1. Por eso hay un segundo archivo,
-`public/redvision-logo-dark.png`, generado desde el original invirtiendo **solo** los pixeles de baja
-saturacion (negros y grises pasan a blancos y grises claros) y dejando el rojo institucional
-intacto. `Navbar` y `Footer` eligen uno u otro segun el tema.
-
-Si volves a exportar el logotipo, regenerá tambien la variante oscura con el mismo criterio: invertir
-luminancia donde la saturacion sea menor a 0,22, nunca tocar los pixeles rojos.
+el contraste no llega a 4.5:1. Por eso hay un segundo archivo (17/11/2026, desde el SVG oficial):
+`public/redvision-logo-oscuro.svg`, el mismo dibujo con `fill="#fff"` en la raiz, asi que todo lo que
+era negro (VISION, la bajada y el aro) pasa a blanco y el rojo y el gris del rombo quedan intactos.
+`Navbar`, `Footer` y `PantallaCarga` eligen uno u otro segun el tema.
 
 ### El logotipo de Dahua
 
