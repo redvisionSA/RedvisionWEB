@@ -8,14 +8,14 @@ import { IconoBasura, IconoMas, IconoMenos } from './Iconos.jsx'
 export function Cantidad({ valor, onCambiar, etiqueta = 'Cantidad', min = 1 }) {
   return (
     <div
-      className="rv-sutil inline-flex items-center rounded-pill"
+      className="rv-sutil inline-flex items-center rounded-[4px]"
     >
       <button
         type="button"
         onClick={() => onCambiar(valor - 1)}
         disabled={valor <= min}
         aria-label="Restar uno"
-        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black hover:text-rv-red disabled:cursor-not-allowed disabled:opacity-35 dark:text-white"
+        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[4px] text-black hover:text-rv-red disabled:cursor-not-allowed disabled:opacity-35 dark:text-white"
       >
         <IconoMenos className="h-4 w-4" />
       </button>
@@ -34,7 +34,7 @@ export function Cantidad({ valor, onCambiar, etiqueta = 'Cantidad', min = 1 }) {
         onClick={() => onCambiar(valor + 1)}
         disabled={valor >= 99}
         aria-label="Sumar uno"
-        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black hover:text-rv-red disabled:opacity-35 dark:text-white"
+        className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[4px] text-black hover:text-rv-red disabled:opacity-35 dark:text-white"
       >
         <IconoMas className="h-4 w-4" />
       </button>
@@ -84,7 +84,7 @@ export default function LineaCarrito({ linea, onNavegar, compacta = false }) {
               type="button"
               onClick={() => quitar(producto.id)}
               aria-label={`Quitar ${producto.nombre}`}
-              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black/50 hover:text-rv-red dark:text-white/55"
+              className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[4px] text-black/50 hover:text-rv-red dark:text-white/55"
             >
               <IconoBasura className="h-[18px] w-[18px]" />
             </button>

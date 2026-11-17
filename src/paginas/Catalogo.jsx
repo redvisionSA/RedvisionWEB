@@ -471,7 +471,7 @@ export default function Catalogo() {
           <ul className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
             {subcategorias.map((c) => (
               <li key={c.slug} className="shrink-0">
-                <Link to={hrefCategoria(c.slug)} className="rv-solido inline-flex min-h-[44px] items-center gap-2 !rounded-full px-4 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:text-white">
+                <Link to={hrefCategoria(c.slug)} className="rv-solido inline-flex min-h-[44px] items-center gap-2 !rounded-[2px] px-4 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:text-white">
                   {c.nombre}
                   <span className="num text-xs font-normal opacity-60">{conteoCategorias.get(c.slug)}</span>
                 </Link>
@@ -549,7 +549,7 @@ export default function Catalogo() {
                   key={c.clave}
                   type="button"
                   onClick={() => quitarChip(c)}
-                  className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full bg-black px-3 text-xs font-semibold text-white hover:bg-rv-red dark:bg-white dark:text-black"
+                  className="inline-flex min-h-[34px] items-center gap-1.5 rounded-[2px] bg-black px-3 text-xs font-semibold text-white hover:bg-rv-red dark:bg-white dark:text-black"
                   aria-label={`Quitar filtro ${c.texto}`}
                 >
                   {c.texto}
@@ -566,7 +566,7 @@ export default function Catalogo() {
                   key={`${a.param}:${a.valor}`}
                   type="button"
                   onClick={() => alternar(a.param, a.valor)}
-                  className="rv-solido inline-flex min-h-[34px] items-center gap-1 !rounded-full px-3 text-xs font-semibold text-black hover:border-rv-red hover:text-rv-red dark:text-white"
+                  className="rv-solido inline-flex min-h-[34px] items-center gap-1 !rounded-[2px] px-3 text-xs font-semibold text-black hover:border-rv-red hover:text-rv-red dark:text-white"
                 >
                   + {a.texto}
                 </button>
@@ -597,7 +597,7 @@ export default function Catalogo() {
                   href={enlaceWhatsapp(`Hola, busco ${q || nodo?.nombre || 'un producto'} y no lo encuentro en la tienda.`)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-black/15 px-5 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:text-white"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-[4px] border border-black/15 px-5 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:text-white"
                 >
                   <IconoWhatsapp className="h-4 w-4" />
                   Pedir cotización
@@ -624,7 +624,7 @@ export default function Catalogo() {
                   <button
                     type="button"
                     onClick={() => setVisibles((v) => v + POR_TANDA)}
-                    className="mt-1 inline-flex min-h-[44px] items-center rounded-full border border-black/15 bg-white px-6 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:bg-[#141417] dark:text-white"
+                    className="mt-1 inline-flex min-h-[44px] items-center rounded-[4px] border border-black/15 bg-white px-6 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:bg-[#141417] dark:text-white"
                   >
                     Mostrar más productos
                   </button>
@@ -649,11 +649,11 @@ export default function Catalogo() {
             <div className="flex-1 overflow-y-auto overscroll-contain px-5">{panelFiltros}</div>
             <div className="flex gap-2 border-t border-black/10 px-5 pt-3 dark:border-white/10">
               {hayFiltros && (
-                <button type="button" onClick={limpiarTodo} className="min-h-[48px] flex-1 rounded-xl border border-black/15 text-sm font-semibold text-black dark:border-white/20 dark:text-white">
+                <button type="button" onClick={limpiarTodo} className="min-h-[48px] flex-1 rounded-[4px] border border-black/15 text-sm font-semibold text-black dark:border-white/20 dark:text-white">
                   Limpiar
                 </button>
               )}
-              <button type="button" onClick={() => setFiltrosAbiertos(false)} className="min-h-[48px] flex-[2] rounded-xl bg-rv-red text-sm font-semibold text-white">
+              <button type="button" onClick={() => setFiltrosAbiertos(false)} className="min-h-[48px] flex-[2] rounded-[4px] bg-rv-red text-sm font-semibold text-white">
                 Ver {resultado.length} productos
               </button>
             </div>

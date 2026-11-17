@@ -72,7 +72,7 @@ export default function CarritoDrawer() {
             type="button"
             onClick={cerrar}
             aria-label="Cerrar carrito"
-            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-pill text-black hover:text-rv-red dark:text-white"
+            className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[4px] text-black hover:text-rv-red dark:text-white"
           >
             <IconoCerrar className="h-5 w-5" />
           </button>
@@ -112,7 +112,7 @@ export default function CarritoDrawer() {
                           type="button"
                           onClick={() => agregar(p.id, 1, { abrir: false })}
                           aria-label={`Agregar ${p.nombre}`}
-                          className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-pill bg-black text-white hover:bg-rv-red dark:bg-white dark:text-black"
+                          className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[4px] bg-black text-white hover:bg-rv-red dark:bg-white dark:text-black"
                         >
                           <IconoMas className="h-4 w-4" />
                         </button>

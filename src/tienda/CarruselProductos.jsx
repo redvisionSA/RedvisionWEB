@@ -83,7 +83,7 @@ export default function CarruselProductos({ eyebrow, titulo, productos }) {
               type="button"
               onClick={() => mover(dir)}
               aria-label={etq}
-              className="rv-solido inline-flex h-11 w-11 cursor-pointer items-center justify-center !rounded-full text-black hover:text-rv-red dark:text-white"
+              className="rv-solido inline-flex h-11 w-11 cursor-pointer items-center justify-center !rounded-[4px] text-black hover:text-rv-red dark:text-white"
             >
               <IconoFlecha className={`h-4 w-4 ${giro}`} />
             </button>

@@ -277,7 +277,7 @@ function MarcasMenu({ onCerrar }) {
    primeras hijas; el resto, en la pagina de la categoria */
 const HIJAS_EN_MENU = 5
 const opcionMenu =
-  'flex min-h-[34px] items-center rounded-lg px-2 transition-colors hover:bg-black/[0.05] hover:text-rv-red dark:hover:bg-white/10 [@media(pointer:coarse)]:min-h-[44px]'
+  'flex min-h-[34px] items-center rounded-[2px] px-2 transition-colors hover:bg-black/[0.05] hover:text-rv-red dark:hover:bg-white/10 [@media(pointer:coarse)]:min-h-[44px]'
 
 function MenuProductos({ abierto, onCerrar }) {
   const { catalogo } = useTienda()
@@ -293,7 +293,7 @@ function MenuProductos({ abierto, onCerrar }) {
       <ul className="columns-4 gap-6 xl:columns-5">
         {raices.map((r) => (
           <li key={r.slug} className="break-inside-avoid pb-3">
-            <Link to={enlaceCategoria(r.slug)} onClick={onCerrar} className={`${opcionMenu} font-display text-sm font-semibold text-black dark:text-white`}>
+            <Link to={enlaceCategoria(r.slug)} onClick={onCerrar} className={`${opcionMenu} gap-2 font-display text-sm font-semibold text-black before:h-1.5 before:w-1.5 before:shrink-0 before:bg-black before:content-[''] dark:text-white dark:before:bg-white`}>
               {r.nombre}
             </Link>
             {r.hijos.length > 0 && (
