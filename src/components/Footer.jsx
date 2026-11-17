@@ -18,7 +18,7 @@ const COLUMNAS = [
     titulo: 'Compañía',
     enlaces: [
       { href: '/empresa', label: 'La empresa' },
-      { href: '/proyectos', label: 'Departamento de proyectos' },
+      { href: '/iared', label: 'Proyectos · IARED' },
       { href: '/tecnologia', label: 'Tecnología' },
       { href: '/capacitaciones', label: 'Capacitaciones' },
     ],
@@ -92,8 +92,8 @@ export default function Footer() {
             />
             <p className="rv-muted mt-5 max-w-sm text-sm leading-relaxed">
               Comercialización de equipamiento de seguridad electrónica en Argentina, con catálogo
-              multimarca y Dahua Technology como plataforma de referencia. Departamento de proyectos
-              llave en mano y formación técnica para instaladores.
+              multimarca y Dahua Technology como plataforma de referencia. Asesoramiento técnico y
+              formación para instaladores.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-2.5">

@@ -19,10 +19,10 @@ const Carrito = lazy(() => import('./paginas/Carrito.jsx'))
 const Favoritos = lazy(() => import('./paginas/Favoritos.jsx'))
 const institucional = (nombre) => lazy(() => import('./paginas/Institucionales.jsx').then((m) => ({ default: m[nombre] })))
 const Empresa = institucional('Empresa')
-const Proyectos = institucional('Proyectos')
 const TecnologiaPagina = institucional('TecnologiaPagina')
 const Capacitaciones = institucional('Capacitaciones')
 const NoEncontrada = institucional('NoEncontrada')
+const Iared = lazy(() => import('./paginas/Iared.jsx'))
 const cuenta = (nombre) => lazy(() => import('./paginas/Cuenta.jsx').then((m) => ({ default: m[nombre] })))
 const Ingresar = cuenta('Ingresar')
 const Activar = cuenta('Activar')
@@ -199,7 +199,9 @@ export default function App() {
                 <Route path="/cuenta/olvide" element={<Olvide />} />
                 <Route path="/cuenta/restablecer" element={<Restablecer />} />
                 <Route path="/empresa" element={<Empresa />} />
-                <Route path="/proyectos" element={<Proyectos />} />
+                {/* Los proyectos los realiza IARED (empresa aparte): la ruta vieja va ahi */}
+                <Route path="/iared" element={<Iared />} />
+                <Route path="/proyectos" element={<Navigate to="/iared" replace />} />
                 <Route path="/tecnologia" element={<TecnologiaPagina />} />
                 <Route path="/capacitaciones" element={<Capacitaciones />} />
                 <Route path="/contacto" element={<Navigate to="/empresa#ubicacion" replace />} />

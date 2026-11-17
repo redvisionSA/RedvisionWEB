@@ -35,7 +35,6 @@ export function mensajePedido({ numero, lineas, cliente, lista }) {
 export const CONSULTAS = {
   asesor: 'Hola, quisiera asesoramiento técnico para una compra.',
   mayorista: 'Hola, soy instalador / empresa y quiero abrir una cuenta mayorista en REDVISION.',
-  proyecto: 'Hola, quisiera coordinar un relevamiento para un proyecto de seguridad electrónica.',
   capacitacion: 'Hola, quisiera inscribirme o recibir información de la próxima capacitación técnica.',
 }
 

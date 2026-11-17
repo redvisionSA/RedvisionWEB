@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import TileCatalogo, { TileComoComprar, TileMarcas, TileRespaldo } from '../components/Servicios.jsx'
 import TileTecnologia, { TileFullColor } from '../components/Tecnologia.jsx'
-import TileProyectos, { TileAsesoramiento, TileCapacitaciones, TileDivisiones, TileNosotros } from '../components/Nosotros.jsx'
+import { TileAsesoramiento, TileCapacitaciones, TileDivisiones, TileNosotros } from '../components/Nosotros.jsx'
 import { TileMapa } from '../components/Ubicacion.jsx'
 import GlassPanel from '../components/GlassPanel.jsx'
 import { Migas } from '../tienda/piezas.jsx'
@@ -42,7 +42,7 @@ const rejilla = 'grid grid-cols-1 gap-4 md:grid-cols-6 lg:grid-cols-12'
 export function Empresa() {
   usePagina({
     titulo: 'La empresa',
-    descripcion: 'REDVISION: comercialización mayorista y minorista de seguridad electrónica, departamento de proyectos y formación técnica.',
+    descripcion: 'REDVISION: comercialización mayorista y minorista de seguridad electrónica, asesoramiento técnico y formación para instaladores.',
   })
   return (
     <Pagina>
@@ -54,7 +54,7 @@ export function Empresa() {
             Tecnología <span className="text-rv-red">sin límites</span>
           </>
         }
-        texto="Comercialización de equipamiento de seguridad electrónica, departamento de proyectos llave en mano y formación técnica para instaladores."
+        texto="Comercialización de equipamiento de seguridad electrónica, asesoramiento técnico y formación para instaladores."
       />
       <div className={rejilla}>
         <TileNosotros className="md:col-span-6 lg:col-span-7" />
@@ -73,32 +73,6 @@ export function Empresa() {
         </div>
       </div>
       <PuenteTienda />
-    </Pagina>
-  )
-}
-
-export function Proyectos() {
-  usePagina({
-    titulo: 'Departamento de proyectos',
-    descripcion: 'Proyectos llave en mano de seguridad electrónica: relevamiento, ingeniería, cotización, instalación, capacitación y posventa.',
-  })
-  return (
-    <Pagina>
-      <Encabezado
-        miga="Proyectos"
-        eyebrow="Departamento de proyectos"
-        titulo={
-          <>
-            Del relevamiento <span className="font-light">al servicio posventa</span>
-          </>
-        }
-      />
-      <div className={rejilla}>
-        <TileProyectos className="md:col-span-6 lg:col-span-12" />
-        <TileRespaldo className="md:col-span-6 lg:col-span-7" />
-        <TileAsesoramiento className="md:col-span-6 lg:col-span-5" />
-      </div>
-      <PuenteTienda texto="¿Prefiere comprar el equipamiento y resolver la instalación?" />
     </Pagina>
   )
 }

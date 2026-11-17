@@ -5,17 +5,17 @@ import GlassPanel from './GlassPanel.jsx'
 /**
  * Nosotros.jsx
  * -----------------------------------------------------------------------
- * Teselas del departamento de proyectos, de la formacion tecnica y de la
- * identidad de la empresa.
+ * Teselas de la formacion tecnica y de la identidad de la empresa.
+ * Los proyectos (relevamiento, ingenieria, puesta en marcha) ya no son de
+ * REDVISION: los realiza IARED, empresa aparte (components/Iared.jsx).
  *
- *   TileProyectos       (default)  ciclo completo del departamento de proyectos
  *   TileCapacitaciones             formacion tecnica sin costo
  *   TileDivisiones                 contadores de la estructura
  *   TileAsesoramiento              mesa tecnica, con reloj en vivo
  *   TileNosotros                   la empresa
  *
  * Jerarquia editorial del sitio:
- *   1. Comercializacion   2. Proyectos   3. Capacitacion y demas
+ *   1. Comercializacion   2. Asesoramiento   3. Capacitacion y demas
  */
 
 /* ---------------------------------------------------- contador animado */
@@ -60,93 +60,6 @@ function useEnVista(margen = '-15%') {
   return { ref, visible }
 }
 
-/* =========================================================================
- * DEPARTAMENTO DE PROYECTOS
- *
- * Segundo eje del sitio, despues de la comercializacion. Ocupa el ancho
- * completo de la rejilla y despliega el ciclo en seis etapas, porque la
- * propuesta de valor es precisamente que todas las etapas las cubre un
- * mismo responsable.
- * ====================================================================== */
-const ETAPAS = [
-  {
-    n: '01',
-    t: 'Escuchamos',
-    d: 'Relevamiento del sitio, análisis del riesgo real y definición de objetivos junto al cliente.',
-  },
-  {
-    n: '02',
-    t: 'Planificamos',
-    d: 'Ingeniería de la solución: plano de implantación, cómputo de materiales y dimensionamiento de red y almacenamiento.',
-  },
-  {
-    n: '03',
-    t: 'Cotizamos',
-    d: 'Propuesta detallada por ítem, con alternativas de equipamiento, plazos de ejecución y condiciones.',
-  },
-  {
-    n: '04',
-    t: 'Instalamos',
-    d: 'Ejecución con personal propio, canalización normalizada, puesta en marcha y verificación punto por punto.',
-  },
-  {
-    n: '05',
-    t: 'Capacitamos',
-    d: 'Formación del personal que va a operar el sistema, con documentación de entrega y claves de administración.',
-  },
-  {
-    n: '06',
-    t: 'Acompañamos',
-    d: 'Servicio posventa permanente: mantenimiento preventivo, actualizaciones de firmware y repuestos del mismo stock.',
-  },
-]
-
-export default function TileProyectos({ className = '' }) {
-  return (
-    <GlassPanel className={`flex flex-col p-6 sm:p-8 ${className}`}>
-      <div className="grid gap-6 lg:grid-cols-12 lg:gap-10">
-        <header className="lg:col-span-5">
-          <p className="rv-eyebrow mb-2">Departamento de proyectos</p>
-          <h2 className="text-onglass font-display text-2xl font-bold sm:text-3xl">
-            De la necesidad a la puesta en marcha,{' '}
-            <span className="text-rv-red">con un único responsable</span>
-          </h2>
-          <p className="rv-muted mt-4 text-sm leading-relaxed">
-            Cuando el requerimiento excede la provisión de equipamiento, el departamento de proyectos
-            asume el ciclo completo. Consorcios, industria, countries, organismos públicos y
-            operaciones multisitio. El mismo equipo que releva es el que ejecuta y el que responde
-            después de la entrega.
-          </p>
-          <a href={enlaceConsulta('proyecto')} target="_blank" rel="noopener noreferrer" className="rv-btn-primary mt-6">
-            Solicitar relevamiento
-          </a>
-        </header>
-
-        <ol className="grid gap-3 sm:grid-cols-2 lg:col-span-7 lg:grid-cols-3">
-          {ETAPAS.map((etapa) => (
-            <li
-              key={etapa.n}
-              className="group flex flex-col rounded-2xl p-4 transition-colors duration-300 ease-apple"
-              style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-            >
-              <span
-                className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full font-display
-                           text-[11px] font-bold transition-all duration-300 ease-apple
-                           group-hover:bg-rv-red group-hover:text-white"
-                style={{ background: 'var(--glass-bg-thin)', border: '1px solid var(--glass-border)' }}
-              >
-                {etapa.n}
-              </span>
-              <h3 className="text-onglass font-display text-sm font-semibold">{etapa.t}</h3>
-              <p className="rv-muted mt-1.5 text-xs leading-relaxed">{etapa.d}</p>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </GlassPanel>
-  )
-}
-
 /* ============================================================ divisiones */
 /* Cifras verificables contra el propio sitio: no hay numeros inventados. */
 const DIVISIONES = [
@@ -180,8 +93,8 @@ export function TileDivisiones({ className = '' }) {
         ))}
       </div>
       <p className="rv-muted text-xs leading-relaxed">
-        Comercialización como actividad principal, departamento de proyectos y formación técnica. Las
-        tres áreas comparten el mismo stock y el mismo equipo técnico.
+        Comercialización como actividad principal, asesoramiento técnico y formación para
+        instaladores. Las tres áreas comparten el mismo equipo técnico.
       </p>
     </GlassPanel>
   )
@@ -225,9 +138,9 @@ export function TileAsesoramiento({ className = '' }) {
 
 /* ======================================================== capacitaciones */
 const TEMARIO = [
-  'Puesta en marcha de NVR y XVR, y alta de dispositivos en plataformas de gestión',
+  'Configuración inicial de NVR y XVR, y alta de dispositivos en plataformas de gestión',
   'Direccionamiento IP y segmentación de red dedicada para tráfico de video',
-  'Configuración de analítica de video y ajuste de reglas de detección en obra',
+  'Configuración de analítica de video y ajuste de reglas de detección en campo',
   'Buenas prácticas de canalización, rotulado y documentación de entrega',
   'Diagnóstico de fallas frecuentes de campo y uso de instrumental de medición',
   'Novedades de catálogo y diferencias entre líneas de cada fabricante',
@@ -298,7 +211,7 @@ const PILARES = [
     numero: '02',
     titulo: 'Cadena de suministro oficial',
     texto:
-      'Producto ingresado por canal oficial, con garantía de fábrica y trazabilidad de número de serie. La disponibilidad de stock es lo que sostiene los plazos de obra comprometidos.',
+      'Producto ingresado por canal oficial, con garantía de fábrica y trazabilidad de número de serie. La disponibilidad de stock es lo que sostiene los plazos de entrega comprometidos.',
   },
   {
     numero: '03',
