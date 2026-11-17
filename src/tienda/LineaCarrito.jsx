@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { formatoPrecio } from './formato.js'
-import { ImagenProducto } from './piezas.jsx'
+import { ImagenProducto, Precio } from './piezas.jsx'
 import { IconoBasura, IconoMas, IconoMenos } from './Iconos.jsx'
 
 /** Selector de cantidad: botones de 44 px, input a 16 px (sin zoom en iOS). */
@@ -44,7 +43,7 @@ export function Cantidad({ valor, onCambiar, etiqueta = 'Cantidad', min = 1 }) {
 
 export default function LineaCarrito({ linea, onNavegar, compacta = false }) {
   const { cambiarCantidad, quitar } = useTienda()
-  const { producto, cantidad, subtotal } = linea
+  const { producto, cantidad, subtotal, subtotalSinIva } = linea
 
   if (!producto) {
     return (
@@ -70,16 +69,25 @@ export default function LineaCarrito({ linea, onNavegar, compacta = false }) {
         >
           {producto.nombre}
         </Link>
-        <p className="rv-muted mt-0.5 text-xs">
-          {producto.sku && <span className="mr-2">Cód. {producto.sku}</span>}
-          {producto.precio !== null ? `${formatoPrecio(producto.precio)} c/u` : 'Precio a confirmar'}
-        </p>
+        <div className="rv-muted mt-0.5 flex flex-wrap items-baseline gap-x-2 text-xs">
+          {producto.sku && <span>Cód. {producto.sku}</span>}
+          {producto.precio !== null ? (
+            <span className="inline-flex items-baseline gap-1">
+              <Precio valor={producto.precio} sinIva={producto.precioSinIva} tamano="xs" className="[&_.num]:!text-xs [&_.num]:!font-semibold" />
+              <span>c/u</span>
+            </span>
+          ) : (
+            'Precio a confirmar'
+          )}
+        </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <Cantidad valor={cantidad} onCambiar={(n) => cambiarCantidad(producto.id, n)} etiqueta={`Cantidad de ${producto.nombre}`} />
           <div className="flex items-center gap-1">
-            <span className="num font-display text-sm font-bold text-black dark:text-white">
-              {subtotal !== null ? formatoPrecio(subtotal) : 'A confirmar'}
-            </span>
+            {subtotal !== null ? (
+              <Precio valor={subtotal} sinIva={subtotalSinIva} tamano="sm" alinear="fin" />
+            ) : (
+              <span className="font-display text-sm font-bold text-black dark:text-white">A confirmar</span>
+            )}
             <button
               type="button"
               onClick={() => quitar(producto.id)}

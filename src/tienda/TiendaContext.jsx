@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { cargarCatalogo, conPreciosDeCanal, conStockDeSesion, normalizarCatalogo } from './catalogo.js'
 import { useCuenta } from '../cuenta/CuentaContext.jsx'
 import { registrarEvento } from './popularidad.js'
+import { aCentavos } from './formato.js'
 
 /**
  * TiendaContext
@@ -124,26 +125,38 @@ export function TiendaProvider({ children }) {
   )
 
   /* Lineas del carrito resueltas contra el catalogo. Un producto que dejo de
-     publicarse queda marcado como no disponible en vez de desaparecer solo. */
+     publicarse queda marcado como no disponible en vez de desaparecer solo.
+     Importes en centavos enteros: `subtotal` con IVA (lo que se cobra) y
+     `subtotalSinIva` (null si el ERP no mando el sin IVA del producto). */
   const lineas = useMemo(
     () =>
       carrito.map((item) => {
         const producto = catalogo.datos.porId.get(item.id) || null
+        const conPrecio = producto && producto.precio !== null
         return {
           ...item,
           producto,
-          subtotal: producto && producto.precio !== null ? producto.precio * item.cantidad : null,
+          subtotal: conPrecio ? (aCentavos(producto.precio) * item.cantidad) / 100 : null,
+          subtotalSinIva: conPrecio && producto.precioSinIva != null ? (aCentavos(producto.precioSinIva) * item.cantidad) / 100 : null,
         }
       }),
     [carrito, catalogo.datos]
   )
 
+  /* `subtotal` = total con IVA. Desglose (sin IVA e IVA) solo si todos los
+     productos con precio traen el sin IVA del ERP: el IVA es la diferencia de
+     las dos sumas, nunca una alicuota aplicada en el navegador. */
   const resumen = useMemo(() => {
     const unidades = carrito.reduce((s, i) => s + i.cantidad, 0)
     const conPrecio = lineas.filter((l) => l.subtotal !== null)
+    const totalC = conPrecio.reduce((s, l) => s + aCentavos(l.subtotal), 0)
+    const desglose = conPrecio.length > 0 && conPrecio.every((l) => l.subtotalSinIva !== null)
+    const netoC = desglose ? conPrecio.reduce((s, l) => s + aCentavos(l.subtotalSinIva), 0) : null
     return {
       unidades,
-      subtotal: conPrecio.reduce((s, l) => s + l.subtotal, 0),
+      subtotal: totalC / 100,
+      subtotalSinIva: netoC === null ? null : netoC / 100,
+      iva: netoC === null ? null : (totalC - netoC) / 100,
       hayAConfirmar: lineas.some((l) => l.subtotal === null),
     }
   }, [carrito, lineas])

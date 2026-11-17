@@ -96,8 +96,23 @@ textos a usted, traducir la pieza** (`Señal` → `Disponibilidad`/`rv-lectura`,
 ## Tienda (rama `ecommerce`, 12/11/2026)
 Decisiones del usuario: **catálogo desde el ERP en solo lectura**; **carrito a pedido** (sin cobro en
 línea en la fase 1: el pedido llega por correo y se confirma por WhatsApp); **precio público visible**
-(lista **GREMIO** de RV, final con IVA; decisión del 12/11). Mayorista y distribuidor, con inicio de sesión y Mercado Pago, fases
+(lista **GREMIO** de RV; decisión del 12/11). Mayorista y distribuidor, con inicio de sesión y Mercado Pago, fases
 siguientes.
+
+- **Precio visible SIN IVA «+ IVA» (17/11, pedido del usuario: que el número visible sea el más bajo).**
+  En todo lugar con precio (tarjetas, ficha y barra fija, buscador, carrito y drawer con sugeridos,
+  carruseles, favoritos, combos) el número es `precioSinIva` (= `netPrice` del ERP, en `products[]`,
+  `combos[]` y `me/prices`) y al lado, en la misma línea, la lectura OSD «+ IVA» (`.rv-iva`). **Un solo
+  componente: `Precio` de `piezas.jsx`** (`producto` o `valor`+`sinIva`; tamaños xs/sm/md/lg; centavos
+  chicos arriba). **Lo cobrado es con IVA** (`price`): `api/pedido.js` vuelve a leer el ERP y cobra con
+  IVA (el correo suma una línea informativa sin IVA); el JSON-LD y la meta de la ficha publican el precio
+  con IVA. **El front nunca calcula IVA** (alícuotas de 10,5 % y 21 %): ni divide por 1,21 ni aplica
+  alícuotas. Carrito: cada línea sin IVA «+ IVA» y `ResumenIva` con subtotal sin IVA, IVA (= suma con
+  IVA − suma sin IVA, en centavos) y **Total con IVA**. Filtro y orden por precio usan el mismo número
+  que se ve (`precioVisible` de `formato.js`). WhatsApp: «$ X + IVA». **Respaldo honesto:** si falta
+  `netPrice` (ERP viejo, caché) el producto muestra su precio con IVA y la lectura «IVA incluido», y el
+  resumen del carrito solo el total con IVA. `demo.js` simula `netPrice` (21 % y 10,5 %; la caja estanca
+  `demo-18` sin él, para probar el respaldo).
 
 - Rutas (`react-router-dom` 6, `BrowserRouter`; `vercel.json` reescribe todo lo que no es `api/` ni
   archivo a `index.html`): `/` tienda + resumen institucional · `/productos` y `/productos/:categoria`
@@ -246,7 +261,8 @@ habilitado».
   aprueba en el ERP; Mi cuenta lo avisa. `username` puede ser null (entra con el correo).
 - **Precios del canal (14/11)**: con sesión Mayorista o Distribuidor, `CuentaContext` lee `GET me/prices`
   y `TiendaContext` los superpone por `id` al catálogo (`conPreciosDeCanal` en `catalogo.js`): tarjetas,
-  ficha, buscador, filtros, carrito y WhatsApp usan ese precio; sin precio en su lista, «Consultar
+  ficha, buscador, filtros, carrito y WhatsApp usan ese precio (con su `netPrice`; si su lista no lo
+  trae, con IVA incluido, nunca el sin IVA de Gremio); sin precio en su lista, «Consultar
   precio»; junto al precio, «Precio Mayorista». Gremio no superpone (el público ya es Gremio). El JSON-LD
   no publica el precio del canal. `api/pedido.js` recibe el token en `Authorization` y lee del ERP
   `me` y `me/prices` (`CUENTAS_URL`, por defecto el de producción): el correo a ventas lleva el mismo

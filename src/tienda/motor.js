@@ -1,4 +1,4 @@
-import { normalizarTexto } from './formato.js'
+import { normalizarTexto, precioVisible } from './formato.js'
 import { etiquetaMp } from './specs.js'
 
 /**
@@ -231,10 +231,13 @@ function pasaFacetas(p, facetas, excepto) {
   return true
 }
 
+/* Filtro y orden por precio con el mismo numero que se ve: el sin IVA del ERP
+   y, si falta, el final con IVA (precioVisible) */
 function pasaPrecio(p, min, max) {
   if (min === null && max === null) return true
-  if (p.precio === null) return false
-  return (min === null || p.precio >= min) && (max === null || p.precio <= max)
+  const v = precioVisible(p)
+  if (v === null) return false
+  return (min === null || v >= min) && (max === null || v <= max)
 }
 
 const pasaStock = (p, stock) => !stock || p.disponibilidad === 'disponible' || p.disponibilidad === 'ultimas'
@@ -268,23 +271,24 @@ export function calcularFacetas(productos, sel, ctx) {
   })
 }
 
-/** Rango de precios disponible y un histograma de 24 barras. */
+/** Rango de precios disponible y un histograma de 24 barras. `sinIva`: todos
+    los precios del rango son sin IVA (el titulo del filtro lo dice). */
 export function rangoPrecios(productos, sel) {
-  const precios = productos
-    .filter((p) => p.precio !== null && pasaFacetas(p, sel.facetas, null) && pasaStock(p, sel.stock))
-    .map((p) => p.precio)
+  const conPrecio = productos.filter((p) => precioVisible(p) !== null && pasaFacetas(p, sel.facetas, null) && pasaStock(p, sel.stock))
+  const precios = conPrecio.map(precioVisible)
   if (!precios.length) return null
+  const sinIva = conPrecio.every((p) => p.precioSinIva !== null && p.precioSinIva !== undefined)
   const min = Math.floor(Math.min(...precios))
   const max = Math.ceil(Math.max(...precios))
   const barras = 24
   const ancho = Math.max(1, (max - min) / barras)
   const histograma = Array(barras).fill(0)
   precios.forEach((v) => histograma[Math.min(barras - 1, Math.floor((v - min) / ancho))]++)
-  return { min, max, histograma, ancho }
+  return { min, max, histograma, ancho, sinIva }
 }
 
 /** Chips de filtros activos, para mostrarlos y quitarlos de a uno. */
-export function chipsActivos(sel, facetas, formatoPrecio) {
+export function chipsActivos(sel, facetas, formatoPrecio, sinIva = false) {
   const chips = []
   for (const f of facetas) {
     for (const o of f.opciones) if (o.activa) chips.push({ clave: `${f.id}:${o.valor}`, param: f.param, valor: o.valor, texto: `${f.titulo}: ${o.etiqueta}` })
@@ -292,7 +296,7 @@ export function chipsActivos(sel, facetas, formatoPrecio) {
   if (sel.precioMin !== null || sel.precioMax !== null) {
     const desde = sel.precioMin !== null ? formatoPrecio(sel.precioMin) : 'mínimo'
     const hasta = sel.precioMax !== null ? formatoPrecio(sel.precioMax) : 'máximo'
-    chips.push({ clave: 'precio', param: 'precio', valor: null, texto: `Precio: ${desde} a ${hasta}` })
+    chips.push({ clave: 'precio', param: 'precio', valor: null, texto: `Precio${sinIva ? ' sin IVA' : ''}: ${desde} a ${hasta}` })
   }
   if (sel.stock) chips.push({ clave: 'stock', param: 'stock', valor: null, texto: 'Con stock para entrega' })
   return chips
@@ -311,7 +315,11 @@ const PESO_DISP = { disponible: 0, ultimas: 1, a_pedido: 2, sin_stock: 3 }
 
 export function ordenarLista(items, orden) {
   const lista = [...items]
-  const conPrecio = (a, b, f) => (a.precio === null) - (b.precio === null) || (a.precio !== null && b.precio !== null ? f(a.precio, b.precio) : 0)
+  const conPrecio = (a, b, f) => {
+    const x = precioVisible(a)
+    const y = precioVisible(b)
+    return (x === null) - (y === null) || (x !== null && y !== null ? f(x, y) : 0)
+  }
   switch (orden) {
     case 'precio-asc':
       return lista.sort((a, b) => conPrecio(a, b, (x, y) => x - y))

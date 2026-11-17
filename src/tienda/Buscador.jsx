@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
 import { buscarRanking } from './motor.js'
 import { registrarEvento } from './popularidad.js'
-import { formatoPrecio } from './formato.js'
 import { IconoBuscar } from './Iconos.jsx'
-import { ImagenProducto } from './piezas.jsx'
+import { ImagenProducto, Precio } from './piezas.jsx'
 
 /**
  * Buscador con sugerencias instantaneas.
@@ -173,8 +172,12 @@ export default function Buscador({ className = '', grande = false, atajo = false
                       {[p.marca?.nombre, p.categoria?.nombre].filter(Boolean).join(' · ')}
                     </span>
                   </span>
-                  <span className="num shrink-0 font-display text-sm font-bold text-black dark:text-white">
-                    {formatoPrecio(p.precio) || 'Consultar'}
+                  <span className="shrink-0">
+                    {p.precio !== null ? (
+                      <Precio producto={p} tamano="xs" alinear="fin" />
+                    ) : (
+                      <span className="font-display text-sm font-bold text-black dark:text-white">Consultar</span>
+                    )}
                   </span>
                 </button>
               ))}

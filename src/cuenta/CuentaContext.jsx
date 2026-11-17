@@ -13,7 +13,8 @@ import { mapaDePrecios, stockDeSesion } from '../tienda/catalogo.js'
  * sesion.js para el manejo de los tokens.
  *
  * `canal`: precios de la lista del cliente cuando no es Gremio (el catalogo
- * publico ya es Gremio). { tier, etiqueta, precios: Map(id -> numero) } o
+ * publico ya es Gremio). { tier, etiqueta, precios: Map(id -> { precio,
+ * precioSinIva }) } o
  * null. Los superpone TiendaContext sobre el catalogo.
  *
  * `stock`: cuantas hay de cada producto (GET me/stock), solo con sesion y

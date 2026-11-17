@@ -123,7 +123,7 @@ function FiltroPrecio({ rango, min, max, onAplicar }) {
   const paso = Math.max(1, Math.round((rango.max - rango.min) / 200))
 
   return (
-    <Grupo titulo="Precio" activas={min !== null || max !== null ? 1 : 0}>
+    <Grupo titulo={rango.sinIva ? 'Precio sin IVA' : 'Precio'} activas={min !== null || max !== null ? 1 : 0}>
       <div className="px-1">
         <div className="flex h-12 items-end gap-[2px]" aria-hidden="true">
           {rango.histograma.map((n, i) => {
@@ -325,7 +325,7 @@ export default function Catalogo() {
   const facetas = useMemo(() => calcularFacetas(base, sel, ctx), [base, sel, ctx])
   const rango = useMemo(() => rangoPrecios(base, sel), [base, sel])
   const resultado = useMemo(() => ordenarLista(filtrar(base, sel), q && orden === 'relevancia' ? 'relevancia' : orden), [base, sel, orden, q])
-  const chips = useMemo(() => chipsActivos(sel, facetas, formatoPrecio), [sel, facetas])
+  const chips = useMemo(() => chipsActivos(sel, facetas, formatoPrecio, Boolean(rango?.sinIva)), [sel, facetas, rango])
   const marcaUnica = useMemo(() => {
     const elegidas = sel.facetas.marca
     if (!elegidas || elegidas.size !== 1) return null

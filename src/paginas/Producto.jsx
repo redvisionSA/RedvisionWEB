@@ -97,7 +97,7 @@ function ComponentesCombo({ combo, porId }) {
   return (
     <div className="rv-solido p-5 sm:p-7">
       <h2 className="rv-eyebrow mb-1">Qué incluye este combo</h2>
-      <p className="mb-3 text-xs text-black/60 dark:text-white/60">El precio corresponde a todos estos productos juntos, con IVA. Cada uno tiene su ficha.</p>
+      <p className="mb-3 text-xs text-black/60 dark:text-white/60">El precio corresponde a todos estos productos juntos. Cada uno tiene su ficha.</p>
       <ul className="divide-y divide-black/[0.07] text-sm dark:divide-white/10">
         {combo.componentes.map((c) => {
           const producto = porId.get(c.id)
@@ -257,11 +257,14 @@ export default function Producto() {
             {producto.marca?.identidad?.oficial && <PreHeader variante="solido" compacto className="mt-4 w-max" />}
 
             <div className="mt-5 border-t rv-hairline pt-5">
-              <Precio valor={producto.precio} canal={producto.canal} grande />
-              <p className="rv-muted mt-1 text-xs">
-                {producto.precio !== null
-                  ? 'Precio final con IVA incluido. Envío no incluido: se cotiza al confirmar el pedido.'
-                  : 'Precio según cantidad y proyecto. Un asesor lo cotiza en el día.'}
+              <Precio producto={producto} grande />
+              {/* El final con IVA (lo que se paga) también lo manda el ERP: se informa, no se calcula */}
+              <p className="rv-muted mt-1.5 text-xs">
+                {producto.precio === null
+                  ? 'Precio según cantidad y proyecto. Un asesor lo cotiza en el día.'
+                  : producto.precioSinIva !== null
+                    ? <>Precio sin IVA. Final con IVA: <span className="num font-semibold text-black dark:text-white">{formatoPrecio(producto.precio)}</span>. Envío no incluido: se cotiza al confirmar el pedido.</>
+                    : 'Precio final con IVA incluido. Envío no incluido: se cotiza al confirmar el pedido.'}
               </p>
               {/* Con sesion la cantidad ya esta a la vista: «Última en stock», «2 en stock» */}
               {producto.disponibilidad === 'ultimas' && !producto.stock && (
@@ -333,7 +336,7 @@ export default function Producto() {
       {/* Barra fija de compra en telefono: la accion siempre al alcance del pulgar */}
       <div className="rv-panel-solido pb-safe fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t rv-hairline px-4 pt-3 sm:hidden">
         <div className="min-w-0 shrink-0">
-          <Precio valor={producto.precio} canal={producto.canal} className="!text-base" />
+          <Precio producto={producto} tamano="sm" />
         </div>
         <div className="flex flex-1 gap-2">
           {comprable ? (

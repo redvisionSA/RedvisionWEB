@@ -1,33 +1,109 @@
 import { Link } from 'react-router-dom'
 import { DISPONIBILIDAD } from './catalogo.js'
 import { medidaLogo } from './marcas.js'
-import { formatoPrecio } from './formato.js'
+import { formatoPrecio, partesPrecio } from './formato.js'
 import { lineaPorId } from './lineas.js'
 import { useTienda } from './TiendaContext.jsx'
 import { IconoCorazon } from './Iconos.jsx'
 import { useCuenta } from '../cuenta/CuentaContext.jsx'
 
 /* ------------------------------------------------------------- Precio */
-/* `canal`: lista del cliente con sesion («Mayorista», «Distribuidor»); se
-   indica junto al precio para que nunca se confunda con el publico. */
-export function Precio({ valor, canal = null, className = '', grande = false }) {
-  const texto = formatoPrecio(valor)
-  const lista = canal ? (
-    <span className={`block font-display font-semibold uppercase tracking-wide text-black/60 dark:text-white/65 ${grande ? 'mt-1 text-xs' : 'text-[10px]'}`}>Precio {canal}</span>
+/**
+ * Precio visible de la tienda (17/11, pedido del usuario): el número grande es
+ * el SIN IVA que calcula el ERP (`netPrice`) y al lado, en la misma línea, la
+ * lectura OSD «+ IVA», que es parte del precio. Lo que se cobra es el final
+ * con IVA. Si el ERP no mandó el sin IVA (ERP viejo, caché), se muestra el
+ * final con IVA y la lectura dice «IVA incluido». El navegador nunca calcula
+ * IVA: las alícuotas varían (10,5 % y 21 %). Único componente de precio.
+ *
+ *   producto        toma precio, precioSinIva y canal del producto
+ *   valor / sinIva  importes sueltos (subtotal de una línea del carrito)
+ *   canal           lista del cliente con sesión («Mayorista», «Distribuidor»):
+ *                   se indica debajo para que nunca se confunda con el público
+ *   tamano          xs buscador y sugeridos · sm líneas del carrito y barra fija
+ *                   · md tarjetas · lg ficha (`grande` = lg)
+ *   alinear         'fin' en columnas alineadas a la derecha
+ */
+const CIFRA = {
+  xs: 'text-sm',
+  sm: 'text-base',
+  md: 'text-base min-[400px]:text-lg',
+  lg: 'text-3xl sm:text-4xl',
+}
+
+export function Precio({ producto, valor, sinIva = null, canal = null, className = '', tamano = 'md', grande = false, alinear = 'inicio' }) {
+  const conIva = producto ? producto.precio : valor
+  const neto = producto ? producto.precioSinIva : sinIva
+  const lista = producto ? producto.canal : canal
+  const t = grande ? 'lg' : CIFRA[tamano] ? tamano : 'md'
+  const fin = alinear === 'fin'
+  const visible = partesPrecio(neto ?? conIva)
+  const etiquetaLista = lista ? (
+    <span className={`block font-display font-semibold uppercase tracking-wide text-black/60 dark:text-white/65 ${t === 'lg' ? 'mt-1 text-xs' : 'text-[10px]'}`}>Precio {lista}</span>
   ) : null
-  if (!texto) {
+  if (!visible || conIva === null || conIva === undefined) {
     return (
-      <span className={`inline-block font-display font-semibold text-black/80 dark:text-white/85 ${grande ? 'text-xl' : 'text-sm'} ${className}`}>
+      <span className={`inline-block font-display font-semibold text-black/80 dark:text-white/85 ${t === 'lg' ? 'text-xl' : 'text-sm'} ${className}`}>
         Consultar precio
-        {lista}
+        {etiquetaLista}
       </span>
     )
   }
+  const masIva = neto !== null && neto !== undefined
   return (
-    <span className={`inline-block ${className}`}>
-      <span className={`num font-display font-bold tracking-tight text-black dark:text-white ${grande ? 'text-3xl sm:text-4xl' : 'text-lg'}`}>{texto}</span>
-      {lista}
+    <span className={`inline-block ${fin ? 'text-right' : ''} ${className}`}>
+      <span className={`rv-precio ${fin ? 'justify-end' : ''}`}>
+        <span className={`num font-display font-bold tracking-tight text-black dark:text-white ${CIFRA[t]}`}>
+          <span aria-hidden="true">
+            {visible.entero}
+            {visible.centavos && <span className="rv-precio__centavos">{visible.centavos}</span>}
+          </span>
+          <span className="sr-only">{visible.texto}</span>
+        </span>
+        {masIva ? (
+          <span className={`rv-iva rv-iva--${t}`}>
+            <span aria-hidden="true">+ IVA</span>
+            <span className="sr-only">más IVA</span>
+          </span>
+        ) : (
+          <span className={`rv-iva rv-iva--${t} rv-iva--incluido`}>IVA incluido</span>
+        )}
+      </span>
+      {etiquetaLista}
     </span>
+  )
+}
+
+/**
+ * Resumen de importes del carrito (17/11): subtotal sin IVA, IVA y **total con
+ * IVA** (lo que se paga). Son sumas de los valores del ERP; el IVA es la
+ * diferencia entre los dos totales, nunca una alícuota aplicada acá. Si algún
+ * producto no trae el sin IVA, solo el total con IVA. `filas`: renglones extra
+ * antes del total (envío). `etiquetaTotal` y `grande` para el checkout.
+ */
+export function ResumenIva({ resumen, filas = null, etiquetaTotal = 'Total con IVA', grande = false, productos = null }) {
+  const desglose = resumen.subtotalSinIva !== null
+  const fila = (dt, dd, clave) => (
+    <div key={clave} className="flex items-baseline justify-between gap-3">
+      <dt className="rv-muted">{dt}</dt>
+      <dd className="num font-semibold text-black dark:text-white">{dd}</dd>
+    </div>
+  )
+  return (
+    <div>
+      {(desglose || filas || productos) && (
+        <dl className="mb-3 space-y-1.5 text-sm">
+          {desglose && fila(productos ? `Subtotal sin IVA (${productos})` : 'Subtotal sin IVA', formatoPrecio(resumen.subtotalSinIva) || '$ 0', 'neto')}
+          {desglose && fila('IVA', formatoPrecio(resumen.iva) || '$ 0', 'iva')}
+          {!desglose && productos && fila(`Productos (${productos})`, formatoPrecio(resumen.subtotal) || '$ 0', 'productos')}
+          {filas}
+        </dl>
+      )}
+      <div className={`flex items-baseline justify-between gap-3 ${desglose || filas || productos ? 'border-t rv-hairline pt-3' : ''}`}>
+        <span className="min-w-0 font-semibold text-black dark:text-white">{etiquetaTotal}</span>
+        <span className={`num shrink-0 font-display font-bold text-black dark:text-white ${grande ? 'text-2xl min-[400px]:text-3xl' : 'text-2xl'}`}>{formatoPrecio(resumen.subtotal) || '$ 0'}</span>
+      </div>
+    </div>
   )
 }
 

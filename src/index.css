@@ -845,6 +845,60 @@
   .rv-lectura--apagado {
     @apply border-rv-red bg-rv-red text-white;
   }
+  /* --- Precio con la lectura «+ IVA» (17/11) -----------------------------
+     El número es el sin IVA que manda el ERP y al lado, en la misma línea, la
+     lectura OSD dice que se suma el IVA: tinta plena, mono en mayúsculas,
+     rectángulo de 2 px como la disponibilidad. Es parte del precio, no una
+     nota gris al pie. Sin el sin IVA del ERP: «IVA incluido», atenuada. */
+  .rv-precio {
+    @apply inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5;
+  }
+  .rv-precio__centavos {
+    font-size: 0.58em;
+    vertical-align: 0.62em;
+    margin-left: 0.08em;
+    letter-spacing: 0;
+  }
+  .rv-iva {
+    @apply inline-flex shrink-0 items-center whitespace-nowrap font-osd font-medium uppercase leading-none;
+    letter-spacing: 0.04em;
+    padding: 0.22em 0.36em 0.18em;
+    border: 1.5px solid var(--osd-ink);
+    border-radius: 2px;
+    color: var(--osd-ink);
+    font-size: 11px;
+  }
+  .rv-iva--xs,
+  .rv-iva--sm {
+    font-size: 10px;
+  }
+  /* Tarjetas a dos columnas en teléfono: la lectura se achica para entrar en
+     la línea del precio; en 320 px igual pasa abajo, pegada al número */
+  @media (max-width: 399px) {
+    .rv-iva--md {
+      font-size: 10px;
+    }
+  }
+  @media (min-width: 640px) {
+    .rv-iva--md {
+      font-size: 12px;
+    }
+  }
+  .rv-iva--lg {
+    font-size: 15px;
+    border-width: 2px;
+  }
+  @media (min-width: 640px) {
+    .rv-iva--lg {
+      font-size: 17px;
+    }
+  }
+  .rv-iva--incluido {
+    border-width: 1px;
+    border-color: var(--osd-line);
+    color: var(--osd-dim);
+  }
+
   /* Punto REC: parpadea tres veces y queda fijo */
   .rv-rec {
     @apply inline-block h-2 w-2 shrink-0 animate-rv-rec rounded-full;

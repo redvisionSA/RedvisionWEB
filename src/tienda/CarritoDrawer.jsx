@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTienda } from './TiendaContext.jsx'
-import { formatoPrecio } from './formato.js'
 import { COMPLEMENTOS } from './lineas.js'
 import LineaCarrito from './LineaCarrito.jsx'
-import { ImagenProducto, sePuedeComprar } from './piezas.jsx'
+import { ImagenProducto, Precio, ResumenIva, sePuedeComprar } from './piezas.jsx'
 import { IconoCarrito, IconoCerrar, IconoMas } from './Iconos.jsx'
 
 /**
@@ -106,7 +105,7 @@ export default function CarritoDrawer() {
                         <ImagenProducto producto={p} tamano="xs" className="h-12 w-12 shrink-0 rounded-xl" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-semibold text-black dark:text-white">{p.nombre}</p>
-                          <p className="num text-xs font-bold text-black/75 dark:text-white/80">{formatoPrecio(p.precio)}</p>
+                          <Precio producto={p} tamano="xs" />
                         </div>
                         <button
                           type="button"
@@ -127,12 +126,10 @@ export default function CarritoDrawer() {
 
         {lineas.length > 0 && (
           <footer className="pb-safe border-t rv-hairline px-5 pt-4">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-semibold text-black dark:text-white">Subtotal</span>
-              <span className="num font-display text-2xl font-bold text-black dark:text-white">{formatoPrecio(resumen.subtotal) || '$ 0'}</span>
-            </div>
+            <ResumenIva resumen={resumen} />
             <p className="rv-muted mb-3 mt-1 text-xs">
-              IVA incluido. {resumen.hayAConfirmar ? 'Hay productos con precio a confirmar. ' : ''}El envío se cotiza al confirmar.
+              {resumen.subtotalSinIva === null ? 'IVA incluido. ' : ''}
+              {resumen.hayAConfirmar ? 'Hay productos con precio a confirmar. ' : ''}El envío se cotiza al confirmar.
             </p>
             <Link to="/carrito" className="rv-btn-primary w-full">
               Finalizar pedido

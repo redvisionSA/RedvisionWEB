@@ -43,6 +43,16 @@ function aNumero(valor) {
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
+/**
+ * Precio sin IVA que manda el ERP (`netPrice`, 17/11). Solo vale junto a su
+ * precio con IVA y nunca por encima de el; si falta (ERP viejo, cache) es
+ * null y la tienda muestra el final con IVA. Nunca se calcula aca.
+ */
+function sinIva(neto, precio) {
+  const n = aNumero(neto)
+  return n !== null && precio !== null && n <= precio ? n : null
+}
+
 export function normalizarCatalogo(crudo, { demo = false } = {}) {
   const categorias = new Map((crudo.categories || []).map((c) => [c.slug, c]))
   const marcas = new Map((crudo.brands || []).map((m) => [m.slug, m]))
@@ -84,6 +94,7 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         linea: lineaDe(textoCategoria, p.name),
         imagen: p.imageUrl || null,
         precio: aNumero(p.price),
+        precioSinIva: sinIva(p.netPrice, aNumero(p.price)),
         disponibilidad,
         destacado: Boolean(p.featured),
         specs: extraerSpecs(p),
@@ -125,6 +136,7 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         imagen: c.imageUrl || primero?.imagen || null,
         imagenes: Array.isArray(c.images) ? c.images : [],
         precio: aNumero(c.price),
+        precioSinIva: sinIva(c.netPrice, aNumero(c.price)),
         disponibilidad,
         destacado: false,
         specs: extraerSpecs({ name: c.name, description: c.description || '' }),
@@ -174,21 +186,35 @@ function conProductos(datos, productos) {
 
 /**
  * Precios de la lista del cliente con sesion, superpuestos por id al catalogo
- * publico (lista Gremio). `canal` = { etiqueta, precios: Map(id -> numero) }
- * o null. Un producto sin precio en su lista queda en «Consultar precio»:
- * nunca se le muestra el precio Gremio como si fuera el suyo.
+ * publico (lista Gremio). `canal` = { etiqueta, precios: Map(id -> { precio,
+ * precioSinIva }) } o null. Un producto sin precio en su lista queda en
+ * «Consultar precio»: nunca se le muestra el precio Gremio como si fuera el
+ * suyo (tampoco el sin IVA de Gremio: si su lista no lo trae, va con IVA).
  */
 export function conPreciosDeCanal(datos, canal) {
   if (!canal) return datos
   return conProductos(
     datos,
-    datos.productos.map((p) => ({ ...p, precio: canal.precios.get(p.id) ?? null, canal: canal.etiqueta }))
+    datos.productos.map((p) => {
+      const lista = canal.precios.get(p.id) || null
+      return { ...p, precio: lista?.precio ?? null, precioSinIva: lista?.precioSinIva ?? null, canal: canal.etiqueta }
+    })
   )
 }
 
-/** Precios del ERP (`[{ id, price }]`, string decimal) a Map(id -> numero). */
+/**
+ * Precios del ERP (`[{ id, price, netPrice }]`, strings decimales) a
+ * Map(id -> { precio, precioSinIva }). Sin `netPrice`, precioSinIva = null.
+ */
 export function mapaDePrecios(lista) {
-  return new Map((lista || []).map((x) => [String(x.id), aNumero(x.price)]).filter(([, precio]) => precio !== null))
+  return new Map(
+    (lista || [])
+      .map((x) => {
+        const precio = aNumero(x.price)
+        return [String(x.id), { precio, precioSinIva: sinIva(x.netPrice, precio) }]
+      })
+      .filter(([, v]) => v.precio !== null)
+  )
 }
 
 /* Hasta cuantas unidades el tramo es «ultimas» (STOREFRONT_LOW_STOCK del ERP) */

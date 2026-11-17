@@ -160,7 +160,7 @@ export default function Hero3D({ onRobotListo }) {
             <p className="rv-muted text-onglass mt-5 max-w-xl text-base leading-relaxed sm:text-lg">
               Videovigilancia, control de accesos, alarmas, redes y energía de las principales marcas,
               con <strong className="font-semibold">Dahua Technology</strong> como plataforma de referencia.
-              Precio final con IVA, envío a todo el país y asesoramiento técnico antes de comprar.
+              Precios sin IVA a la vista, envío a todo el país y asesoramiento técnico antes de comprar.
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center">

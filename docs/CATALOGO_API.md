@@ -38,6 +38,7 @@ CORS: `Access-Control-Allow-Origin` para `https://redvision.com.ar` y `https://w
       "category": "camaras-ip",
       "imageUrl": "https://… (URL pública directa, o null)",
       "price": "98500.00",
+      "netPrice": "81404.96",
       "availability": "disponible",
       "featured": false,
       "specs": {
@@ -68,6 +69,7 @@ CORS: `Access-Control-Allow-Origin` para `https://redvision.com.ar` y `https://w
 | `brand`, `category` | slug | Deben existir en `brands` / `categories`. |
 | `imageUrl` | string \| null | Sin foto = `null` (la web dibuja un ícono de la línea). |
 | `price` | string decimal \| null | **Lista GREMIO de REDVISION, en pesos, final con IVA** (decisión del 12/11: el precio público de la web es Gremio), convertida con la cotización del día que usa el ERP (BNA billete vendedor). `null` = "Consultar precio". Nunca `0`. |
+| `netPrice` | string decimal \| null | **El mismo precio sin IVA** (17/11), calculado por el ERP con la alícuota de cada producto (10,5 % o 21 %). **Es el número que muestra la tienda**, con la lectura «+ IVA» al lado; lo que se cobra sigue siendo `price`. Si falta (ERP viejo, caché), la tienda muestra `price` con «IVA incluido». **El navegador nunca calcula IVA.** |
 | `availability` | enum | `disponible` · `ultimas` (pocas unidades; umbral lo define el ERP) · `a_pedido` · `sin_stock`. **No se publica la cantidad exacta.** |
 | `featured` | bool | Opcional. Destacados del inicio. |
 | `specs` | object | **Opcional**, alimenta los filtros de la tienda. Cada clave puede faltar o ser `null`. Ver abajo. |
@@ -128,11 +130,13 @@ prendidas en el ERP, llega `[]`. Un consumidor viejo que no lo conoce lo ignora.
 | `category` | slug | Categoría del ERP elegida al aprobar; está en `categories`. |
 | `imageUrl`, `images` | string \| null, string[] | Fotos de la publicación de MercadoLibre (https). Sin foto, la tienda usa la del primer producto. |
 | `price` | string decimal \| null | **Suma de sus productos** a la lista GREMIO de RV con IVA, redondeada **una sola vez** a centavos. **Nunca el precio de MercadoLibre** (trae la comisión). `null` = «Consultar precio». |
+| `netPrice` | string decimal \| null | El mismo precio sin IVA, calculado por el ERP. Igual que en `products`. |
 | `availability` | enum | La del producto más escaso (cuántos combos enteros se pueden armar), con los mismos tramos. |
 | `components` | `[{ id, slug, sku, name, qty }]` | Qué trae: cada producto está en `products` (con su ficha) y cuántas unidades. |
 
 Si a un producto del combo le falta el precio Gremio o está deshabilitado, **el combo no viene**.
-Con sesión, `me/prices` y `me/stock` traen también los combos (mismo `id`), con la lista del
+Con sesión, `me/prices` trae cada ítem como `{ id, price, netPrice }` (con IVA y sin IVA de la lista del
+cliente, los dos del ERP). `me/prices` y `me/stock` traen también los combos (mismo `id`), con la lista del
 canal y las unidades topeadas. La tienda los trata como un producto más (`src/tienda/catalogo.js`):
 carrito, favoritos, búsqueda y categoría; la ficha lista lo que trae.
 

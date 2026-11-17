@@ -127,7 +127,7 @@ async function leerCuenta(cuentasUrl, autorizacion) {
   if (!token) return null
   try {
     const [cuenta, lista] = await Promise.all([leerJson(`${cuentasUrl}/me`, token), leerJson(`${cuentasUrl}/me/prices`, token)])
-    const precios = lista.priceTier && lista.priceTier !== 'GREMIO' ? new Map((lista.prices || []).map((x) => [String(x.id), x.price])) : null
+    const precios = lista.priceTier && lista.priceTier !== 'GREMIO' ? new Map((lista.prices || []).map((x) => [String(x.id), x])) : null
     return { cuenta, tier: lista.priceTier, link: lista.link, precios }
   } catch (error) {
     console.error('[api/pedido] No se pudo confirmar la cuenta del cliente; se usan los precios públicos:', error.message)
@@ -213,7 +213,10 @@ export default async function handler(req, res) {
   const precios = sesion?.precios || null
   const lineas = limpios.map((i) => {
     const p = catalogo?.get(i.id)
-    const unitario = precios ? aCentavos(precios.get(i.id)) : p ? aCentavos(p.price) : null
+    const fuente = precios ? precios.get(i.id) : p
+    const unitario = fuente ? aCentavos(fuente.price) : null
+    /* Sin IVA del ERP (`netPrice`), solo informativo para ventas: se cobra con IVA */
+    const neto = unitario !== null ? aCentavos(fuente.netPrice) : null
     return {
       cantidad: i.cantidad,
       nombre: p?.name || `Producto ${i.id}`,
@@ -225,10 +228,15 @@ export default async function handler(req, res) {
       publicado: catalogo ? Boolean(p) : null,
       unitario,
       subtotal: unitario !== null ? unitario * i.cantidad : null,
+      subtotalNeto: neto !== null && neto <= unitario ? neto * i.cantidad : null,
     }
   })
   const todosConPrecio = lineas.every((l) => l.subtotal !== null)
   const totalCentavos = lineas.reduce((s, l) => s + (l.subtotal || 0), 0)
+  /* Linea sin IVA del correo: solo si todos los productos con precio la traen */
+  const conPrecio = lineas.filter((l) => l.subtotal !== null)
+  const netoCentavos = conPrecio.length && conPrecio.every((l) => l.subtotalNeto !== null) ? conPrecio.reduce((s, l) => s + l.subtotalNeto, 0) : null
+  const lineaSinIva = netoCentavos !== null ? `Subtotal sin IVA: ${formatoCentavos(netoCentavos)} · IVA: ${formatoCentavos(totalCentavos - netoCentavos)}` : null
 
   const numero = numeroPedido()
   const asunto = `Pedido web ${numero} — ${cliente.nombre}`
@@ -280,10 +288,11 @@ export default async function handler(req, res) {
     <p style="margin:0 0 16px;color:#666;font-size:13px;">Pedido sin cobro: confirmar stock, precio y envío con el cliente.${precios ? ` <b>Precios de la lista ${escaparHtml(LISTAS[sesion.tier] || sesion.tier)} del cliente.</b>` : ''}${catalogo ? '' : ' <b style="color:#D61922;">El catálogo no respondió: todos los precios quedan a confirmar.</b>'}</p>
     <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
       <thead><tr style="text-align:left;color:#666;font-size:12px;text-transform:uppercase;">
-        <th style="padding:8px;">Cant.</th><th style="padding:8px;">Producto</th><th style="padding:8px;text-align:right;">Unitario</th><th style="padding:8px;text-align:right;">Subtotal</th>
+        <th style="padding:8px;">Cant.</th><th style="padding:8px;">Producto</th><th style="padding:8px;text-align:right;">Unitario con IVA</th><th style="padding:8px;text-align:right;">Subtotal con IVA</th>
       </tr></thead>
       <tbody>${filasProductos}</tbody>
     </table>
+    ${lineaSinIva ? `<p style="font-size:13px;color:#666;text-align:right;margin:0 0 4px;">${escaparHtml(lineaSinIva)}</p>` : ''}
     <p style="font-size:16px;text-align:right;margin:0 0 20px;"><b>Total ${todosConPrecio ? '' : 'parcial '}con IVA: ${formatoCentavos(totalCentavos)}</b></p>
     <table style="width:100%;border-collapse:collapse;">
       ${datos
@@ -301,6 +310,7 @@ export default async function handler(req, res) {
     ...lineas.map(
       (l) => `${l.cantidad} x ${l.nombre}${l.sku ? ` [${l.sku}]` : ''}${l.componentes ? ` (combo: ${l.componentes})` : ''} — ${l.subtotal !== null ? formatoCentavos(l.subtotal) : 'a confirmar'}`
     ),
+    ...(lineaSinIva ? [lineaSinIva] : []),
     `Total ${todosConPrecio ? '' : 'parcial '}con IVA: ${formatoCentavos(totalCentavos)}`,
     '',
     ...datos.map(([k, v]) => `${k}: ${v}`),

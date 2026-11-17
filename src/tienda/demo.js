@@ -8,7 +8,15 @@
  *
  * Se importa con import() detras de `import.meta.env.DEV`, por lo que Vite
  * lo elimina del build de produccion.
+ *
+ * `netPrice` (precio sin IVA, 17/11) lo calcula el ERP; aca se simula con la
+ * alicuota de cada producto (21 % o 10,5 %) para probar la tienda. `iva: null`
+ * deja un producto sin `netPrice`, como un ERP viejo: la tienda debe mostrarlo
+ * con IVA incluido y el carrito, solo el total con IVA.
  */
+
+/* Solo la demostracion: en la tienda real el navegador nunca calcula IVA */
+const neto = (precio, iva) => (precio === null || iva === null ? undefined : (Math.round((precio / (1 + iva / 100)) * 100) / 100).toFixed(2))
 
 const P = (id, name, brand, category, price, availability, extra = {}) => ({
   id: `demo-${id}`,
@@ -20,6 +28,7 @@ const P = (id, name, brand, category, price, availability, extra = {}) => ({
   category,
   imageUrl: null,
   price: price === null ? null : String(price),
+  netPrice: neto(price, extra.iva === undefined ? 21 : extra.iva),
   availability,
   featured: Boolean(extra.featured),
 })
@@ -61,11 +70,12 @@ export default {
     P(5, 'Cámara Wi-Fi interior motorizada 360°', 'imou', 'camaras-ip', 54900, 'disponible', { featured: true }),
     P(6, 'Grabador NVR 8 canales PoE 4K', 'dahua', 'grabadores', 289000, 'disponible', {
       featured: true,
+      iva: 10.5,
       description: 'Ocho puertos PoE integrados, un disco de hasta 16 TB, búsqueda inteligente por personas.',
     }),
     P(7, 'Grabador XVR 4 canales 1080p Lite', 'dahua', 'grabadores', 78400, 'ultimas'),
-    P(8, 'Disco rígido de vigilancia 2 TB', 'generico', 'discos', 96200, 'disponible'),
-    P(9, 'Disco rígido de vigilancia 4 TB', 'generico', 'discos', 158000, 'a_pedido'),
+    P(8, 'Disco rígido de vigilancia 2 TB', 'generico', 'discos', 96200, 'disponible', { iva: 10.5 }),
+    P(9, 'Disco rígido de vigilancia 4 TB', 'generico', 'discos', 158000, 'a_pedido', { iva: 10.5 }),
     P(10, 'Lector de reconocimiento facial con control de presentismo', 'dahua', 'control-acceso', 465000, 'a_pedido', {
       featured: true,
     }),
@@ -74,11 +84,12 @@ export default {
       featured: true,
     }),
     P(13, 'Sensor infrarrojo pasivo inalámbrico', 'dahua', 'alarmas', 27800, 'sin_stock'),
-    P(14, 'Switch PoE 8 puertos + 2 uplink', 'tp-link', 'switches', 134000, 'disponible', { featured: true }),
+    P(14, 'Switch PoE 8 puertos + 2 uplink', 'tp-link', 'switches', 134000, 'disponible', { featured: true, iva: 10.5 }),
     P(15, 'Bobina de cable UTP Cat6 exterior 305 m', 'generico', 'cableado', 189000, 'disponible'),
     P(16, 'Fuente switching 12 V 10 A', 'generico', 'fuentes', 24600, 'disponible'),
     P(17, 'UPS interactiva 1200 VA', 'generico', 'fuentes', 172000, 'ultimas'),
-    P(18, 'Caja de conexión estanca para cámara', 'dahua', 'soportes', 9800, 'disponible'),
+    /* Sin netPrice a proposito: prueba el respaldo con IVA incluido */
+    P(18, 'Caja de conexión estanca para cámara', 'dahua', 'soportes', 9800, 'disponible', { iva: null }),
     P(19, 'Soporte de pared para domo', 'dahua', 'soportes', 12400, 'disponible'),
     P(20, 'Cámara PTZ 4 MP zoom óptico 25x', 'dahua', 'camaras-ip', null, 'a_pedido', {
       description: 'Precio según proyecto: consulte disponibilidad y condiciones.',
@@ -98,6 +109,7 @@ export default {
       imageUrl: null,
       images: [],
       price: '420000.00',
+      netPrice: '347107.44',
       availability: 'disponible',
       components: [
         { id: 'demo-3', slug: 'demo-3', sku: 'DEMO-0003', name: 'Cámara HDCVI bullet 2 MP con infrarrojo 30 m', qty: 4 },

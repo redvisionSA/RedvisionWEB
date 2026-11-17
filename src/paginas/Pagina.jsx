@@ -4,7 +4,7 @@ const SITIO = 'REDVISION'
 /* El mismo valor que index.html; las paginas de cuenta lo cambian a noindex */
 const ROBOTS_BASE = 'index, follow, max-image-preview:large'
 const DESCRIPCION_BASE =
-  'Tienda de equipamiento de seguridad electrónica: videovigilancia, control de accesos, detección de intrusión, redes y energía. Precios con IVA, envíos a todo el país y asesoramiento técnico.'
+  'Tienda de equipamiento de seguridad electrónica: videovigilancia, control de accesos, detección de intrusión, redes y energía. Precios a la vista, envíos a todo el país y asesoramiento técnico.'
 
 function fijarMeta(nombre, valor, atributo = 'name') {
   let nodo = document.head.querySelector(`meta[${atributo}="${nombre}"]`)

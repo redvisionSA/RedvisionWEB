@@ -17,7 +17,13 @@ export function mensajePedido({ numero, lineas, cliente, lista }) {
   const filas = lineas
     .filter((l) => l.producto)
     .map((l) => {
-      const precio = l.subtotal !== null ? ` — ${formatoPrecio(l.subtotal)}` : ' — precio a confirmar'
+      /* El mismo precio que se ve: sin IVA «+ IVA»; sin el dato del ERP, el final con IVA incluido */
+      const precio =
+        l.subtotal === null
+          ? ' — precio a confirmar'
+          : l.subtotalSinIva !== null && l.subtotalSinIva !== undefined
+            ? ` — ${formatoPrecio(l.subtotalSinIva)} + IVA`
+            : ` — ${formatoPrecio(l.subtotal)} IVA incluido`
       return `• ${l.cantidad} x ${l.producto.nombre}${l.producto.sku ? ` [${l.producto.sku}]` : ''}${precio}`
     })
   return [
