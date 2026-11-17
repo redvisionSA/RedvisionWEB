@@ -3,6 +3,7 @@ import { normalizarTexto, slugify } from './formato.js'
 import { extraerSpecs } from './specs.js'
 import { indexar } from './motor.js'
 import { esGenerica, identidadDe } from './marcas.js'
+import { arbolCategorias, indiceCategorias, rutaDeCategoria } from './categorias.js'
 
 /**
  * catalogo.js
@@ -45,6 +46,7 @@ function aNumero(valor) {
 export function normalizarCatalogo(crudo, { demo = false } = {}) {
   const categorias = new Map((crudo.categories || []).map((c) => [c.slug, c]))
   const marcas = new Map((crudo.brands || []).map((m) => [m.slug, m]))
+  const indice = indiceCategorias(crudo.categories)
 
   /* Nombre completo de la categoria (con su padre) para ubicarla en una linea */
   const rutaCategoria = (slug) => {
@@ -76,7 +78,9 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
         nombre: p.name,
         descripcion: p.description || '',
         marca: marca ? { slug: marca.slug, nombre: marca.name, identidad: identidadDe(marca) } : null,
-        categoria: categoria ? { slug: categoria.slug, nombre: categoria.name } : null,
+        categoria: categoria ? { slug: categoria.slug, nombre: indice.get(categoria.slug)?.nombre || categoria.name } : null,
+        /* Slugs de la raiz a la hoja: navegar una categoria incluye sus descendientes */
+        rutaCategoria: rutaDeCategoria(indice, p.category),
         linea: lineaDe(textoCategoria, p.name),
         imagen: p.imageUrl || null,
         precio: aNumero(p.price),
@@ -101,7 +105,8 @@ export function normalizarCatalogo(crudo, { demo = false } = {}) {
     porSlug: new Map(productos.map((p) => [p.slug, p])),
     marcas: [...marcas.values()].filter((m) => !esGenerica(m)).map((m) => ({ slug: m.slug, nombre: m.name, identidad: identidadDe(m) })),
     nombresMarca: new Map([...marcas.values()].filter((m) => !esGenerica(m)).map((m) => [m.slug, m.name])),
-    nombresCategoria: new Map([...categorias.values()].map((c) => [c.slug, c.name])),
+    nombresCategoria: new Map([...indice.values()].map((c) => [c.slug, c.nombre])),
+    categorias: arbolCategorias(indice, productos),
     motor: indexar(productos),
     actualizado: crudo.updatedAt || null,
     demo,

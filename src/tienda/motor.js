@@ -200,7 +200,7 @@ export const FACETAS = [
   { id: 'uso', param: 'uso', titulo: 'Instalación', valores: (p) => (p.specs.uso ? [p.specs.uso] : []) },
   { id: 'tb', param: 'tb', titulo: 'Capacidad', valores: (p) => (p.specs.tb ? [String(p.specs.tb)] : []), etiqueta: (v) => `${fmt(v)} TB`, orden: 'numerico' },
   { id: 'puertos', param: 'puertos', titulo: 'Puertos', valores: (p) => (p.specs.puertos ? [String(p.specs.puertos)] : []), etiqueta: (v) => `${v} puertos`, orden: 'numerico' },
-  { id: 'cat', param: 'cat', titulo: 'Categoría', valores: (p) => (p.categoria ? [p.categoria.slug] : []), etiqueta: (v, ctx) => ctx.categorias.get(v) || v },
+  /* La categoria no es una faceta: se navega por el arbol (`/productos/:categoria`) */
 ]
 
 export const PARAMS_FACETAS = FACETAS.map((f) => f.param)

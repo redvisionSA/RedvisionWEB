@@ -3,12 +3,14 @@ import { LINEAS_CATALOGO } from '../components/Servicios.jsx'
 /**
  * lineas.js
  * -----------------------------------------------------------------------
- * Las seis lineas de producto del sitio institucional son la puerta de
- * entrada de la tienda: cada una funciona como departamento.
+ * Las seis lineas de producto del sitio institucional. Ya NO son la
+ * navegacion de la tienda: se navega por las categorias del ERP
+ * (`categorias.js`, orden en `src/datos/categorias.js`). Las lineas quedan
+ * como criterio tecnico interno (similares, compatibles, venta cruzada del
+ * carrito, icono de respaldo) y no se muestran como menu.
  *
- * El ERP tiene su propio arbol de categorias (mas fino y cambiante). La web
- * no lo replica: ubica cada categoria del ERP dentro de una de las seis lineas
- * por palabras clave. Lo que no encaja cae en "accesorios", nunca se pierde.
+ * Cada categoria del ERP se ubica en una de las seis lineas por palabras
+ * clave. Lo que no encaja cae en "accesorios", nunca se pierde.
  */
 
 export const LINEAS = LINEAS_CATALOGO

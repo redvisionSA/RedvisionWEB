@@ -82,7 +82,7 @@ línea en la fase 1: el pedido llega por correo y se confirma por WhatsApp); **p
 siguientes.
 
 - Rutas (`react-router-dom` 6, `BrowserRouter`; `vercel.json` reescribe todo lo que no es `api/` ni
-  archivo a `index.html`): `/` tienda + resumen institucional · `/productos` y `/productos/:linea`
+  archivo a `index.html`): `/` tienda + resumen institucional · `/productos` y `/productos/:categoria`
   (filtros en la URL: `q`, `marca`, `stock`, `orden`) · `/producto/:slug` · `/carrito` (checkout) ·
   `/favoritos` · `/cuenta` (ingreso: hoy explica que el login llega con las listas mayorista y
   distribuidor) · `/empresa` (con el mapa en `#ubicacion`) · `/proyectos` · `/tecnologia` ·
@@ -152,8 +152,14 @@ siguientes.
   disco y cámaras de su tecnología; switch → cable y cámaras IP. Si el producto no tiene entrega
   inmediata, primero «Alternativas con stock». La equivalencia de Hikvision de Kike (rama
   `crmovil/2026-11-05-equivalencias`, sin mergear) va a llegar por el ERP y tiene prioridad.
-- Las seis líneas de `Servicios.jsx` son los departamentos. Cada categoría del ERP se ubica en una
-  línea por palabras clave (`src/tienda/lineas.js`; manda la categoría, el nombre solo desempata).
+- **Categorías del ERP** (17/11): la tienda se navega por el árbol `categories` del catálogo
+  (`src/tienda/categorias.js`): `/productos/<slug>` incluye a sus descendientes; menú «Productos ▾»
+  (categorías con sus hijas y marcas, superficie sólida), hoja del teléfono, panel y chips del catálogo,
+  migas y pie. **Orden y alias en un solo archivo: `src/datos/categorias.js`** (`PRIORIDAD`, el resto
+  alfabético, `AL_FINAL` y «…-outlet» al final; sin productos no se muestra; `LINEAS_VIEJAS` redirige
+  `/productos/<linea>`, `?linea=`, `?categoria=` y `?cat=`). La faceta plana «Categoría» se quitó.
+- Las seis líneas de `Servicios.jsx` siguen como copy institucional y criterio interno (similares,
+  compatibles, venta cruzada; `src/tienda/lineas.js`), ya no como menú de la tienda.
 - Las teselas institucionales se reutilizan sin cambiar su copy (`src/paginas/Institucionales.jsx`).
   `BentoCanvas.jsx` se eliminó; `TileRespaldo` pasó a `Servicios.jsx`.
 - Psicología de compra, siempre con datos reales: reseñas de Google en el hero, "Últimas unidades"

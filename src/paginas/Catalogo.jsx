@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
 import {
   buscarRanking,
@@ -13,7 +13,7 @@ import {
   rangoPrecios,
 } from '../tienda/motor.js'
 import { formatoPrecio } from '../tienda/formato.js'
-import { LINEAS, lineaPorId } from '../tienda/lineas.js'
+import { cadenaDeCategoria, contarPorCategoria, enlaceCategoria, resolverCategoria } from '../tienda/categorias.js'
 import ProductoCard from '../tienda/ProductoCard.jsx'
 import { LogoMarca, Migas } from '../tienda/piezas.jsx'
 import { IconoBuscar, IconoCerrar, IconoWhatsapp } from '../tienda/Iconos.jsx'
@@ -207,9 +207,48 @@ function FiltroPrecio({ rango, min, max, onAplicar }) {
   )
 }
 
+/* ====================================================== categorias */
+/* Parametros de links viejos que ahora son la ruta `/productos/:categoria` */
+const PARAMS_VIEJOS = ['categoria', 'linea', 'cat']
+
+/* Arbol de categorias del ERP: sin categoria, las raices; dentro de una, su
+   cadena de padres y sus hijas (o sus hermanas si no tiene hijas). */
+function ArbolCategorias({ arbol, nodo, cadena, conteo, total, href }) {
+  const conHijas = Boolean(nodo?.hijos.length)
+  const ancestros = !nodo ? [] : conHijas ? cadena : cadena.slice(0, -1)
+  const contexto = ancestros[ancestros.length - 1]
+  const opciones = (contexto ? contexto.hijos : arbol.raices).filter((c) => (conteo.get(c.slug) || 0) > 0 || c.slug === nodo?.slug)
+
+  const item = (c, nivel, etiqueta = c?.nombre, n = conteo.get(c?.slug) || 0) => {
+    const activa = c ? c.slug === nodo?.slug : !nodo
+    return (
+      <li key={c?.slug || 'todas'}>
+        <Link
+          to={href(c?.slug || null)}
+          aria-current={activa ? 'page' : undefined}
+          style={{ paddingLeft: `${6 + nivel * 12}px` }}
+          className={`flex min-h-[44px] items-center justify-between gap-2 rounded-lg pr-1.5 text-sm transition-colors
+                      ${activa ? 'bg-black font-semibold text-white dark:bg-white dark:text-black' : 'text-black/80 hover:bg-black/[0.04] dark:text-white/80 dark:hover:bg-white/5'}`}
+        >
+          <span className="min-w-0 flex-1 leading-snug">{etiqueta}</span>
+          <span className="num pr-1 text-xs opacity-60">{n}</span>
+        </Link>
+      </li>
+    )
+  }
+
+  return (
+    <ul className="flex flex-col">
+      {item(null, 0, nodo ? '‹ Todas las categorías' : 'Todas las categorías', total)}
+      {ancestros.map((c, i) => item(c, i + 1))}
+      {opciones.map((c) => item(c, nodo ? ancestros.length + 1 : 1))}
+    </ul>
+  )
+}
+
 /* ========================================================== pagina */
 export default function Catalogo() {
-  const { linea: lineaId } = useParams()
+  const { categoria: slugCategoria } = useParams()
   const [params, setParams] = useSearchParams()
   const { catalogo } = useTienda()
   const [visibles, setVisibles] = useState(POR_TANDA)
@@ -222,15 +261,18 @@ export default function Catalogo() {
     }
   })
 
-  const linea = lineaPorId(lineaId)
+  const arbol = catalogo.datos.categorias
+  const cargando = catalogo.estado === 'cargando'
+  const { nodo = null, redirigir, inexistente } = useMemo(() => resolverCategoria(arbol, slugCategoria), [arbol, slugCategoria])
+  const cadena = useMemo(() => (nodo ? cadenaDeCategoria(arbol, nodo.slug) : []), [arbol, nodo])
   const q = params.get('q') || ''
   const orden = params.get('orden') || 'relevancia'
   const sel = useMemo(() => leerSeleccion(params), [params])
   const { productos, motor, nombresMarca, nombresCategoria } = catalogo.datos
 
   usePagina({
-    titulo: q ? `«${q}»` : linea ? linea.titulo : 'Productos',
-    descripcion: linea ? `${linea.titulo}: ${linea.texto}` : undefined,
+    titulo: q ? `«${q}»` : nodo ? nodo.nombre : 'Productos',
+    descripcion: nodo ? `${cadena.map((c) => c.nombre).join(' › ')}: productos de la tienda de REDVISION.` : undefined,
   })
 
   const cambiarVista = (v) => {
@@ -269,12 +311,12 @@ export default function Catalogo() {
     setParams(nuevos, { replace: true })
   }
 
-  /* 1. Busqueda con ranking  2. Linea  3. Facetas */
+  /* 1. Busqueda con ranking  2. Categoria (con sus descendientes)  3. Facetas */
   const busqueda = useMemo(() => buscarRanking(motor, q), [motor, q])
   const base = useMemo(() => {
     const lista = busqueda.resultados.map((r) => r.p)
-    return linea ? lista.filter((p) => p.linea === linea.id) : lista
-  }, [busqueda, linea])
+    return nodo ? lista.filter((p) => p.rutaCategoria?.includes(nodo.slug)) : lista
+  }, [busqueda, nodo])
 
   const ctx = useMemo(
     () => ({ marcas: nombresMarca, categorias: nombresCategoria, listaMarcas: catalogo.datos.marcas }),
@@ -291,11 +333,20 @@ export default function Catalogo() {
     return catalogo.datos.marcas.find((m) => m.slug === slug) || null
   }, [sel, catalogo.datos.marcas])
 
-  const conteoLineas = useMemo(() => {
-    const c = {}
-    busqueda.resultados.forEach(({ p }) => (c[p.linea] = (c[p.linea] || 0) + 1))
-    return c
-  }, [busqueda])
+  /* Conteo por categoria con lo que se conserva al cambiar de categoria (busqueda, marca, precio y stock) */
+  const sinCategoria = useMemo(() => {
+    const conservada = { ...sel, facetas: sel.facetas.marca ? { marca: sel.facetas.marca } : {} }
+    return filtrar(busqueda.resultados.map((r) => r.p), conservada)
+  }, [busqueda, sel])
+  const conteoCategorias = useMemo(() => contarPorCategoria(sinCategoria), [sinCategoria])
+  const subcategorias = (nodo ? nodo.hijos : arbol.raices).filter((c) => (conteoCategorias.get(c.slug) || 0) > 0)
+  const hrefCategoria = (slug) => {
+    const resto = new URLSearchParams(params)
+    PARAMS_FACETAS.forEach((k) => k !== 'marca' && resto.delete(k))
+    PARAMS_VIEJOS.forEach((k) => resto.delete(k))
+    const qs = resto.toString()
+    return `${enlaceCategoria(slug)}${qs ? `?${qs}` : ''}`
+  }
 
   /* Atajos: las opciones mas elegidas del momento, a un toque */
   const atajos = useMemo(() => {
@@ -315,7 +366,7 @@ export default function Catalogo() {
     return out
   }, [facetas])
 
-  useEffect(() => setVisibles(POR_TANDA), [lineaId, q, params])
+  useEffect(() => setVisibles(POR_TANDA), [slugCategoria, q, params])
 
   const quitarChip = (chip) => (chip.valor === null ? actualizar({ [chip.param]: null }) : alternar(chip.param, chip.valor))
   const hayFiltros = chips.length > 0
@@ -323,31 +374,8 @@ export default function Catalogo() {
 
   const panelFiltros = (
     <div>
-      <Grupo titulo="Línea de producto" abiertoInicial>
-        <ul className="flex flex-col">
-          {[{ id: null, titulo: 'Todas las líneas', Icono: null }, ...LINEAS].map((l) => {
-            const activa = (linea?.id || null) === l.id
-            const resto = new URLSearchParams(params)
-            PARAMS_FACETAS.forEach((k) => k !== 'marca' && resto.delete(k))
-            const qs = resto.toString()
-            return (
-              <li key={l.id || 'todas'}>
-                <Link
-                  to={`/productos${l.id ? `/${l.id}` : ''}${qs ? `?${qs}` : ''}`}
-                  aria-current={activa ? 'page' : undefined}
-                  className={`flex min-h-[36px] items-center justify-between gap-2 rounded-lg px-1.5 text-sm transition-colors
-                              ${activa ? 'bg-black font-semibold text-white dark:bg-white dark:text-black' : 'text-black/80 hover:bg-black/[0.04] dark:text-white/80 dark:hover:bg-white/5'}`}
-                >
-                  <span className="flex items-center gap-2 pl-1">
-                    {l.Icono && <l.Icono className="h-4 w-4" />}
-                    {l.titulo}
-                  </span>
-                  <span className="num pr-1 text-xs opacity-60">{l.id ? conteoLineas[l.id] || 0 : busqueda.resultados.length}</span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+      <Grupo titulo="Categorías" abiertoInicial>
+        <ArbolCategorias arbol={arbol} nodo={nodo} cadena={cadena} conteo={conteoCategorias} total={sinCategoria.length} href={hrefCategoria} />
       </Grupo>
 
       <section className="border-b border-black/[0.07] py-3 dark:border-white/10">
@@ -372,7 +400,7 @@ export default function Catalogo() {
       {facetas
         .filter((f) => f.visible)
         .map((f) => (
-          <FacetaLista key={`${f.id}-${linea?.id || ''}`} faceta={f} onAlternar={alternar} />
+          <FacetaLista key={`${f.id}-${nodo?.slug || ''}`} faceta={f} onAlternar={alternar} />
         ))}
     </div>
   )
@@ -381,19 +409,31 @@ export default function Catalogo() {
     <>
       Resultados para <span className="text-rv-red">«{q}»</span>
     </>
-  ) : linea ? (
-    linea.titulo
+  ) : nodo ? (
+    nodo.nombre
+  ) : slugCategoria && cargando ? (
+    'Productos'
   ) : (
     'Todos los productos'
   )
+
+  /* Links viejos: `?categoria=`, `?linea=`, `?cat=` y `/productos/<linea>` van a la categoria (replace: el
+     atras no vuelve al link viejo) */
+  const slugViejo = PARAMS_VIEJOS.map((k) => (params.get(k) || '').split(',')[0]).find(Boolean)
+  if (slugViejo || (redirigir && !cargando)) {
+    const resto = new URLSearchParams(params)
+    PARAMS_VIEJOS.forEach((k) => resto.delete(k))
+    const qs = resto.toString()
+    return <Navigate replace to={`${enlaceCategoria(redirigir || slugCategoria || slugViejo)}${qs ? `?${qs}` : ''}`} />
+  }
 
   return (
     <Pagina>
       <Migas
         items={[
           { label: 'Inicio', to: '/' },
-          linea || q ? { label: 'Productos', to: '/productos' } : { label: 'Productos' },
-          ...(linea ? [{ label: linea.titulo }] : []),
+          nodo || q ? { label: 'Productos', to: '/productos' } : { label: 'Productos' },
+          ...cadena.map((c) => (c === nodo && !q ? { label: c.nombre } : { label: c.nombre, to: hrefCategoria(c.slug) })),
         ]}
       />
 
@@ -416,7 +456,7 @@ export default function Catalogo() {
 
       <header className="mb-5 flex flex-col gap-1.5 px-1">
         <h1 className="font-display text-3xl font-bold text-black dark:text-white sm:text-4xl">{titulo}</h1>
-        {linea && !q && <p className="max-w-3xl text-sm leading-relaxed text-black/65 dark:text-white/65">{linea.resumen} {linea.texto}</p>}
+        {inexistente && !cargando && <p className="max-w-3xl text-sm leading-relaxed text-black/65 dark:text-white/65">Esa categoría ya no está en la tienda: se muestra el catálogo completo.</p>}
         {busqueda.correccion && (
           <p className="text-sm text-black/75 dark:text-white/75">
             Sin resultados exactos. Mostramos resultados para <strong>«{busqueda.correccion}»</strong>.
@@ -424,6 +464,22 @@ export default function Catalogo() {
         )}
         {busqueda.aproximado && <p className="text-sm text-black/75 dark:text-white/75">No hay productos con todas las palabras: mostramos los más parecidos.</p>}
       </header>
+
+      {/* Subcategorias a un toque (telefono y tablet; en escritorio estan en el panel) */}
+      {subcategorias.length > 0 && (
+        <nav aria-label={nodo ? `Subcategorías de ${nodo.nombre}` : 'Categorías'} className="-mx-1 mb-4 lg:hidden">
+          <ul className="flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+            {subcategorias.map((c) => (
+              <li key={c.slug} className="shrink-0">
+                <Link to={hrefCategoria(c.slug)} className="rv-solido inline-flex min-h-[44px] items-center gap-2 !rounded-full px-4 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:text-white">
+                  {c.nombre}
+                  <span className="num text-xs font-normal opacity-60">{conteoCategorias.get(c.slug)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-6">
         <aside className="hidden lg:block" aria-label="Filtros">
@@ -538,7 +594,7 @@ export default function Catalogo() {
                   </button>
                 )}
                 <a
-                  href={enlaceWhatsapp(`Hola, busco ${q || linea?.titulo || 'un producto'} y no lo encuentro en la tienda.`)}
+                  href={enlaceWhatsapp(`Hola, busco ${q || nodo?.nombre || 'un producto'} y no lo encuentro en la tienda.`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-black/15 px-5 text-sm font-semibold text-black hover:border-rv-red hover:text-rv-red dark:border-white/20 dark:text-white"

@@ -2,18 +2,17 @@ import { Link } from 'react-router-dom'
 import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
 import EMPRESA from '../datos/empresa.js'
+import { useTienda } from '../tienda/TiendaContext.jsx'
+import { enlaceCategoria } from '../tienda/categorias.js'
+
+/* Cuantas categorias del ERP (las primeras, ver src/datos/categorias.js) van al pie */
+const CATEGORIAS_EN_PIE = 5
 
 const COLUMNAS = [
   {
     titulo: 'Catálogo',
-    enlaces: [
-      { href: '/productos/cctv', label: 'Videovigilancia' },
-      { href: '/productos/accesos', label: 'Control de accesos' },
-      { href: '/productos/alarmas', label: 'Detección de intrusión' },
-      { href: '/productos/redes', label: 'Redes y conectividad' },
-      { href: '/productos/energia', label: 'Energía y respaldo' },
-      { href: '/productos', label: 'Todos los productos' },
-    ],
+    /* Las categorias se agregan arriba de este enlace al dibujar el pie */
+    enlaces: [{ href: '/productos', label: 'Todos los productos' }],
   },
   {
     titulo: 'Compañía',
@@ -70,6 +69,9 @@ const CONTACTO = [
 export default function Footer() {
   const { isDark } = useSite()
   const anio = new Date().getFullYear()
+  const { catalogo } = useTienda()
+  const categorias = catalogo.datos.categorias.raices.slice(0, CATEGORIAS_EN_PIE).map((c) => ({ href: enlaceCategoria(c.slug), label: c.nombre }))
+  const columnas = COLUMNAS.map((c, i) => (i === 0 ? { ...c, enlaces: [...categorias, ...c.enlaces] } : c))
 
   return (
     <footer className="pb-safe relative z-10 mx-auto max-w-[1400px] px-3 sm:px-5">
@@ -114,7 +116,7 @@ export default function Footer() {
           </div>
 
           {/* Enlaces */}
-          {COLUMNAS.map((columna) => (
+          {columnas.map((columna) => (
             <nav key={columna.titulo} aria-label={columna.titulo} className="lg:col-span-2">
               <h3 className="rv-eyebrow">{columna.titulo}</h3>
               <ul className="mt-5 space-y-3">

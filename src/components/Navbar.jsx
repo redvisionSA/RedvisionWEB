@@ -4,7 +4,8 @@ import { useSite } from '../context/SiteContext.jsx'
 import GlassPanel from './GlassPanel.jsx'
 import Buscador from '../tienda/Buscador.jsx'
 import { useTienda } from '../tienda/TiendaContext.jsx'
-import { LINEAS } from '../tienda/lineas.js'
+import { enlaceCategoria } from '../tienda/categorias.js'
+import { EN_LA_BARRA } from '../datos/categorias.js'
 import { IconoCarrito, IconoCorazon, IconoUsuario, IconoWhatsapp } from '../tienda/Iconos.jsx'
 import { useCuenta } from '../cuenta/CuentaContext.jsx'
 import { LogoMarca } from '../tienda/piezas.jsx'
@@ -271,30 +272,47 @@ function MarcasMenu({ onCerrar }) {
   )
 }
 
+/* Categorias del ERP (orden en src/datos/categorias.js): cada raiz con sus
+   primeras hijas; el resto, en la pagina de la categoria */
+const HIJAS_EN_MENU = 5
+const opcionMenu =
+  'flex min-h-[34px] items-center rounded-lg px-2 transition-colors hover:bg-black/[0.05] hover:text-rv-red dark:hover:bg-white/10 [@media(pointer:coarse)]:min-h-[44px]'
+
 function MenuProductos({ abierto, onCerrar }) {
+  const { catalogo } = useTienda()
+  const raices = catalogo.datos.categorias.raices
   if (!abierto) return null
   return (
-    <GlassPanel
-      variant="chrome"
-      className="pointer-events-auto absolute left-0 right-0 top-full mt-2 rounded-glass p-4"
+    /* Superficie solida (como la tienda): con tantas opciones, el vidrio dejaba pasar el contenido de abajo */
+    <div
+      id="rv-menu-categorias"
+      className="rv-solido pointer-events-auto absolute left-0 right-0 top-full mt-2 max-h-[calc(100svh-120px)] overflow-y-auto overscroll-contain p-4"
       onMouseLeave={onCerrar}
     >
-      <ul className="grid grid-cols-3 gap-2">
-        {LINEAS.map((l) => (
-          <li key={l.id}>
-            <Link
-              to={`/productos/${l.id}`}
-              onClick={onCerrar}
-              className="group flex items-start gap-3 rounded-2xl p-3 transition-colors hover:bg-black/[0.05] dark:hover:bg-white/10"
-            >
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-black text-white transition-colors group-hover:bg-rv-red dark:bg-white dark:text-black dark:group-hover:bg-rv-red dark:group-hover:text-white">
-                <l.Icono className="h-5 w-5" />
-              </span>
-              <span>
-                <span className="block font-display text-sm font-semibold text-black group-hover:text-rv-red dark:text-white">{l.titulo}</span>
-                <span className="rv-muted block text-xs leading-snug">{l.resumen}</span>
-              </span>
+      <ul className="columns-4 gap-6 xl:columns-5">
+        {raices.map((r) => (
+          <li key={r.slug} className="break-inside-avoid pb-3">
+            <Link to={enlaceCategoria(r.slug)} onClick={onCerrar} className={`${opcionMenu} font-display text-sm font-semibold text-black dark:text-white`}>
+              {r.nombre}
             </Link>
+            {r.hijos.length > 0 && (
+              <ul>
+                {r.hijos.slice(0, HIJAS_EN_MENU).map((h) => (
+                  <li key={h.slug}>
+                    <Link to={enlaceCategoria(h.slug)} onClick={onCerrar} className={`${opcionMenu} rv-muted text-[13px]`}>
+                      {h.nombre}
+                    </Link>
+                  </li>
+                ))}
+                {r.hijos.length > HIJAS_EN_MENU && (
+                  <li>
+                    <Link to={enlaceCategoria(r.slug)} onClick={onCerrar} className={`${opcionMenu} text-[13px] font-semibold text-black underline underline-offset-2 dark:text-white`}>
+                      Ver las {r.hijos.length} de {r.nombre}
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
@@ -305,7 +323,7 @@ function MenuProductos({ abierto, onCerrar }) {
           Ver todos los productos
         </Link>
       </div>
-    </GlassPanel>
+    </div>
   )
 }
 
@@ -414,6 +432,8 @@ export default function Navbar() {
   }, [])
 
   const enTienda = location.pathname.startsWith('/producto')
+  const { catalogo } = useTienda()
+  const raicesMenu = catalogo.datos.categorias.raices
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
@@ -448,7 +468,7 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Productos: clic va al catalogo; la flecha (o el cursor) abre lineas y marcas */}
+          {/* Productos: clic va al catalogo; la flecha (o el cursor) abre categorias y marcas */}
           <div
             className="hidden shrink-0 items-center lg:flex"
             onMouseEnter={() => canHover && setMegaOpen(true)}
@@ -468,7 +488,8 @@ export default function Navbar() {
               type="button"
               onClick={() => setMegaOpen((v) => !v)}
               aria-expanded={megaOpen}
-              aria-label="Ver líneas y marcas"
+              aria-controls="rv-menu-categorias"
+              aria-label="Ver categorías y marcas"
               className={`inline-flex h-11 items-center rounded-r-pill border-l border-white/25 pl-2 pr-3 text-white transition-colors
                           ${enTienda ? 'bg-black dark:bg-white dark:text-black' : 'bg-rv-red hover:bg-rv-red-press'}`}
             >
@@ -512,7 +533,7 @@ export default function Navbar() {
           </div>
         </GlassPanel>
 
-        {/* Lineas y marcas (escritorio) */}
+        {/* Categorias y marcas (escritorio) */}
         <div className="hidden lg:block" onMouseLeave={() => canHover && setMegaOpen(false)}>
           <MenuProductos abierto={megaOpen} onCerrar={() => setMegaOpen(false)} />
         </div>
@@ -531,21 +552,44 @@ export default function Navbar() {
           <Link to="/productos" className="rv-btn-primary w-full">
             Ver todos los productos
           </Link>
-          <p className="rv-eyebrow mb-2 mt-5 px-2">Líneas</p>
+          {raicesMenu.length > 0 && <p className="rv-eyebrow mb-2 mt-5 px-2">Categorías</p>}
           <ul className="grid grid-cols-2 gap-1.5">
-            {LINEAS.map((l) => (
-              <li key={l.id}>
+            {raicesMenu.slice(0, EN_LA_BARRA).map((c) => (
+              <li key={c.slug}>
                 <Link
-                  to={`/productos/${l.id}`}
-                  className="flex min-h-[52px] items-center gap-2.5 rounded-2xl px-3 font-display text-sm font-medium text-black hover:text-rv-red dark:text-white"
+                  to={enlaceCategoria(c.slug)}
+                  className="flex min-h-[52px] items-center rounded-2xl px-3 font-display text-sm font-medium text-black hover:text-rv-red dark:text-white"
                   style={fondoBoton}
                 >
-                  <l.Icono className="h-5 w-5 shrink-0" />
-                  <span className="leading-tight">{l.titulo}</span>
+                  <span className="leading-tight">{c.nombre}</span>
                 </Link>
               </li>
             ))}
           </ul>
+          {raicesMenu.length > EN_LA_BARRA && (
+            <details className="group mt-1.5">
+              <summary
+                className="flex min-h-[48px] cursor-pointer list-none items-center justify-between rounded-2xl px-4 font-display text-sm font-semibold text-black hover:text-rv-red dark:text-white [&::-webkit-details-marker]:hidden"
+                style={fondoBoton}
+              >
+                Más categorías
+                <Chevron className="group-open:rotate-180" />
+              </summary>
+              <ul className="mt-1.5 grid grid-cols-2 gap-1.5">
+                {raicesMenu.slice(EN_LA_BARRA).map((c) => (
+                  <li key={c.slug}>
+                    <Link
+                      to={enlaceCategoria(c.slug)}
+                      className="flex min-h-[52px] items-center rounded-2xl px-3 font-display text-sm font-medium text-black hover:text-rv-red dark:text-white"
+                      style={fondoBoton}
+                    >
+                      <span className="leading-tight">{c.nombre}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
 
           <p className="rv-eyebrow mb-2 mt-5 px-2">REDVISION</p>
           <ul className="flex flex-col gap-1">

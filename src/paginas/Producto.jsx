@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTienda } from '../tienda/TiendaContext.jsx'
-import { COMPLEMENTOS, lineaPorId } from '../tienda/lineas.js'
+import { COMPLEMENTOS } from '../tienda/lineas.js'
+import { cadenaDeCategoria, enlaceCategoria } from '../tienda/categorias.js'
 import { BotonFavorito, Disponibilidad, ImagenProducto, InvitacionStock, LogoMarca, Migas, Precio, sePuedeComprar } from '../tienda/piezas.jsx'
 import { Cantidad } from '../tienda/LineaCarrito.jsx'
 import Riel from '../tienda/Riel.jsx'
@@ -156,7 +157,9 @@ export default function Producto() {
     )
   }
 
-  const linea = lineaPorId(producto.linea)
+  /* Migas y «Ver todo» por la categoria del ERP (de la raiz a la hoja) */
+  const cadena = cadenaDeCategoria(catalogo.datos.categorias, producto.categoria?.slug)
+  const hoja = cadena[cadena.length - 1] || null
   const comprable = sePuedeComprar(producto)
 
   function onAgregar() {
@@ -192,7 +195,7 @@ export default function Producto() {
         items={[
           { label: 'Inicio', to: '/' },
           { label: 'Productos', to: '/productos' },
-          ...(linea ? [{ label: linea.titulo, to: `/productos/${linea.id}` }] : []),
+          ...cadena.map((c) => ({ label: c.nombre, to: enlaceCategoria(c.slug) })),
           { label: producto.nombre },
         ]}
       />
@@ -293,7 +296,7 @@ export default function Producto() {
       <div className="mt-10 flex flex-col gap-10">
         <Riel eyebrow="Entrega inmediata" titulo="Alternativas con stock para llevar hoy" productos={conStock} />
         <Riel eyebrow="Compatibles" titulo="Complete la instalación" productos={complementos} />
-        <Riel eyebrow={linea?.titulo} titulo="Productos similares" productos={misma} verTodo={linea ? `/productos/${linea.id}` : undefined} />
+        <Riel eyebrow={hoja?.nombre} titulo="Productos similares" productos={misma} verTodo={hoja ? enlaceCategoria(hoja.slug) : undefined} />
         <Riel eyebrow="Para retomar" titulo="Vistos recientemente" productos={recientes} />
       </div>
 
