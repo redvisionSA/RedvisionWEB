@@ -49,7 +49,7 @@ function Pasos({ actual }) {
       {PASOS.map((p, i) => (
         <li key={p} className="flex items-center gap-2">
           <span
-            className={`num inline-flex h-7 w-7 items-center justify-center rounded-pill text-xs font-bold ${
+            className={`num inline-flex h-7 w-7 items-center justify-center rounded-[2px] font-osd text-xs font-medium ${
               i < actual ? 'bg-black text-white dark:bg-white dark:text-black' : i === actual ? 'bg-rv-red text-white' : 'text-black/50 dark:text-white/50'
             }`}
             style={i > actual ? { border: '1px solid rgba(127,127,127,0.35)' } : undefined}
